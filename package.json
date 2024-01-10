@@ -15,9 +15,17 @@
     "commands": [
       {
         "command": "bpmsoft-creator-package.helloWorld",
-        "title": "Hello World"
+        "title": "Create Package"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+          {
+              "when": "explorerResourceIsFolder",
+              "command": "bpmsoft-creator-package.helloWorld"
+          }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -37,5 +45,8 @@
     "typescript": "^5.3.3",
     "@vscode/test-cli": "^0.0.4",
     "@vscode/test-electron": "^2.3.8"
-  }
+  },
+  "extensionDependencies": [
+    "vscode.git"
+  ]
 }

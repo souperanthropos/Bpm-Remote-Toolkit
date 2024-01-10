@@ -6,20 +6,23 @@ import * as vscode from 'vscode';
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "bpmsoft-creator-package" is now active!');
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.helloWorld', () => {
+		const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
+		terminal.show(true);
+		terminal.sendText("echo 'Sent text immediately after creating'");
+	}));
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('bpmsoft-creator-package.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Bpmsoft Creator Package!');
-	});
+	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+	const api = gitExtension.getAPI(1);
 
-	context.subscriptions.push(disposable);
+	const repo = api.repositories[0];
+	const head = repo.state.HEAD;
+
+	// Get the branch and commit 
+	const {commit,name: branch} = head;
+
+
+	console.log({ branch, commit });
 }
 
 // This method is called when your extension is deactivated
