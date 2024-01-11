@@ -42,11 +42,19 @@ function isPermittedBranch() : boolean {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', (uri:vscode.Uri) => {
+		console.log(uri.fsPath);
+
+		const path = require("path");
+		const parentDirectory = path.basename(path.dirname(uri.fsPath));
+
+		const config = vscode.workspace.getConfiguration();
+		const outputPath = config.get('outputPath');
+
 		if(isPermittedBranch()){
 			const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
 			terminal.show(true);
-			terminal.sendText("echo 'Sent text immediately after creating'");
+			terminal.sendText("clio help");
 		}
 	}));
 }

@@ -12,6 +12,17 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "BCPSettings",
+      "properties": {
+        "bcp.outputPath": {
+          "type": "string",
+          "default": "C:\\",
+          "scope": "resource",
+          "description": "Specify output full path for .gz file."
+        }
+      }
+    },
     "commands": [
       {
         "command": "bpmsoft-creator-package.create",
