@@ -44,17 +44,17 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
-
+		
 		const path = require("path");
-		const parentDirectory = path.basename(path.dirname(uri.fsPath));
-
+		const parentDirectory = path.basename(uri.fsPath);
+		
 		const config = vscode.workspace.getConfiguration('bcp');
 		const outputPath = config.get('outputPath');
 
 		if(isPermittedBranch()){
 			const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
 			terminal.show(true);
-			terminal.sendText("clio generate-pkg-zip " + uri.fsPath + " -d " + outputPath + parentDirectory + ".gz");
+			terminal.sendText("clio generate-pkg-zip " + uri.fsPath + " -d " + path.join(outputPath, parentDirectory + ".gz"));
 		}
 	}));
 }
