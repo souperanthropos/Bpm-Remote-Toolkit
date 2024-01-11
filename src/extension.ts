@@ -2,20 +2,26 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+let terminalLog: vscode.OutputChannel;
+
 function isPermittedBranch() : boolean {
 	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
-	let terminalLog = vscode.window.createOutputChannel("BCP");
+	if( terminalLog === undefined){
+		terminalLog = vscode.window.createOutputChannel("BCP");
+	}
+
+	terminalLog.show(true);
 
 	if (!gitExtension.enabled) {
 		console.warn("Git extension not active");
 		terminalLog.appendLine("Git extension not active");
-		vscode.window.showInformationMessage('Git extension not active');
 		return false;
 	}
 	
 	const api = gitExtension.getAPI(1);
 	const repo = api.repositories[0];
 	if(repo === undefined){
+		terminalLog.appendLine("Git extension not active");
 		return false;
 	}
 	const head = repo.state.HEAD;
@@ -29,7 +35,6 @@ function isPermittedBranch() : boolean {
 	console.error('Branch: ' + branch + 'not permitted');
 	terminalLog.appendLine('Branch: ' + branch + ' not permitted');
 	terminalLog.appendLine('Please select branch: develop, preprod or master');
-	vscode.window.showInformationMessage('Branch: ' + branch + ' not permitted');
 	return false;
 }
 
