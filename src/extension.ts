@@ -48,13 +48,13 @@ export function activate(context: vscode.ExtensionContext) {
 		const path = require("path");
 		const parentDirectory = path.basename(path.dirname(uri.fsPath));
 
-		const config = vscode.workspace.getConfiguration();
+		const config = vscode.workspace.getConfiguration('bcp');
 		const outputPath = config.get('outputPath');
 
 		if(isPermittedBranch()){
 			const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
 			terminal.show(true);
-			terminal.sendText("clio help");
+			terminal.sendText("clio generate-pkg-zip " + uri.fsPath + " -d " + outputPath + parentDirectory + ".gz");
 		}
 	}));
 }
