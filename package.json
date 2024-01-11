@@ -14,7 +14,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "bpmsoft-creator-package.helloWorld",
+        "command": "bpmsoft-creator-package.create",
         "title": "Create Package"
       }
     ],
@@ -22,7 +22,7 @@
       "explorer/context": [
           {
               "when": "explorerResourceIsFolder",
-              "command": "bpmsoft-creator-package.helloWorld"
+              "command": "bpmsoft-creator-package.create"
           }
       ]
     }

@@ -37,7 +37,7 @@ function isPermittedBranch() : boolean {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.helloWorld', () => {
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', () => {
 		if(isPermittedBranch()){
 			const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
 			terminal.show(true);
