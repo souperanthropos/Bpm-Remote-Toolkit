@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as cp from "child_process";
 
 let terminalLog: vscode.OutputChannel;
 
@@ -38,11 +39,21 @@ function isPermittedBranch() : boolean {
 	return false;
 }
 
+const execShell = (cmd: string) =>
+    new Promise<string>((resolve, reject) => {
+        cp.exec(cmd, (err, out) => {
+            if (err) {
+                return reject(err);
+            }
+            return resolve(out);
+        });
+    });
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 		
 		const path = require("path");
@@ -54,7 +65,10 @@ export function activate(context: vscode.ExtensionContext) {
 		if(isPermittedBranch()){
 			const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
 			terminal.show(true);
-			terminal.sendText("clio generate-pkg-zip " + uri.fsPath + " -d " + path.join(outputPath, parentDirectory + ".gz"));
+			//terminal.sendText("clio generate-pkg-zip " + uri.fsPath + " -d " + path.join(outputPath, parentDirectory + ".gz"));
+			terminalLog.appendLine('Execute: clio generate-pkg-zip ' + uri.fsPath + ' -d ' + path.join(outputPath, parentDirectory + '.gz'));
+			const result = await execShell("clio generate-pkg-zip " + uri.fsPath + " -d " + path.join(outputPath, parentDirectory + ".gz"));
+			terminalLog.appendLine('Result: ' + result);
 		}
 	}));
 }
