@@ -13,13 +13,31 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "BCPSettings",
+      "title": "Bpmsoft Creator Package",
       "properties": {
         "bcp.outputPath": {
           "type": "string",
           "default": "C:\\",
           "scope": "resource",
           "description": "Specify output full path for .gz file."
+        },
+        "bcp.remoteServer": {
+          "type": "string",
+          "default": "localhost",
+          "scope": "resource",
+          "description": "Remote server with Bpmsoft."
+        },
+        "bcp.remoteServerLogin": {
+          "type": "string",
+          "default": "admin",
+          "scope": "resource",
+          "description": "Bpmsoft account login."
+        },
+        "bcp.remoteServerPassword": {
+          "type": "string",
+          "default": "admin",
+          "scope": "resource",
+          "description": "Bpmsoft account password."
         }
       }
     },
@@ -27,6 +45,10 @@
       {
         "command": "bpmsoft-creator-package.create",
         "title": "Create Package"
+      },
+      {
+        "command": "bpmsoft-creator-package.test.createandsend",
+        "title": "Create Package and send to test"
       }
     ],
     "menus": {
@@ -34,7 +56,11 @@
           {
               "when": "explorerResourceIsFolder",
               "command": "bpmsoft-creator-package.create"
-          }
+          },
+          {
+            "when": "explorerResourceIsFolder",
+            "command": "bpmsoft-creator-package.test.createandsend"
+        }
       ]
     }
   },
