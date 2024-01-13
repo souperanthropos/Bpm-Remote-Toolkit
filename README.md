@@ -1,71 +1,41 @@
-# bpmsoft-creator-package README
+# bpmsoft-creator-package
 
-This is the README for your extension "bpmsoft-creator-package". After writing up a brief description, we recommend including the following sections.
+Расширение позволяет автоматически создавать и устанавливать пакеты с расширением **.gz** на целевой среде.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+#### Create package:
 
-For example if there is an image subfolder under your extension project workspace:
+Чтобы сгенерировать пакет, в области **Workspace** Visual Studio Code щелкните правой кнопкой на папке с именем пакета и выберите **Create Package**
 
-\!\[feature X\]\(images/feature-x.png\)
+![Create Package](images/create_package.png)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Чтобы сгенерировать и отправить пакет на целевую среду, в области **Workspace** Visual Studio Code щелкните правой кнопкой на папке с именем пакета и выберите **Create Package And Send To Test Server**
+
+![Create Package](images/create_package_and_send.png)
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Для корректной работы необходимо установить **clio** с помощью следующей команды:
+
+`dotnet tool install clio -g`
+
+> Command Line Interface clio is the utility for integration Creatio platform with development and CI/CD tools.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Это расширение добавляет следующие настройки:
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+* `bcp.outputPath`: Specify output full path for .gz file.
+* `bcp.remoteTestServerLogin`: Bpmsoft account login for test server.
+* `bcp.remoteTestServerPassword`: Bpmsoft account password for test server.
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+NONE
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Initial release

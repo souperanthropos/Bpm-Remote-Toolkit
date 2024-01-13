@@ -42,7 +42,7 @@
       },
       {
         "command": "bpmsoft-creator-package.test.createandsend",
-        "title": "Create Package and send to test"
+        "title": "Create Package And Send To Test Server"
       }
     ],
     "menus": {
