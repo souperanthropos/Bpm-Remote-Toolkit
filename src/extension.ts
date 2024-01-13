@@ -84,7 +84,7 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	}
 }
 
-async function pushPackage(targetFolderPath: string) : Promise<boolean> {
+function pushPackage(targetFolderPath: string) {
 	const path = require("path");
 	const config = vscode.workspace.getConfiguration('bcp');
 	const outputPath = config.get('outputPath');
@@ -92,28 +92,15 @@ async function pushPackage(targetFolderPath: string) : Promise<boolean> {
 	const remoteServerLogin = config.get('remoteTestServerLogin');
 	const remoteServerPassword = config.get('remoteTestServerPassword');
 
-	terminalLog.appendLine(
-		'Execute: clio push-pkg ' 
+	const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
+	terminal.show(true);
+	terminal.sendText(
+		'clio push-pkg ' 
 		+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
 		+ ' -u ' + remoteServer 
 		+ ' -l ' + remoteServerLogin 
 		+ ' -p ' + remoteServerPassword
 	);
-	try{
-		const pushResult = await execShell(
-			'Execute: clio push-pkg ' 
-			+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
-			+ ' -u ' + remoteServer 
-			+ ' -l ' + remoteServerLogin 
-			+ ' -p ' + remoteServerPassword
-		);
-		terminalLog.appendLine('Result: ' + pushResult);
-		return true;
-	}
-	catch(error){
-		terminalLog.appendLine('Error: ' + error);
-		return false;
-	}
 }
 
 // This method is called when your extension is activated
@@ -141,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if(isPermittedBranch('develop')){
 			var result = await createPackage(uri.fsPath);
 			if(result){
-				await pushPackage(uri.fsPath);
+				pushPackage(uri.fsPath);
 			}
 		}
 	}));
