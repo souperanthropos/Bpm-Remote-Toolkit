@@ -21,23 +21,17 @@
           "scope": "resource",
           "description": "Specify output full path for .gz file."
         },
-        "bcp.remoteServer": {
-          "type": "string",
-          "default": "localhost",
-          "scope": "resource",
-          "description": "Remote server with Bpmsoft."
-        },
-        "bcp.remoteServerLogin": {
+        "bcp.remoteTestServerLogin": {
           "type": "string",
           "default": "admin",
           "scope": "resource",
-          "description": "Bpmsoft account login."
+          "description": "Bpmsoft account login for test server."
         },
-        "bcp.remoteServerPassword": {
+        "bcp.remoteTestServerPassword": {
           "type": "string",
           "default": "admin",
           "scope": "resource",
-          "description": "Bpmsoft account password."
+          "description": "Bpmsoft account password for test server."
         }
       }
     },
