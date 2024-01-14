@@ -100,6 +100,7 @@ function pushPackage(targetFolderPath: string) {
 	const terminal = vscode.window.createTerminal(`cliowrapper`);
 	terminal.show(true);
 	terminal.sendText(
+		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
 		'clio push-pkg ' 
 		+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
 		+ ' -u ' + remoteServer 
