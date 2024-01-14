@@ -1,4 +1,4 @@
-# bpmsoft-creator-package
+# cliowrapper
 
 Расширение позволяет автоматически создавать и устанавливать пакеты с расширением **.gz** на целевой среде.
 
@@ -26,9 +26,9 @@
 
 Это расширение добавляет следующие настройки:
 
-* `bcp.outputPath`: Specify output full path for .gz file.
-* `bcp.remoteTestServerLogin`: Bpmsoft account login for test server.
-* `bcp.remoteTestServerPassword`: Bpmsoft account password for test server.
+* `cw.outputPath`: Specify output full path for .gz file.
+* `cw.remoteTestServerLogin`: Bpmsoft account login for test server.
+* `cw.remoteTestServerPassword`: Bpmsoft account password for test server.
 
 ## Known Issues
 

@@ -1,7 +1,7 @@
 {
-  "name": "bpmsoft-creator-package",
-  "displayName": "Bpmsoft Creator Package",
-  "description": "Helper for creating Bpmsoft package",
+  "name": "cliowrapper",
+  "displayName": "Clio Wrapper",
+  "description": "CI/CD tools for Bpmsoft.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
@@ -13,21 +13,21 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Bpmsoft Creator Package",
+      "title": "Clio Wrapper",
       "properties": {
-        "bcp.outputPath": {
+        "cw.outputPath": {
           "type": "string",
           "default": "C:\\",
           "scope": "resource",
           "description": "Specify output full path for .gz file."
         },
-        "bcp.remoteTestServerLogin": {
+        "cw.remoteTestServerLogin": {
           "type": "string",
           "default": "admin",
           "scope": "resource",
           "description": "Bpmsoft account login for test server."
         },
-        "bcp.remoteTestServerPassword": {
+        "cw.remoteTestServerPassword": {
           "type": "string",
           "default": "admin",
           "scope": "resource",
@@ -37,11 +37,11 @@
     },
     "commands": [
       {
-        "command": "bpmsoft-creator-package.create",
+        "command": "cliowrapper.create",
         "title": "Create Package"
       },
       {
-        "command": "bpmsoft-creator-package.test.createandsend",
+        "command": "cliowrapper.test.createandsend",
         "title": "Create Package And Send To Test Server"
       }
     ],
@@ -49,11 +49,11 @@
       "explorer/context": [
           {
               "when": "explorerResourceIsFolder",
-              "command": "bpmsoft-creator-package.create"
+              "command": "cliowrapper.create"
           },
           {
             "when": "explorerResourceIsFolder",
-            "command": "bpmsoft-creator-package.test.createandsend"
+            "command": "cliowrapper.test.createandsend"
         }
       ]
     }

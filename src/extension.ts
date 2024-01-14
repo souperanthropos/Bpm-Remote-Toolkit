@@ -23,7 +23,7 @@ function getDirectoryName(localPath: string) : string {
 function isPermittedBranch(branchName: string | undefined) : boolean {
 	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
 	if( terminalLog === undefined){
-		terminalLog = vscode.window.createOutputChannel("BCP");
+		terminalLog = vscode.window.createOutputChannel("cliowrapper");
 	}
 
 	terminalLog.show(true);
@@ -66,7 +66,7 @@ function isPermittedBranch(branchName: string | undefined) : boolean {
 
 async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('bcp');
+	const config = vscode.workspace.getConfiguration('cw');
 	const outputPath = config.get('outputPath');
 
 	terminalLog.appendLine('del ' + path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz'));
@@ -86,7 +86,7 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 
 function pushPackage(targetFolderPath: string) {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('bcp');
+	const config = vscode.workspace.getConfiguration('cw');
 	const outputPath = config.get('outputPath');
 	const remoteServer = 'https://10.252.60.234:10443';
 	const remoteServerLogin = config.get('remoteTestServerLogin');
@@ -107,7 +107,7 @@ function pushPackage(targetFolderPath: string) {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.create', async (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
 		if(isPermittedBranch(undefined)){
@@ -115,7 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoft-creator-package.test.createandsend', async (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.test.createandsend', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 		
 		const path = require("path");
