@@ -92,7 +92,12 @@ function pushPackage(targetFolderPath: string) {
 	const remoteServerLogin = config.get('remoteTestServerLogin');
 	const remoteServerPassword = config.get('remoteTestServerPassword');
 
-	const terminal = vscode.window.createTerminal(`Bpmsoft Terminal`);
+	if(remoteServerLogin === '' || remoteServerPassword === ''){
+		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestServerLogin, remoteTestServerPassword');
+		return;
+	}
+
+	const terminal = vscode.window.createTerminal(`cliowrapper`);
 	terminal.show(true);
 	terminal.sendText(
 		'clio push-pkg ' 

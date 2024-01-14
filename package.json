@@ -23,13 +23,13 @@
         },
         "cw.remoteTestServerLogin": {
           "type": "string",
-          "default": "admin",
+          "default": "",
           "scope": "resource",
           "description": "Bpmsoft account login for test server."
         },
         "cw.remoteTestServerPassword": {
           "type": "string",
-          "default": "admin",
+          "default": "",
           "scope": "resource",
           "description": "Bpmsoft account password for test server."
         }
