@@ -3,7 +3,7 @@
   "displayName": "Clio Wrapper",
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -48,13 +48,13 @@
     ],
     "menus": {
       "explorer/context": [
-          {
-              "when": "explorerResourceIsFolder",
-              "command": "cliowrapper.create"
-          },
-          {
-            "when": "explorerResourceIsFolder",
-            "command": "cliowrapper.test.createandsend"
+        {
+          "when": "explorerResourceIsFolder",
+          "command": "cliowrapper.create"
+        },
+        {
+          "when": "explorerResourceIsFolder",
+          "command": "cliowrapper.test.createandsend"
         }
       ]
     }
