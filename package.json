@@ -14,21 +14,21 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Clio Wrapper",
+      "title": "Clio wrapper",
       "properties": {
-        "cw.outputPath": {
+        "clio.outputPath": {
           "type": "string",
           "default": "C:\\",
           "scope": "application",
           "description": "Specify output full path for .gz file."
         },
-        "cw.remoteTestLogin": {
+        "clio.bpmSoft.test.login": {
           "type": "string",
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account login for test."
         },
-        "cw.remoteTestPassword": {
+        "clio.bpmSoft.test.password": {
           "type": "string",
           "default": "",
           "scope": "application",

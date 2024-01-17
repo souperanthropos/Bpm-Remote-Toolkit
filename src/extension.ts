@@ -66,7 +66,7 @@ function isPermittedBranch(branchName: string | undefined) : boolean {
 
 async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('cw');
+	const config = vscode.workspace.getConfiguration('clio');
 	const outputPath = config.get('outputPath');
 
 	terminalLog.appendLine('del ' + path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz'));
@@ -86,10 +86,10 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 
 function pushPackage(targetFolderPath: string, targetRemoteUrl: string | undefined) {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('cw');
+	const config = vscode.workspace.getConfiguration('clio');
 	const outputPath = config.get('outputPath');
-	const remoteLogin = config.get('remoteTestLogin');
-	const remotePassword = config.get('remoteTestPassword');
+	const remoteLogin = config.get('bpmSoft.test.login');
+	const remotePassword = config.get('bpmSoft.test.password');
 
 	if(targetRemoteUrl === undefined){
 		terminalLog.appendLine('Error: incorrect server');
