@@ -20,7 +20,7 @@ function getDirectoryName(localPath: string) : string {
 	return path.basename(localPath);
 }
 
-function isPermittedBranch(branchName: string | undefined) : boolean {
+async function isPermittedBranch(branchName: string | undefined) : Promise<boolean> {
 	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
 	if( terminalLog === undefined){
 		terminalLog = vscode.window.createOutputChannel("cliowrapper");
@@ -40,6 +40,15 @@ function isPermittedBranch(branchName: string | undefined) : boolean {
 		terminalLog.appendLine("Git extension not active");
 		return false;
 	}
+
+    //Get all changes for first repository in list
+	const changes = await repo.diffWithHEAD();
+	//Print out array of changes
+	if(changes.length > 0){
+		terminalLog.appendLine('Error: Uncommitted changes detected.');
+		return false;
+	}
+
 	const head = repo.state.HEAD;
 	const {commit,name: branch} = head;
 	console.log({ branch, commit });
@@ -120,7 +129,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
-		if(isPermittedBranch(undefined)){
+		if(await isPermittedBranch(undefined)){
 			await createPackage(uri.fsPath);
 		}
 	}));
@@ -131,7 +140,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
 		const serverUrl = workspaceConfig.get<string>('test');
 
-		if(isPermittedBranch('develop')){
+		if(await isPermittedBranch('develop')){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage(uri.fsPath, serverUrl);
