@@ -4,15 +4,17 @@
 
 ## Features
 
-#### Create package:
+#### Создание пакета:
 
 Чтобы сгенерировать пакет, в области **Workspace** Visual Studio Code щелкните правой кнопкой на папке с именем пакета и выберите **Create Package**
 
 ![Create Package](images/create_package.png)
 
+#### Создание и отправка пакета:
+
 Чтобы сгенерировать и отправить пакет на целевую среду, в области **Workspace** Visual Studio Code щелкните правой кнопкой на папке с именем пакета и выберите **Create Package And Send To Test Server**
 
-![Create Package](images/create_package_and_send.png)
+![Create Package And Send](images/create_package_and_send.png)
 
 ## Requirements
 
@@ -26,9 +28,9 @@
 
 Это расширение добавляет следующие настройки:
 
-* `cw.outputPath`: Specify output full path for .gz file.
-* `cw.remoteTestServerLogin`: Bpmsoft account login for test server.
-* `cw.remoteTestServerPassword`: Bpmsoft account password for test server.
+* `clio.outputPath`: Specify output full path for .gz file.
+* `clio.bpmSoft.test.login`: Bpmsoft account login for test app.
+* `clio.bpmSoft.test.password`: Bpmsoft account password for test app.
 
 ## Known Issues
 
@@ -39,3 +41,11 @@ NONE
 ### 1.0.0
 
 Initial release
+
+### 1.1.0
+
+Исправление кодировки при выводе выходных данных в терминале
+
+### 1.2.0
+
+Группировка пунктов меню для **Создание и отправка пакета**
