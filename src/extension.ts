@@ -84,16 +84,20 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	}
 }
 
-function pushPackage(targetFolderPath: string) {
+function pushPackage(targetFolderPath: string, targetRemoteUrl: string | undefined) {
 	const path = require("path");
 	const config = vscode.workspace.getConfiguration('cw');
 	const outputPath = config.get('outputPath');
-	const remoteServer = 'https://10.252.60.234:10443';
-	const remoteServerLogin = config.get('remoteTestServerLogin');
-	const remoteServerPassword = config.get('remoteTestServerPassword');
+	const remoteLogin = config.get('remoteTestLogin');
+	const remotePassword = config.get('remoteTestPassword');
 
-	if(remoteServerLogin === '' || remoteServerPassword === ''){
-		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestServerLogin, remoteTestServerPassword');
+	if(targetRemoteUrl === undefined){
+		terminalLog.appendLine('Error: incorrect server');
+		return;
+	}
+
+	if(remoteLogin === '' || remotePassword === ''){
+		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestLogin, remoteTestPassword');
 		return;
 	}
 
@@ -103,9 +107,9 @@ function pushPackage(targetFolderPath: string) {
 		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
 		'clio push-pkg ' 
 		+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
-		+ ' -u ' + remoteServer 
-		+ ' -l ' + remoteServerLogin 
-		+ ' -p ' + remoteServerPassword
+		+ ' -u ' + targetRemoteUrl 
+		+ ' -l ' + remoteLogin 
+		+ ' -p ' + remotePassword
 	);
 }
 
@@ -123,18 +127,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.test.createandsend', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
-		
-		const path = require("path");
-		const parentDirectory = path.basename(uri.fsPath);
-		
-		const config = vscode.workspace.getConfiguration('bcp');
-		const outputPath = config.get('outputPath');
 
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverUrl = workspaceConfig.get<string>('test');
 
 		if(isPermittedBranch('develop')){
 			var result = await createPackage(uri.fsPath);
 			if(result){
-				pushPackage(uri.fsPath);
+				pushPackage(uri.fsPath, serverUrl);
 			}
 		}
 	}));

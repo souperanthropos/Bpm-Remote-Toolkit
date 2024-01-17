@@ -19,19 +19,19 @@
         "cw.outputPath": {
           "type": "string",
           "default": "C:\\",
-          "scope": "resource",
+          "scope": "application",
           "description": "Specify output full path for .gz file."
         },
-        "cw.remoteTestServerLogin": {
+        "cw.remoteTestLogin": {
           "type": "string",
           "default": "",
-          "scope": "resource",
+          "scope": "application",
           "description": "Bpmsoft account login for test server."
         },
-        "cw.remoteTestServerPassword": {
+        "cw.remoteTestPassword": {
           "type": "string",
           "default": "",
-          "scope": "resource",
+          "scope": "application",
           "description": "Bpmsoft account password for test server."
         }
       }
