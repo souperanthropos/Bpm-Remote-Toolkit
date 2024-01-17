@@ -26,13 +26,13 @@
           "type": "string",
           "default": "",
           "scope": "application",
-          "description": "Bpmsoft account login for test server."
+          "description": "Bpmsoft account login for test."
         },
         "cw.remoteTestPassword": {
           "type": "string",
           "default": "",
           "scope": "application",
-          "description": "Bpmsoft account password for test server."
+          "description": "Bpmsoft account password for test."
         }
       }
     },
@@ -42,19 +42,32 @@
         "title": "Create Package"
       },
       {
-        "command": "cliowrapper.test.createandsend",
-        "title": "Create Package And Send To Test Server"
+        "command": "cliowrapper.createandsend.totest",
+        "title": "Bmpsoft Test"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "cliowrapper.submenu",
+        "label": "Create Package And Send To"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder",
-          "command": "cliowrapper.create"
+          "command": "cliowrapper.create",
+          "group": "z_cliowrapper"
         },
         {
+          "submenu": "cliowrapper.submenu",
           "when": "explorerResourceIsFolder",
-          "command": "cliowrapper.test.createandsend"
+          "group": "z_cliowrapper"
+        }
+      ],
+      "cliowrapper.submenu": [
+        {
+          "command": "cliowrapper.createandsend.totest"
         }
       ]
     }

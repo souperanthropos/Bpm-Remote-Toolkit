@@ -125,7 +125,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.test.createandsend', async (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.totest', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
