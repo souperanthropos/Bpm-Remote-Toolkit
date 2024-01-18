@@ -28,25 +28,37 @@
           "type": "string",
           "default": "",
           "scope": "application",
-          "description": "Bpmsoft account login for test."
+          "description": "Bpmsoft account login for test app."
         },
         "clio.bpmSoft.test.password": {
           "type": "string",
           "default": "",
           "scope": "application",
-          "description": "Bpmsoft account password for test."
+          "description": "Bpmsoft account password for test app."
         },
         "clio.bpmSoft.preprod.login": {
           "type": "string",
           "default": "",
           "scope": "application",
-          "description": "Bpmsoft account login for preprod."
+          "description": "Bpmsoft account login for preprod app."
         },
         "clio.bpmSoft.preprod.password": {
           "type": "string",
           "default": "",
           "scope": "application",
-          "description": "Bpmsoft account password for preprod."
+          "description": "Bpmsoft account password for preprod app."
+        },
+        "clio.bpmSoft.prod.login": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "Bpmsoft account login for prod app."
+        },
+        "clio.bpmSoft.prod.password": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "Bpmsoft account password for prod app."
         }
       }
     },
@@ -62,6 +74,10 @@
       {
         "command": "cliowrapper.createandsend.topreprod",
         "title": "Bmpsoft Prepod"
+      },
+      {
+        "command": "cliowrapper.createandsend.toprod",
+        "title": "Bmpsoft Prod"
       }
     ],
     "submenus": [
@@ -93,6 +109,11 @@
           "command": "cliowrapper.createandsend.topreprod",
           "when": "isShowPreprodApp",
           "group": "cliosub@2"
+        },
+        {
+          "command": "cliowrapper.createandsend.toprod",
+          "when": "isShowProdApp",
+          "group": "cliosub@3"
         }
       ]
     }

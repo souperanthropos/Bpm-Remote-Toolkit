@@ -31,15 +31,24 @@ function checkWorkspaceSettings(){
 	const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
 	const serverTestUrl = workspaceConfig.get<string>('test');
 	const serverPreprodUrl = workspaceConfig.get<string>('preprod');
+	const serverProdUrl = workspaceConfig.get<string>('prod');
+
 	if(serverTestUrl !== '' && serverTestUrl !== undefined){
 		vscode.commands.executeCommand('setContext', 'isShowTestApp', true);
 	}else{
 		vscode.commands.executeCommand('setContext', 'isShowTestApp', false);
 	}
+
 	if(serverPreprodUrl !== '' && serverPreprodUrl !== undefined){
 		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', true);
 	}else{
 		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', false);
+	}
+
+	if(serverProdUrl !== '' && serverProdUrl !== undefined){
+		vscode.commands.executeCommand('setContext', 'isShowProdApp', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowProdApp', false);
 	}
 }
 
@@ -195,6 +204,29 @@ export function activate(context: vscode.ExtensionContext) {
 		const serverUrl = workspaceConfig.get<string>('preprod');
 
 		if(await isPermittedBranch('preprod')){
+			var result = await createPackage(uri.fsPath);
+			if(result){
+				pushPackage({
+					targetFolderPath: uri.fsPath,
+					targetRemoteUrl: serverUrl,
+					remoteLogin: remoteTestLogin,
+					remotePassword: remoteTestPassword
+				});
+			}
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.toprod', async (uri:vscode.Uri) => {
+		console.log(uri.fsPath);
+
+		const config = vscode.workspace.getConfiguration('clio');
+		const remoteTestLogin = config.get<string>('bpmSoft.prod.login');
+		const remoteTestPassword = config.get<string>('bpmSoft.prod.password');
+
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverUrl = workspaceConfig.get<string>('prod');
+
+		if(await isPermittedBranch('master')){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
