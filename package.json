@@ -10,29 +10,31 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Clio Wrapper",
+      "title": "Clio wrapper",
       "properties": {
-        "cw.outputPath": {
+        "clio.outputPath": {
           "type": "string",
           "default": "C:\\",
-          "scope": "resource",
+          "scope": "application",
           "description": "Specify output full path for .gz file."
         },
-        "cw.remoteTestServerLogin": {
+        "clio.bpmSoft.test.login": {
           "type": "string",
           "default": "",
-          "scope": "resource",
-          "description": "Bpmsoft account login for test server."
+          "scope": "application",
+          "description": "Bpmsoft account login for test."
         },
-        "cw.remoteTestServerPassword": {
+        "clio.bpmSoft.test.password": {
           "type": "string",
           "default": "",
-          "scope": "resource",
-          "description": "Bpmsoft account password for test server."
+          "scope": "application",
+          "description": "Bpmsoft account password for test."
         }
       }
     },
@@ -42,19 +44,41 @@
         "title": "Create Package"
       },
       {
-        "command": "cliowrapper.test.createandsend",
-        "title": "Create Package And Send To Test Server"
+        "command": "cliowrapper.createandsend.totest",
+        "title": "Bmpsoft Test"
+      },
+      {
+        "command": "cliowrapper.createandsend.toprepod",
+        "title": "Bmpsoft Prepod"
+      }
+    ],
+    "submenus": [
+      {
+        "id": "cliowrapper.submenu",
+        "label": "Create Package And Send To"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder",
-          "command": "cliowrapper.create"
+          "command": "cliowrapper.create",
+          "group": "z_cliowrapper"
         },
         {
+          "submenu": "cliowrapper.submenu",
           "when": "explorerResourceIsFolder",
-          "command": "cliowrapper.test.createandsend"
+          "group": "z_cliowrapper"
+        }
+      ],
+      "cliowrapper.submenu": [
+        {
+          "command": "cliowrapper.createandsend.totest",
+          "when": "isShowTestApp"
+        },
+        {
+          "command": "cliowrapper.createandsend.toprepod",
+          "when": "isShowPreprodApp"
         }
       ]
     }

@@ -20,7 +20,23 @@ function getDirectoryName(localPath: string) : string {
 	return path.basename(localPath);
 }
 
-function isPermittedBranch(branchName: string | undefined) : boolean {
+function checkWorkspaceSettings(){
+	const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+	const serverTestUrl = workspaceConfig.get<string>('test');
+	const serverPreprodUrl = workspaceConfig.get<string>('preprod');
+	if(serverTestUrl !== '' && serverTestUrl !== undefined){
+		vscode.commands.executeCommand('setContext', 'isShowTestApp', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowTestApp', false);
+	}
+	if(serverPreprodUrl !== '' && serverPreprodUrl !== undefined){
+		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', false);
+	}
+}
+
+async function isPermittedBranch(branchName: string | undefined) : Promise<boolean> {
 	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
 	if( terminalLog === undefined){
 		terminalLog = vscode.window.createOutputChannel("cliowrapper");
@@ -40,6 +56,15 @@ function isPermittedBranch(branchName: string | undefined) : boolean {
 		terminalLog.appendLine("Git extension not active");
 		return false;
 	}
+
+    //Get all changes for first repository in list
+	const changes = await repo.diffWithHEAD();
+	//Print out array of changes
+	if(changes.length > 0){
+		terminalLog.appendLine('Error: Uncommitted changes detected.');
+		return false;
+	}
+
 	const head = repo.state.HEAD;
 	const {commit,name: branch} = head;
 	console.log({ branch, commit });
@@ -66,7 +91,7 @@ function isPermittedBranch(branchName: string | undefined) : boolean {
 
 async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('cw');
+	const config = vscode.workspace.getConfiguration('clio');
 	const outputPath = config.get('outputPath');
 
 	terminalLog.appendLine('del ' + path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz'));
@@ -84,16 +109,20 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	}
 }
 
-function pushPackage(targetFolderPath: string) {
+function pushPackage(targetFolderPath: string, targetRemoteUrl: string | undefined) {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('cw');
+	const config = vscode.workspace.getConfiguration('clio');
 	const outputPath = config.get('outputPath');
-	const remoteServer = 'https://10.252.60.234:10443';
-	const remoteServerLogin = config.get('remoteTestServerLogin');
-	const remoteServerPassword = config.get('remoteTestServerPassword');
+	const remoteLogin = config.get('bpmSoft.test.login');
+	const remotePassword = config.get('bpmSoft.test.password');
 
-	if(remoteServerLogin === '' || remoteServerPassword === ''){
-		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestServerLogin, remoteTestServerPassword');
+	if(targetRemoteUrl === undefined){
+		terminalLog.appendLine('Error: incorrect server');
+		return;
+	}
+
+	if(remoteLogin === '' || remotePassword === ''){
+		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestLogin, remoteTestPassword');
 		return;
 	}
 
@@ -103,9 +132,9 @@ function pushPackage(targetFolderPath: string) {
 		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
 		'clio push-pkg ' 
 		+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
-		+ ' -u ' + remoteServer 
-		+ ' -l ' + remoteServerLogin 
-		+ ' -p ' + remoteServerPassword
+		+ ' -u ' + targetRemoteUrl 
+		+ ' -l ' + remoteLogin 
+		+ ' -p ' + remotePassword
 	);
 }
 
@@ -113,28 +142,31 @@ function pushPackage(targetFolderPath: string) {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+	checkWorkspaceSettings();
+	
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
-
-		if(isPermittedBranch(undefined)){
+		if(await isPermittedBranch(undefined)){
 			await createPackage(uri.fsPath);
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.test.createandsend', async (uri:vscode.Uri) => {
+	//vscode.commands.executeCommand('setContext', 'inCordovaProject', true);
+
+	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+		checkWorkspaceSettings();
+    }));
+
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.totest', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
-		
-		const path = require("path");
-		const parentDirectory = path.basename(uri.fsPath);
-		
-		const config = vscode.workspace.getConfiguration('bcp');
-		const outputPath = config.get('outputPath');
 
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverUrl = workspaceConfig.get<string>('test');
 
-		if(isPermittedBranch('develop')){
+		if(await isPermittedBranch('develop')){
 			var result = await createPackage(uri.fsPath);
 			if(result){
-				pushPackage(uri.fsPath);
+				pushPackage(uri.fsPath, serverUrl);
 			}
 		}
 	}));
