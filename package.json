@@ -86,11 +86,13 @@
       "cliowrapper.submenu": [
         {
           "command": "cliowrapper.createandsend.totest",
-          "when": "isShowTestApp"
+          "when": "isShowTestApp",
+          "group": "cliosub@1"
         },
         {
           "command": "cliowrapper.createandsend.topreprod",
-          "when": "isShowPreprodApp"
+          "when": "isShowPreprodApp",
+          "group": "cliosub@2"
         }
       ]
     }
