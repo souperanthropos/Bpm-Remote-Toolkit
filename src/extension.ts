@@ -10,6 +10,12 @@ interface appSettings {
 	targetRemoteUrl: string | undefined;
 	remoteLogin: string | undefined;
 	remotePassword: string | undefined;
+	branchName: string | undefined;
+  }
+
+  interface serverSettings {
+	url: string | undefined;
+	branchName: string | undefined;
   }
 
 const execShell = (cmd: string) =>
@@ -133,8 +139,13 @@ function pushPackage(settings: appSettings) {
 		return;
 	}
 
+	if(settings.branchName === undefined || settings.branchName === ''){
+		terminalLog.appendLine('Error: incorrect branchName');
+		return;
+	}
+
 	if(settings.remoteLogin === '' || settings.remotePassword === ''){
-		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestLogin, remoteTestPassword');
+		terminalLog.appendLine('Error: Go to settings extension and fill Login and Password for ' + settings.branchName);
 		return;
 	}
 
@@ -178,16 +189,17 @@ export function activate(context: vscode.ExtensionContext) {
 		const remoteTestPassword = config.get<string>('bpmSoft.test.password');
 
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
-		const serverUrl = workspaceConfig.get<string>('test');
+		const serverConfig = workspaceConfig.get<serverSettings>('test');
 
-		if(await isPermittedBranch('develop')){
+		if(await isPermittedBranch(serverConfig?.branchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
 					targetFolderPath: uri.fsPath,
-					targetRemoteUrl: serverUrl,
+					targetRemoteUrl: serverConfig?.url,
 					remoteLogin: remoteTestLogin,
-					remotePassword: remoteTestPassword
+					remotePassword: remoteTestPassword,
+					branchName: serverConfig?.branchName
 				});
 			}
 		}
@@ -201,16 +213,17 @@ export function activate(context: vscode.ExtensionContext) {
 		const remoteTestPassword = config.get<string>('bpmSoft.preprod.password');
 
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
-		const serverUrl = workspaceConfig.get<string>('preprod');
+		const serverConfig = workspaceConfig.get<serverSettings>('preprod');
 
-		if(await isPermittedBranch('preprod')){
+		if(await isPermittedBranch(serverConfig?.branchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
 					targetFolderPath: uri.fsPath,
-					targetRemoteUrl: serverUrl,
+					targetRemoteUrl: serverConfig?.url,
 					remoteLogin: remoteTestLogin,
-					remotePassword: remoteTestPassword
+					remotePassword: remoteTestPassword,
+					branchName: serverConfig?.branchName
 				});
 			}
 		}
@@ -224,16 +237,17 @@ export function activate(context: vscode.ExtensionContext) {
 		const remoteTestPassword = config.get<string>('bpmSoft.prod.password');
 
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
-		const serverUrl = workspaceConfig.get<string>('prod');
+		const serverConfig = workspaceConfig.get<serverSettings>('prod');
 
-		if(await isPermittedBranch('master')){
+		if(await isPermittedBranch(serverConfig?.branchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
 					targetFolderPath: uri.fsPath,
-					targetRemoteUrl: serverUrl,
+					targetRemoteUrl: serverConfig?.url,
 					remoteLogin: remoteTestLogin,
-					remotePassword: remoteTestPassword
+					remotePassword: remoteTestPassword,
+					branchName: serverConfig?.branchName
 				});
 			}
 		}

@@ -19,42 +19,49 @@
       "title": "Clio wrapper",
       "properties": {
         "clio.outputPath": {
+          "order": 0,
           "type": "string",
           "default": "C:\\",
           "scope": "application",
           "description": "Specify output full path for .gz file."
         },
         "clio.bpmSoft.test.login": {
+          "order": 1,
           "type": "string",
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account login for test app."
         },
         "clio.bpmSoft.test.password": {
+          "order": 2,
           "type": "string",
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account password for test app."
         },
         "clio.bpmSoft.preprod.login": {
+          "order": 3,
           "type": "string",
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account login for preprod app."
         },
         "clio.bpmSoft.preprod.password": {
+          "order": 4,
           "type": "string",
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account password for preprod app."
         },
         "clio.bpmSoft.prod.login": {
+          "order": 5,
           "type": "string",
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account login for prod app."
         },
         "clio.bpmSoft.prod.password": {
+          "order": 6,
           "type": "string",
           "default": "",
           "scope": "application",
