@@ -35,6 +35,18 @@
           "default": "",
           "scope": "application",
           "description": "Bpmsoft account password for test."
+        },
+        "clio.bpmSoft.preprod.login": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "Bpmsoft account login for preprod."
+        },
+        "clio.bpmSoft.preprod.password": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "Bpmsoft account password for preprod."
         }
       }
     },
@@ -48,7 +60,7 @@
         "title": "Bmpsoft Test"
       },
       {
-        "command": "cliowrapper.createandsend.toprepod",
+        "command": "cliowrapper.createandsend.topreprod",
         "title": "Bmpsoft Prepod"
       }
     ],
@@ -77,7 +89,7 @@
           "when": "isShowTestApp"
         },
         {
-          "command": "cliowrapper.createandsend.toprepod",
+          "command": "cliowrapper.createandsend.topreprod",
           "when": "isShowPreprodApp"
         }
       ]

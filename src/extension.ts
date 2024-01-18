@@ -5,6 +5,13 @@ import * as cp from "child_process";
 
 let terminalLog: vscode.OutputChannel;
 
+interface appSettings {
+	targetFolderPath: string;
+	targetRemoteUrl: string | undefined;
+	remoteLogin: string | undefined;
+	remotePassword: string | undefined;
+  }
+
 const execShell = (cmd: string) =>
     new Promise<string>((resolve, reject) => {
         cp.exec(cmd, (err, out) => {
@@ -74,7 +81,7 @@ async function isPermittedBranch(branchName: string | undefined) : Promise<boole
 			return true;
 		}
 
-		terminalLog.appendLine('Please select branch: develop');
+		terminalLog.appendLine('Please select branch: ' + branchName);
 		return false;
 	}
 	else{
@@ -109,32 +116,31 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	}
 }
 
-function pushPackage(targetFolderPath: string, targetRemoteUrl: string | undefined) {
+function pushPackage(settings: appSettings) {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('clio');
-	const outputPath = config.get('outputPath');
-	const remoteLogin = config.get('bpmSoft.test.login');
-	const remotePassword = config.get('bpmSoft.test.password');
 
-	if(targetRemoteUrl === undefined){
+	if(settings.targetRemoteUrl === undefined || settings.targetRemoteUrl === ''){
 		terminalLog.appendLine('Error: incorrect server');
 		return;
 	}
 
-	if(remoteLogin === '' || remotePassword === ''){
+	if(settings.remoteLogin === '' || settings.remotePassword === ''){
 		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestLogin, remoteTestPassword');
 		return;
 	}
+
+	const config = vscode.workspace.getConfiguration('clio');
+	const outputPath = config.get('outputPath');
 
 	const terminal = vscode.window.createTerminal(`cliowrapper`);
 	terminal.show(true);
 	terminal.sendText(
 		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
 		'clio push-pkg ' 
-		+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
-		+ ' -u ' + targetRemoteUrl 
-		+ ' -l ' + remoteLogin 
-		+ ' -p ' + remotePassword
+		+ path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz") 
+		+ ' -u ' + settings.targetRemoteUrl 
+		+ ' -l ' + settings.remoteLogin 
+		+ ' -p ' + settings.remotePassword
 	);
 }
 
@@ -151,8 +157,6 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	//vscode.commands.executeCommand('setContext', 'inCordovaProject', true);
-
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
 		checkWorkspaceSettings();
     }));
@@ -160,13 +164,45 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.totest', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
+		const config = vscode.workspace.getConfiguration('clio');
+		const remoteTestLogin = config.get<string>('bpmSoft.test.login');
+		const remoteTestPassword = config.get<string>('bpmSoft.test.password');
+
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
 		const serverUrl = workspaceConfig.get<string>('test');
 
 		if(await isPermittedBranch('develop')){
 			var result = await createPackage(uri.fsPath);
 			if(result){
-				pushPackage(uri.fsPath, serverUrl);
+				pushPackage({
+					targetFolderPath: uri.fsPath,
+					targetRemoteUrl: serverUrl,
+					remoteLogin: remoteTestLogin,
+					remotePassword: remoteTestPassword
+				});
+			}
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.topreprod', async (uri:vscode.Uri) => {
+		console.log(uri.fsPath);
+
+		const config = vscode.workspace.getConfiguration('clio');
+		const remoteTestLogin = config.get<string>('bpmSoft.preprod.login');
+		const remoteTestPassword = config.get<string>('bpmSoft.preprod.password');
+
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverUrl = workspaceConfig.get<string>('preprod');
+
+		if(await isPermittedBranch('preprod')){
+			var result = await createPackage(uri.fsPath);
+			if(result){
+				pushPackage({
+					targetFolderPath: uri.fsPath,
+					targetRemoteUrl: serverUrl,
+					remoteLogin: remoteTestLogin,
+					remotePassword: remoteTestPassword
+				});
 			}
 		}
 	}));
