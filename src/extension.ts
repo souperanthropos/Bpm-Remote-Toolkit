@@ -4,6 +4,20 @@ import * as vscode from 'vscode';
 import * as cp from "child_process";
 
 let terminalLog: vscode.OutputChannel;
+let terminal: vscode.Terminal;
+
+interface appSettings {
+	targetFolderPath: string;
+	targetRemoteUrl: string | undefined;
+	remoteLogin: string | undefined;
+	remotePassword: string | undefined;
+	branchName: string | undefined;
+  }
+
+  interface serverSettings {
+	url: string | undefined;
+	branchName: string | undefined;
+  }
 
 const execShell = (cmd: string) =>
     new Promise<string>((resolve, reject) => {
@@ -18,6 +32,31 @@ const execShell = (cmd: string) =>
 function getDirectoryName(localPath: string) : string {
 	const path = require("path");
 	return path.basename(localPath);
+}
+
+function checkWorkspaceSettings(){
+	const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+	const serverTestUrl = workspaceConfig.get<string>('test');
+	const serverPreprodUrl = workspaceConfig.get<string>('preprod');
+	const serverProdUrl = workspaceConfig.get<string>('prod');
+
+	if(serverTestUrl !== '' && serverTestUrl !== undefined){
+		vscode.commands.executeCommand('setContext', 'isShowTestApp', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowTestApp', false);
+	}
+
+	if(serverPreprodUrl !== '' && serverPreprodUrl !== undefined){
+		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', false);
+	}
+
+	if(serverProdUrl !== '' && serverProdUrl !== undefined){
+		vscode.commands.executeCommand('setContext', 'isShowProdApp', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowProdApp', false);
+	}
 }
 
 async function isPermittedBranch(branchName: string | undefined) : Promise<boolean> {
@@ -58,7 +97,7 @@ async function isPermittedBranch(branchName: string | undefined) : Promise<boole
 			return true;
 		}
 
-		terminalLog.appendLine('Please select branch: develop');
+		terminalLog.appendLine('Please select branch: ' + branchName);
 		return false;
 	}
 	else{
@@ -93,32 +132,39 @@ async function createPackage(targetFolderPath: string) : Promise<boolean> {
 	}
 }
 
-function pushPackage(targetFolderPath: string, targetRemoteUrl: string | undefined) {
+function pushPackage(settings: appSettings) {
 	const path = require("path");
-	const config = vscode.workspace.getConfiguration('clio');
-	const outputPath = config.get('outputPath');
-	const remoteLogin = config.get('bpmSoft.test.login');
-	const remotePassword = config.get('bpmSoft.test.password');
 
-	if(targetRemoteUrl === undefined){
+	if(settings.targetRemoteUrl === undefined || settings.targetRemoteUrl === ''){
 		terminalLog.appendLine('Error: incorrect server');
 		return;
 	}
 
-	if(remoteLogin === '' || remotePassword === ''){
-		terminalLog.appendLine('Error: Go to settings extension and fill remoteTestLogin, remoteTestPassword');
+	if(settings.branchName === undefined || settings.branchName === ''){
+		terminalLog.appendLine('Error: incorrect branchName');
 		return;
 	}
 
-	const terminal = vscode.window.createTerminal(`cliowrapper`);
+	if(settings.remoteLogin === '' || settings.remotePassword === ''){
+		terminalLog.appendLine('Error: Go to settings extension and fill Login and Password for ' + settings.branchName);
+		return;
+	}
+
+	const config = vscode.workspace.getConfiguration('clio');
+	const outputPath = config.get('outputPath');
+
+	if(terminal === undefined){
+		terminal = vscode.window.createTerminal(`cliowrapper`);
+	}
+	
 	terminal.show(true);
 	terminal.sendText(
 		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
 		'clio push-pkg ' 
-		+ path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz") 
-		+ ' -u ' + targetRemoteUrl 
-		+ ' -l ' + remoteLogin 
-		+ ' -p ' + remotePassword
+		+ path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz") 
+		+ ' -u ' + settings.targetRemoteUrl 
+		+ ' -l ' + settings.remoteLogin 
+		+ ' -p ' + settings.remotePassword
 	);
 }
 
@@ -126,24 +172,87 @@ function pushPackage(targetFolderPath: string, targetRemoteUrl: string | undefin
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+	checkWorkspaceSettings();
+	
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
-
 		if(await isPermittedBranch(undefined)){
 			await createPackage(uri.fsPath);
 		}
 	}));
 
+	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+		checkWorkspaceSettings();
+    }));
+
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.totest', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
-		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
-		const serverUrl = workspaceConfig.get<string>('test');
+		const config = vscode.workspace.getConfiguration('clio');
+		const remoteTestLogin = config.get<string>('bpmSoft.test.login');
+		const remoteTestPassword = config.get<string>('bpmSoft.test.password');
 
-		if(await isPermittedBranch('develop')){
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverConfig = workspaceConfig.get<serverSettings>('test');
+
+		if(await isPermittedBranch(serverConfig?.branchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
-				pushPackage(uri.fsPath, serverUrl);
+				pushPackage({
+					targetFolderPath: uri.fsPath,
+					targetRemoteUrl: serverConfig?.url,
+					remoteLogin: remoteTestLogin,
+					remotePassword: remoteTestPassword,
+					branchName: serverConfig?.branchName
+				});
+			}
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.topreprod', async (uri:vscode.Uri) => {
+		console.log(uri.fsPath);
+
+		const config = vscode.workspace.getConfiguration('clio');
+		const remotePreprodLogin = config.get<string>('bpmSoft.preprod.login');
+		const remotePreprodPassword = config.get<string>('bpmSoft.preprod.password');
+
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverConfig = workspaceConfig.get<serverSettings>('preprod');
+
+		if(await isPermittedBranch(serverConfig?.branchName)){
+			var result = await createPackage(uri.fsPath);
+			if(result){
+				pushPackage({
+					targetFolderPath: uri.fsPath,
+					targetRemoteUrl: serverConfig?.url,
+					remoteLogin: remotePreprodLogin,
+					remotePassword: remotePreprodPassword,
+					branchName: serverConfig?.branchName
+				});
+			}
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend.toprod', async (uri:vscode.Uri) => {
+		console.log(uri.fsPath);
+
+		const config = vscode.workspace.getConfiguration('clio');
+		const remoteProdLogin = config.get<string>('bpmSoft.prod.login');
+		const remoteProdPassword = config.get<string>('bpmSoft.prod.password');
+
+		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
+		const serverConfig = workspaceConfig.get<serverSettings>('prod');
+
+		if(await isPermittedBranch(serverConfig?.branchName)){
+			var result = await createPackage(uri.fsPath);
+			if(result){
+				pushPackage({
+					targetFolderPath: uri.fsPath,
+					targetRemoteUrl: serverConfig?.url,
+					remoteLogin: remoteProdLogin,
+					remotePassword: remoteProdPassword,
+					branchName: serverConfig?.branchName
+				});
 			}
 		}
 	}));
