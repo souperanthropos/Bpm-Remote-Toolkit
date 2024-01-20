@@ -3,6 +3,7 @@
   "displayName": "Clio Wrapper",
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
+  "publisher": "code-papery",
   "version": "1.3.0",
   "engines": {
     "vscode": "^1.85.0"
