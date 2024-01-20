@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as cp from "child_process";
 
 let terminalLog: vscode.OutputChannel;
+let terminal: vscode.Terminal;
 
 interface appSettings {
 	targetFolderPath: string;
@@ -152,7 +153,10 @@ function pushPackage(settings: appSettings) {
 	const config = vscode.workspace.getConfiguration('clio');
 	const outputPath = config.get('outputPath');
 
-	const terminal = vscode.window.createTerminal(`cliowrapper`);
+	if(terminal === undefined){
+		terminal = vscode.window.createTerminal(`cliowrapper`);
+	}
+	
 	terminal.show(true);
 	terminal.sendText(
 		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
