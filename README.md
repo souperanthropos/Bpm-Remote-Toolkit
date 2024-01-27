@@ -16,7 +16,7 @@ In the **Workspace** area of Visual Studio Code, right-click on the folder and s
 
 Install clio before using the extension:
 
-`dotnet tool install clio`
+`dotnet tool install clio -g`
 
 > Command Line Interface clio is the utility for integration Creatio platform with development and CI/CD tools.
 
@@ -38,8 +38,9 @@ This extension contributes the following settings:
 * `cwServers.preprod`: Configuration of the pre-production environment.
 * `cwServers.prod`: Configuration of the production environment.
 
-- `url`: Web application url address
-- `branchName`: Name of the branch associated with the target environment
+- `url`: Web application url address.
+- `gitBranchName`: Name of the branch associated with the target environment.
+- `isEnable`: Show submenu item when true, otherwise hide.
 
 **For example**:
 
@@ -53,15 +54,18 @@ This extension contributes the following settings:
 	"settings": {
 		"cwServers.test": {
 			"url": "https://test.contoso.com",
-			"branchName": "develop"
+			"gitBranchName": "develop",
+			"isEnable": true
 		},
 		"cwServers.preprod": {
 			"url": "https://preprod.contoso.com",
-			"branchName": "preprod"
+			"gitBranchName": "preprod",
+			"isEnable": true
 		},
 		"cwServers.prod": {
 			"url": "https://prod.contoso.com",
-			"branchName": "master"
+			"gitBranchName": "master",
+			"isEnable": true
 		}
 	}
 }
@@ -75,19 +79,8 @@ NONE
 
 ## Release Notes
 
-### 1.0.0
+## 1.3.1
 
-- Initial release
-
-### 1.1.0
-
-- Corrects encoding when outputting data in the terminal
-
-### 1.2.0
-
-- Grouping of menu items for **Сreation and sending package**
-
-## 1.3.0
-
-- Minor corrections and improvements
-- Added logic for **test**, **preprod** and **prod** configurations
+- Update README
+- [.code-workspace file] rename `branchName` to `gitBranchName`
+- [.code-workspace file] added property `isEnable`
