@@ -11,12 +11,13 @@ interface appSettings {
 	targetRemoteUrl: string | undefined;
 	remoteLogin: string | undefined;
 	remotePassword: string | undefined;
-	branchName: string | undefined;
+	gitBranchName: string | undefined;
   }
 
   interface serverSettings {
 	url: string | undefined;
-	branchName: string | undefined;
+	gitBranchName: string | undefined;
+	isEnable: boolean;
   }
 
 const execShell = (cmd: string) =>
@@ -36,23 +37,23 @@ function getDirectoryName(localPath: string) : string {
 
 function checkWorkspaceSettings(){
 	const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
-	const serverTestUrl = workspaceConfig.get<string>('test');
-	const serverPreprodUrl = workspaceConfig.get<string>('preprod');
-	const serverProdUrl = workspaceConfig.get<string>('prod');
+	const serverTest = workspaceConfig.get<serverSettings>('test');
+	const serverPreprod = workspaceConfig.get<serverSettings>('preprod');
+	const serverProd = workspaceConfig.get<serverSettings>('prod');
 
-	if(serverTestUrl !== '' && serverTestUrl !== undefined){
+	if(serverTest !== undefined && serverTest.isEnable){
 		vscode.commands.executeCommand('setContext', 'isShowTestApp', true);
 	}else{
 		vscode.commands.executeCommand('setContext', 'isShowTestApp', false);
 	}
 
-	if(serverPreprodUrl !== '' && serverPreprodUrl !== undefined){
+	if(serverPreprod !== undefined && serverPreprod.isEnable){
 		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', true);
 	}else{
 		vscode.commands.executeCommand('setContext', 'isShowPreprodApp', false);
 	}
 
-	if(serverProdUrl !== '' && serverProdUrl !== undefined){
+	if(serverProd !== undefined && serverProd.isEnable){
 		vscode.commands.executeCommand('setContext', 'isShowProdApp', true);
 	}else{
 		vscode.commands.executeCommand('setContext', 'isShowProdApp', false);
@@ -140,13 +141,13 @@ function pushPackage(settings: appSettings) {
 		return;
 	}
 
-	if(settings.branchName === undefined || settings.branchName === ''){
+	if(settings.gitBranchName === undefined || settings.gitBranchName === ''){
 		terminalLog.appendLine('Error: incorrect branchName');
 		return;
 	}
 
 	if(settings.remoteLogin === '' || settings.remotePassword === ''){
-		terminalLog.appendLine('Error: Go to settings extension and fill Login and Password for ' + settings.branchName);
+		terminalLog.appendLine('Error: Go to settings extension and fill Login and Password for ' + settings.gitBranchName);
 		return;
 	}
 
@@ -195,7 +196,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
 		const serverConfig = workspaceConfig.get<serverSettings>('test');
 
-		if(await isPermittedBranch(serverConfig?.branchName)){
+		if(await isPermittedBranch(serverConfig?.gitBranchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
@@ -203,7 +204,7 @@ export function activate(context: vscode.ExtensionContext) {
 					targetRemoteUrl: serverConfig?.url,
 					remoteLogin: remoteTestLogin,
 					remotePassword: remoteTestPassword,
-					branchName: serverConfig?.branchName
+					gitBranchName: serverConfig?.gitBranchName
 				});
 			}
 		}
@@ -219,7 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
 		const serverConfig = workspaceConfig.get<serverSettings>('preprod');
 
-		if(await isPermittedBranch(serverConfig?.branchName)){
+		if(await isPermittedBranch(serverConfig?.gitBranchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
@@ -227,7 +228,7 @@ export function activate(context: vscode.ExtensionContext) {
 					targetRemoteUrl: serverConfig?.url,
 					remoteLogin: remotePreprodLogin,
 					remotePassword: remotePreprodPassword,
-					branchName: serverConfig?.branchName
+					gitBranchName: serverConfig?.gitBranchName
 				});
 			}
 		}
@@ -243,7 +244,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const workspaceConfig = vscode.workspace.getConfiguration('cwServers');
 		const serverConfig = workspaceConfig.get<serverSettings>('prod');
 
-		if(await isPermittedBranch(serverConfig?.branchName)){
+		if(await isPermittedBranch(serverConfig?.gitBranchName)){
 			var result = await createPackage(uri.fsPath);
 			if(result){
 				pushPackage({
@@ -251,7 +252,7 @@ export function activate(context: vscode.ExtensionContext) {
 					targetRemoteUrl: serverConfig?.url,
 					remoteLogin: remoteProdLogin,
 					remotePassword: remoteProdPassword,
-					branchName: serverConfig?.branchName
+					gitBranchName: serverConfig?.gitBranchName
 				});
 			}
 		}
