@@ -3,22 +3,11 @@
 import * as vscode from 'vscode';
 import * as cp from "child_process";
 
+import { EnvironmentsProvider, serverTreeItem } from './environments';
+import { serverSettings, appSettings } from './interfaces';
+
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
-
-interface appSettings {
-	targetFolderPath: string;
-	targetRemoteUrl: string | undefined;
-	remoteLogin: string | undefined;
-	remotePassword: string | undefined;
-	gitBranchName: string | undefined;
-  }
-
-  interface serverSettings {
-	url: string | undefined;
-	gitBranchName: string | undefined;
-	isEnable: boolean;
-  }
 
 const execShell = (cmd: string) =>
     new Promise<string>((resolve, reject) => {
@@ -41,6 +30,8 @@ function checkWorkspaceSettings(){
 	const serverPreprod = workspaceConfig.get<serverSettings>('preprod');
 	const serverProd = workspaceConfig.get<serverSettings>('prod');
 
+	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+
 	if(serverTest !== undefined && serverTest.isEnable){
 		vscode.commands.executeCommand('setContext', 'isShowTestApp', true);
 	}else{
@@ -62,9 +53,6 @@ function checkWorkspaceSettings(){
 
 async function isPermittedBranch(branchName: string | undefined) : Promise<boolean> {
 	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
-	if( terminalLog === undefined){
-		terminalLog = vscode.window.createOutputChannel("cliowrapper");
-	}
 
 	terminalLog.show(true);
 
@@ -153,14 +141,10 @@ function pushPackage(settings: appSettings) {
 
 	const config = vscode.workspace.getConfiguration('clio');
 	const outputPath = config.get('outputPath');
-
-	if(terminal === undefined){
-		terminal = vscode.window.createTerminal(`cliowrapper`);
-	}
 	
 	terminal.show(true);
 	terminal.sendText(
-		'$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
+		'clear \n $OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
 		'clio push-pkg ' 
 		+ path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz") 
 		+ ' -u ' + settings.targetRemoteUrl 
@@ -173,12 +157,61 @@ function pushPackage(settings: appSettings) {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+	if( terminalLog === undefined){
+		terminalLog = vscode.window.createOutputChannel("cliowrapper");
+	}
+	if(terminal === undefined){
+		terminal = vscode.window.createTerminal(`cliowrapper`);
+	}
+
 	checkWorkspaceSettings();
+
+	const environmentsProvider = new EnvironmentsProvider();
+	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
+
+	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => environmentsProvider.refresh());
+
+	context.subscriptions.push(vscode.commands.registerCommand('clio.openSettings', () => {
+		terminal.sendText("clear \n clio open-settings");
+		terminalLog.appendLine('Open settings...');
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.register', async (server: serverSettings) => {
+		const loginQuery = await vscode.window.showInputBox({
+			placeHolder: "Enter login",
+			prompt: "Add login for Bpmsoft"
+		});
+		if(loginQuery !== ''){
+			const passwordQuery = await vscode.window.showInputBox({
+				placeHolder: "Enter password",
+				prompt: "Add login for Bpmsoft"
+			});
+			if(passwordQuery !== ''){
+				const result = await execShell(
+					"clio reg-web-app "
+					+ server.id
+					+ " -u " + server.url
+					+ " -l " + loginQuery
+					+ " -p " + passwordQuery);
+				terminalLog.appendLine('Result: ' + result);
+			}
+		}
+	}));
 	
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 		if(await isPermittedBranch(undefined)){
-			await createPackage(uri.fsPath);
+			//await createPackage(uri.fsPath);
+			const arr = ["test", "preprod", "prod"];
+			const quickPickItems = arr.map(item => ( { label: item, iconPath: new vscode.ThemeIcon('device-desktop') } ) );
+			const qp = vscode.window.createQuickPick();
+			qp.canSelectMany = false;
+			qp.items = quickPickItems;
+			qp.onDidChangeSelection(selection => {
+				var k=0;
+			});
+			qp.onDidHide(() => qp.dispose());
+			qp.show();
 		}
 	}));
 

@@ -16,6 +16,33 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "colors": [
+      {
+        "id": "bpmsoftEnvironment.enable",
+        "description": "Color for error message in the status bar.",
+        "defaults": {
+          "dark": "charts.green",
+          "light": "charts.green"
+        }
+      },
+      {
+        "id": "bpmsoftEnvironment.disable",
+        "description": "Color for error message in the status bar.",
+        "defaults": {
+          "dark": "charts.red",
+          "light": "charts.red"
+        }
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "bpmsoftEnvironments",
+          "name": "Bpmsoft Environments",
+          "contextualTitle": "Environments Explorer"
+        }
+      ]
+    },
     "configuration": {
       "title": "Clio wrapper",
       "properties": {
@@ -25,48 +52,6 @@
           "default": "C:\\",
           "scope": "application",
           "description": "Specify output full path for .gz file."
-        },
-        "clio.bpmSoft.test.login": {
-          "order": 1,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Bpmsoft account login for test app."
-        },
-        "clio.bpmSoft.test.password": {
-          "order": 2,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Bpmsoft account password for test app."
-        },
-        "clio.bpmSoft.preprod.login": {
-          "order": 3,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Bpmsoft account login for preprod app."
-        },
-        "clio.bpmSoft.preprod.password": {
-          "order": 4,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Bpmsoft account password for preprod app."
-        },
-        "clio.bpmSoft.prod.login": {
-          "order": 5,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Bpmsoft account login for prod app."
-        },
-        "clio.bpmSoft.prod.password": {
-          "order": 6,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Bpmsoft account password for prod app."
         }
       }
     },
@@ -77,16 +62,31 @@
       },
       {
         "command": "cliowrapper.createandsend.totest",
-        "title": "Bmpsoft Test"
+        "title": "Bpmsoft Test"
       },
       {
         "command": "cliowrapper.createandsend.topreprod",
-        "title": "Bmpsoft Prepod"
+        "title": "Bpmsoft Prepod"
       },
       {
         "command": "cliowrapper.createandsend.toprod",
-        "title": "Bmpsoft Prod"
-      }
+        "title": "Bpmsoft Prod"
+      },
+      {
+				"command": "clio.openSettings",
+				"title": "Settings",
+				"icon": "$(settings-gear)"
+			},
+      {
+				"command": "bpmsoftEnvironments.register",
+				"title": "Register",
+        "icon": "$(plug)"
+			},
+      {
+				"command": "bpmsoftEnvironments.delete",
+				"title": "Delete",
+        "icon": "$(close)"
+			}
     ],
     "submenus": [
       {
@@ -107,6 +107,25 @@
           "group": "z_cliowrapper"
         }
       ],
+      "view/title": [
+				{
+					"command": "clio.openSettings",
+					"when": "view == bpmsoftEnvironments",
+					"group": "navigation"
+				}
+			],
+      "view/item/context": [
+				{
+					"command": "bpmsoftEnvironments.register",
+					"when": "view == bpmsoftEnvironments",
+          "group": "inline@1"
+				},
+				{
+					"command": "bpmsoftEnvironments.delete",
+					"when": "view == bpmsoftEnvironments",
+          "group": "inline@3"
+				}
+			],
       "cliowrapper.submenu": [
         {
           "command": "cliowrapper.createandsend.totest",
