@@ -1,9 +1,6 @@
-export interface appSettings {
+export interface packageSettings {
 	targetFolderPath: string;
-	targetRemoteUrl: string | undefined;
-	remoteLogin: string | undefined;
-	remotePassword: string | undefined;
-	gitBranchName: string | undefined;
+	targetEnviroment: string | undefined;
 }
 
 export interface serverSettings {
