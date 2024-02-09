@@ -22,7 +22,7 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 			element.isEnable,
 			vscode.TreeItemCollapsibleState.None
 		);
-		treeItem.contextValue += element.isRegister ? 'Delete' : 'Register';
+		treeItem.contextValue += element.isRegister ? 'Unregister' : 'Register';
 		if(!treeItem.enable){
 			treeItem.iconPath = new vscode.ThemeIcon('vm-outline', new vscode.ThemeColor("bpmsoftEnvironment.disable"));
 		}else if(element.isRegister){
@@ -33,7 +33,7 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 		return treeItem;
 	}
 
-	getChildren(element?: serverSettings): Thenable<serverSettings[]> {
+	getChildren(): Thenable<serverSettings[]> {
 		if (!this._servers) {
 			return Promise.resolve([]);
 		}
