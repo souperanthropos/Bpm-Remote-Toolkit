@@ -117,13 +117,13 @@
       "view/item/context": [
 				{
 					"command": "bpmsoftEnvironments.register",
-					"when": "view == bpmsoftEnvironments",
+					"when": "view == bpmsoftEnvironments && viewItem == serverTreeItemRegister",
           "group": "inline@1"
 				},
 				{
 					"command": "bpmsoftEnvironments.delete",
-					"when": "view == bpmsoftEnvironments",
-          "group": "inline@3"
+					"when": "view == bpmsoftEnvironments && viewItem == serverTreeItemDelete",
+          "group": "inline@2"
 				}
 			],
       "cliowrapper.submenu": [

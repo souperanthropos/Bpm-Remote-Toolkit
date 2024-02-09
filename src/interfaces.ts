@@ -11,4 +11,5 @@ export interface serverSettings {
     url: string | undefined;
     gitBranchName: string | undefined;
     isEnable: boolean;
+	isRegister: boolean;
 }
