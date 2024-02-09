@@ -10,19 +10,27 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 
 	private _servers: serverSettings[] | undefined;
 
-	refresh(): void {
-		const serverConfig = vscode.workspace.getConfiguration('cwSettings');
-		this._servers = serverConfig.get<serverSettings[]>('cwEnvironments');
+	refresh(env: serverSettings[]): void {
+		this._servers = env;
 		this._onDidChangeTreeData.fire();
 	}
 
 	getTreeItem(element: serverSettings): vscode.TreeItem {
-		return new serverTreeItem(
+		var treeItem = new serverTreeItem(
 			element.id,
 			element.id,
 			element.isEnable,
 			vscode.TreeItemCollapsibleState.None
-		  );
+		);
+		treeItem.contextValue += element.isRegister ? 'Delete' : 'Register';
+		if(!treeItem.enable){
+			treeItem.iconPath = new vscode.ThemeIcon('vm-outline', new vscode.ThemeColor("bpmsoftEnvironment.disable"));
+		}else if(element.isRegister){
+			treeItem.iconPath = new vscode.ThemeIcon('vm-active', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
+		}else{
+			treeItem.iconPath = new vscode.ThemeIcon('vm', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
+		}
+		return treeItem;
 	}
 
 	getChildren(element?: serverSettings): Thenable<serverSettings[]> {
@@ -40,13 +48,8 @@ export class serverTreeItem extends vscode.TreeItem {
 	  public readonly id: string,
 	  public readonly enable: boolean,
 	  public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-	  public readonly contextValue: string = 'serverTreeItem'
+	  public contextValue: string = 'serverTreeItem'
 	) {
 	  super(name, collapsibleState);
-	  if(enable){
-		this.iconPath = new vscode.ThemeIcon('device-desktop', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
-	  }else{
-		this.iconPath = new vscode.ThemeIcon('device-desktop', new vscode.ThemeColor("bpmsoftEnvironment.disable"));
-	  }
 	}
   }

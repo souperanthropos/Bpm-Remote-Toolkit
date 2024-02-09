@@ -8,6 +8,7 @@ import { serverSettings, appSettings } from './interfaces';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
+let environments: serverSettings[] | undefined;
 
 const execShell = (cmd: string) =>
     new Promise<string>((resolve, reject) => {
@@ -29,6 +30,9 @@ function checkWorkspaceSettings(){
 	const serverTest = workspaceConfig.get<serverSettings>('test');
 	const serverPreprod = workspaceConfig.get<serverSettings>('preprod');
 	const serverProd = workspaceConfig.get<serverSettings>('prod');
+
+	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
+	environments = serverConfig.get<serverSettings[]>('cwEnvironments');
 
 	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 
@@ -169,7 +173,19 @@ export function activate(context: vscode.ExtensionContext) {
 	const environmentsProvider = new EnvironmentsProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
 
-	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => environmentsProvider.refresh());
+	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
+		if(environments){
+			environments?.forEach(env=>{
+				var isReg = context.globalState.get(env.id);
+				if(isReg){
+					env.isRegister = true;
+				}else{
+					env.isRegister = false;
+				}
+			});
+			environmentsProvider.refresh(environments);
+		}
+	});
 
 	context.subscriptions.push(vscode.commands.registerCommand('clio.openSettings', () => {
 		terminal.sendText("clear \n clio open-settings");
@@ -194,8 +210,19 @@ export function activate(context: vscode.ExtensionContext) {
 					+ " -l " + loginQuery
 					+ " -p " + passwordQuery);
 				terminalLog.appendLine('Result: ' + result);
+				context.globalState.update(server.id, true);
+				vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 			}
 		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.delete', async (server: serverSettings) => {
+		const result = await execShell(
+			"clio unreg-web-app "
+			+ server.id);
+		terminalLog.appendLine('Result: ' + result);
+		context.globalState.update(server.id, false);
+		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
 	
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
