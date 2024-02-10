@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.1
+
+- Update README
+- [.code-workspace file] rename `branchName` to `gitBranchName`
+- [.code-workspace file] added property `isEnable`
+
 ## 1.3.0
 
 - Minor corrections and improvements
