@@ -29,6 +29,12 @@ function checkWorkspaceSettings(){
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
 	environments = serverConfig.get<serverSettings[]>('cwEnvironments');
 
+	if(environments && environments.length > 0){
+		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
+	}else{
+		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
+	}
+
 	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 }
 
@@ -175,6 +181,8 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			});
 			environmentsProvider.refresh(environments);
+		}else{
+			environmentsProvider.refresh([]);
 		}
 	});
 

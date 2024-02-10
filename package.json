@@ -91,13 +91,13 @@
     "menus": {
       "explorer/context": [
         {
-          "when": "explorerResourceIsFolder",
           "command": "cliowrapper.create",
+          "when": "isShowContextMenu",
           "group": "z_cliowrapper"
         },
         {
           "command": "cliowrapper.createandsend",
-          "when": "explorerResourceIsFolder",
+          "when": "isShowContextMenu",
           "group": "z_cliowrapper"
         }
       ],
