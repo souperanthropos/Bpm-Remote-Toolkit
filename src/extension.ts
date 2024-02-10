@@ -246,8 +246,15 @@ export function activate(context: vscode.ExtensionContext) {
 	
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
+		const path = require("path");
+		const config = vscode.workspace.getConfiguration('clio');
+		const outputPath = config.get<string>('outputPath');
+
 		if(await isPermittedBranch(undefined)){
 			await createPackage(uri.fsPath);
+			if(outputPath){
+				vscode.env.openExternal(vscode.Uri.file(outputPath));
+			}
 		}
 	}));
 
