@@ -218,6 +218,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.compileConfiguration', (server: serverSettings) => {
+		if(!server.isEnable){
+			vscode.window.showInformationMessage(
+				"You cannot execute this command because server " + server.id + " is disabled."
+			  );
+		}else{
+			terminal.show(true);
+			terminal.sendText(
+				"clear \n clio compile-configuration "
+				+ server.id);
+		}
+	}));
+
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.register', async (server: serverSettings) => {
 		const loginQuery = await vscode.window.showInputBox({
 			placeHolder: "Login",

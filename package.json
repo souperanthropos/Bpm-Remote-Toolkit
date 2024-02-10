@@ -70,12 +70,16 @@
         "icon": "$(settings-gear)"
       },
       {
+        "command": "bpmsoftEnvironments.restart",
+        "title": "Restart application"
+      },
+      {
         "command": "bpmsoftEnvironments.redis.clear",
         "title": "Clear redis database"
       },
       {
-        "command": "bpmsoftEnvironments.restart",
-        "title": "Restart application"
+        "command": "bpmsoftEnvironments.compileConfiguration",
+        "title": "Compile configuration"
       },
       {
         "command": "bpmsoftEnvironments.register",
@@ -110,14 +114,19 @@
       ],
       "view/item/context": [
         {
-          "command": "bpmsoftEnvironments.redis.clear",
+          "command": "bpmsoftEnvironments.restart",
+          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "group": "navigation@1"
+        },
+        {
+          "command": "bpmsoftEnvironments.compileConfiguration",
           "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@2"
         },
         {
-          "command": "bpmsoftEnvironments.restart",
+          "command": "bpmsoftEnvironments.redis.clear",
           "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
-          "group": "navigation@1"
+          "group": "cw_other@2"
         },
         {
           "command": "bpmsoftEnvironments.register",
