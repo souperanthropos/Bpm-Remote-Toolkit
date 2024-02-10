@@ -179,8 +179,35 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(vscode.commands.registerCommand('clio.openSettings', () => {
+		terminal.show(true);
 		terminal.sendText("clear \n clio open-settings");
 		terminalLog.appendLine('Open settings...');
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.restart', (server: serverSettings) => {
+		if(!server.isEnable){
+			vscode.window.showInformationMessage(
+				"You cannot execute this command because server " + server.id + " is disabled."
+			  );
+		}else{
+			terminal.show(true);
+			terminal.sendText(
+				"clear \n clio restart-web-app "
+				+ server.id);
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.redis.clear', (server: serverSettings) => {
+		if(!server.isEnable){
+			vscode.window.showInformationMessage(
+				"You cannot execute this command because server " + server.id + " is disabled."
+			  );
+		}else{
+			terminal.show(true);
+			terminal.sendText(
+				"clear \n clio clear-redis-db "
+				+ server.id);
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.register', async (server: serverSettings) => {
