@@ -43,26 +43,28 @@ This extension contributes the following settings:
 		}
 	],
 	"settings": {
-		"cwEnvironments": [
-			{
-				"id": "test",
-				"url": "https://test.contoso.com",
-				"gitBranchName": "test",
-				"isEnable": true
-			},
-			{
-				"id": "preprod",
-				"url": "https://preprod.contoso.com",
-				"gitBranchName": "preprod",
-				"isEnable": true
-			},
-			{
-				"id": "prod",
-				"url": "https://prod.contoso.com",
-				"gitBranchName": "master",
-				"isEnable": false
-			}
-		]
+		"cwSettings": {
+			"cwEnvironments": [
+				{
+					"id": "test",
+					"url": "https://test.contoso.com",
+					"gitBranchName": "test",
+					"isEnable": true
+				},
+				{
+					"id": "preprod",
+					"url": "https://preprod.contoso.com",
+					"gitBranchName": "preprod",
+					"isEnable": true
+				},
+				{
+					"id": "prod",
+					"url": "https://prod.contoso.com",
+					"gitBranchName": "master",
+					"isEnable": false
+				}
+			]
+		}
 	}
 }
 ```
