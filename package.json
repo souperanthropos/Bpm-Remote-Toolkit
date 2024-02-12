@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.4.0",
+  "version": "1.4.3",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -70,12 +70,16 @@
         "icon": "$(settings-gear)"
       },
       {
+        "command": "bpmsoftEnvironments.restart",
+        "title": "Restart application"
+      },
+      {
         "command": "bpmsoftEnvironments.redis.clear",
         "title": "Clear redis database"
       },
       {
-        "command": "bpmsoftEnvironments.restart",
-        "title": "Restart application"
+        "command": "bpmsoftEnvironments.compileConfiguration",
+        "title": "Compile configuration"
       },
       {
         "command": "bpmsoftEnvironments.register",
@@ -91,13 +95,13 @@
     "menus": {
       "explorer/context": [
         {
-          "when": "explorerResourceIsFolder",
           "command": "cliowrapper.create",
+          "when": "isShowContextMenu",
           "group": "z_cliowrapper"
         },
         {
           "command": "cliowrapper.createandsend",
-          "when": "explorerResourceIsFolder",
+          "when": "isShowContextMenu",
           "group": "z_cliowrapper"
         }
       ],
@@ -110,14 +114,19 @@
       ],
       "view/item/context": [
         {
-          "command": "bpmsoftEnvironments.redis.clear",
+          "command": "bpmsoftEnvironments.restart",
+          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "group": "navigation@1"
+        },
+        {
+          "command": "bpmsoftEnvironments.compileConfiguration",
           "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@2"
         },
         {
-          "command": "bpmsoftEnvironments.restart",
+          "command": "bpmsoftEnvironments.redis.clear",
           "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
-          "group": "navigation@1"
+          "group": "cw_other@2"
         },
         {
           "command": "bpmsoftEnvironments.register",
