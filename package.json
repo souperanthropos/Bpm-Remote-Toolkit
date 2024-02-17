@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -57,11 +57,11 @@
     },
     "commands": [
       {
-        "command": "cliowrapper.create",
+        "command": "cliowrapper.package.create",
         "title": "Create Package"
       },
       {
-        "command": "cliowrapper.createandsend",
+        "command": "cliowrapper.package.createandsend",
         "title": "Create Package And Send"
       },
       {
@@ -95,12 +95,12 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "cliowrapper.create",
+          "command": "cliowrapper.package.create",
           "when": "isShowContextMenu",
           "group": "z_cliowrapper"
         },
         {
-          "command": "cliowrapper.createandsend",
+          "command": "cliowrapper.package.createandsend",
           "when": "isShowContextMenu",
           "group": "z_cliowrapper"
         }
