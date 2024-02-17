@@ -77,7 +77,7 @@ NONE
 
 ## Release Notes
 
-## 1.4.0
+## 1.4.x
 
 - Update README
 - [.code-workspace file] new structure of settings
