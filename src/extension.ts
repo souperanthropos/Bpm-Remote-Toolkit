@@ -192,7 +192,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
 	
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.create', async (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', async (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 		const path = require("path");
 		const config = vscode.workspace.getConfiguration('clio');
@@ -218,7 +218,7 @@ export function activate(context: vscode.ExtensionContext) {
 		checkWorkspaceSettings();
     }));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend', (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
 		const currentBranch = gitHelper.getCurrentBranch();
