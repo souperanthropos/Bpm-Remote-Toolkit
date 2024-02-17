@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as cp from "child_process";
 
 import { EnvironmentsProvider } from './environments';
+import { GitHelper } from './git';
 import { serverSettings, packageSettings } from './interfaces';
 
 let terminalLog: vscode.OutputChannel;
@@ -36,82 +37,6 @@ function checkWorkspaceSettings(){
 	}
 
 	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
-}
-
-function getCurrentBranch() : string {
-	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
-
-	terminalLog.show(true);
-
-	if (!gitExtension.enabled) {
-		console.warn("Git extension not active");
-		terminalLog.appendLine("Git extension not active");
-		return "";
-	}
-	
-	const api = gitExtension.getAPI(1);
-	const repo = api.repositories[0];
-	if(repo === undefined){
-		terminalLog.appendLine("Git extension not active");
-		return "";
-	}
-
-	const head = repo.state.HEAD;
-	const {commit,name: branch} = head;
-	console.log({ branch, commit });
-
-	return branch;
-}
-
-async function isPermittedBranch(branchName: string | undefined) : Promise<boolean> {
-	const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
-
-	terminalLog.show(true);
-
-	if (!gitExtension.enabled) {
-		console.warn("Git extension not active");
-		terminalLog.appendLine("Git extension not active");
-		return false;
-	}
-	
-	const api = gitExtension.getAPI(1);
-	const repo = api.repositories[0];
-	if(repo === undefined){
-		terminalLog.appendLine("Git extension not active");
-		return false;
-	}
-
-    //Get all changes for first repository in list
-	const changes = await repo.diffWithHEAD();
-	//Print out array of changes
-	if(changes.length > 0){
-		terminalLog.appendLine('Error: Uncommitted changes detected.');
-		return false;
-	}
-
-	const head = repo.state.HEAD;
-	const {commit,name: branch} = head;
-	console.log({ branch, commit });
-
-	if(branchName){
-		if(branch === branchName){
-			return true;
-		}
-
-		terminalLog.appendLine('Please select branch: ' + branchName);
-		return false;
-	}
-	else{
-		const branches = environments?.map(({ gitBranchName }) => gitBranchName );
-		if(branches?.includes(branch)){
-			return true;
-		}
-	
-		console.error('Branch: ' + branch + ' not permitted');
-		terminalLog.appendLine('Branch: ' + branch + ' not permitted');
-		terminalLog.appendLine('Please select branch: ' + branches);
-		return false;
-	}
 }
 
 async function createPackage(targetFolderPath: string) : Promise<boolean> {
@@ -166,6 +91,8 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	checkWorkspaceSettings();
+
+	const gitHelper = new GitHelper(terminalLog);
 
 	const environmentsProvider = new EnvironmentsProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
@@ -271,11 +198,19 @@ export function activate(context: vscode.ExtensionContext) {
 		const config = vscode.workspace.getConfiguration('clio');
 		const outputPath = config.get<string>('outputPath');
 
-		if(await isPermittedBranch(undefined)){
-			await createPackage(uri.fsPath);
-			if(outputPath){
-				vscode.env.openExternal(vscode.Uri.file(outputPath));
+		if(environments){
+			const branches = environments.map(({ gitBranchName }) => gitBranchName ?? '' );
+
+			if(await gitHelper.isPermittedBranch(branches)){
+				await createPackage(uri.fsPath);
+				if(outputPath){
+					vscode.env.openExternal(vscode.Uri.file(outputPath));
+				}
 			}
+		}else{
+			vscode.window.showInformationMessage(
+				"Command execute failed: check you .code-workspace file."
+			  );
 		}
 	}));
 
@@ -286,7 +221,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.createandsend', (uri:vscode.Uri) => {
 		console.log(uri.fsPath);
 
-		const currentBranch = getCurrentBranch();
+		const currentBranch = gitHelper.getCurrentBranch();
 		if(environments && currentBranch !== ''){
 			const arr = environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id );
 			const quickPickItems = arr.map(item => ( { label: item, iconPath: new vscode.ThemeIcon('device-desktop') } ) );
@@ -298,14 +233,20 @@ export function activate(context: vscode.ExtensionContext) {
 				const serverConfig = environments?.find(e=>e.id === serverId);
 				qp.hide();
 				
-				if(await isPermittedBranch(serverConfig?.gitBranchName)){
-					var result = await createPackage(uri.fsPath);
-					if(result){
-						pushPackage({
-							targetFolderPath: uri.fsPath,
-							targetEnviroment: serverConfig?.id
-						});
+				if(serverConfig && serverConfig.gitBranchName){
+					if(await gitHelper.checkBranch(serverConfig.gitBranchName)){
+							var result = await createPackage(uri.fsPath);
+							if(result){
+								pushPackage({
+									targetFolderPath: uri.fsPath,
+									targetEnviroment: serverConfig.id
+								});
+							}
 					}
+				}else{
+					vscode.window.showInformationMessage(
+						"Command execute failed: check you .code-workspace file."
+					  );
 				}
 			});
 			qp.onDidHide(() => qp.dispose());
