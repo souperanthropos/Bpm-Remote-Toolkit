@@ -170,15 +170,41 @@ export function activate(context: vscode.ExtensionContext) {
 				password: true
 			});
 			if(passwordQuery !== ''){
-				const result = await execShell(
-					"clio reg-web-app "
-					+ server.id
-					+ " -u " + server.url
-					+ " -l " + loginQuery
-					+ " -p " + passwordQuery);
-				terminalLog.appendLine('Result: ' + result);
-				context.globalState.update(server.id, true);
-				vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+				vscode.window.withProgress(
+					{
+					  location: vscode.ProgressLocation.Window,
+					  title: 'Server registration'
+					},
+					async progress => {
+						try{
+							terminalLog.show(true);
+
+							let result = await execShell(
+								"clio reg-web-app "
+								+ server.id
+								+ " -u " + server.url
+								+ " -l " + loginQuery
+								+ " -p " + passwordQuery);
+							terminalLog.appendLine('Result: ' + result);
+		
+							result = await execShell(
+								"clio ping "
+								+ server.id);
+							terminalLog.appendLine('Result: ' + result);
+		
+							context.globalState.update(server.id, true);
+							vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+						}catch(error){
+							terminalLog.appendLine('' + error);
+		
+							let result = await execShell(
+								"clio unreg-web-app "
+								+ server.id);
+							context.globalState.update(server.id, false);
+							vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+						}
+					}
+				  );
 			}
 		}
 	}));
