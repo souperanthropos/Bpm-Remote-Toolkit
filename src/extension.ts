@@ -87,7 +87,7 @@ export function activate(context: vscode.ExtensionContext) {
 		terminalLog = vscode.window.createOutputChannel("cliowrapper");
 	}
 	if(terminal === undefined){
-		terminal = vscode.window.createTerminal(`cliowrapper`);
+		terminal = vscode.window.terminals.find(x=>x.name === 'cliowrapper') ?? vscode.window.createTerminal(`cliowrapper`);
 	}
 
 	checkWorkspaceSettings();
