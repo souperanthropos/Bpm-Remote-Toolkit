@@ -1,11 +1,6 @@
 import * as vscode from 'vscode';
-import { packageSettings } from './interfaces';
+import { packageSettings } from '../interfaces';
 import { TerminalManager } from './terminalmanager';
-import { rejects } from 'assert';
-
-//https://hackwild.com/article/event-handling-techniques/
-//$share = clio generate-pkg-zip c:\Users\Superb\OneDrive\Desktop\src\ModernWay-Srv\OmnilineR1 -d C:\Windows\OmnilineR1.gz > c:\Users\Superb\OneDrive\Документы\Source\bpmsoft-creator-package\commandExecute.log
-//if($?){"command succeeded"}else{"command failed"}
 
 export class PackageManager {
     private terminal: TerminalManager;
@@ -13,9 +8,8 @@ export class PackageManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private terminalLog: vscode.OutputChannel, 
-        extensionPath: string) {
-            this.terminal = new TerminalManager(extensionPath);
+    constructor(private terminalLog: vscode.OutputChannel) {
+        this.terminal = new TerminalManager();
     }
 
     private getDirectoryName(localPath: string): string {

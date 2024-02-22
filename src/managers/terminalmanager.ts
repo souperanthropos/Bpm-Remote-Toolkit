@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
-import { Constants } from './constants';
+import { Constants } from '../constants';
 
 export class TerminalManager {
 
-	constructor(private extensionPath: string) {
-	}
+	/*constructor(private extensionPath: string) {
+	}*/
 
 	public async callInInteractiveTerminal(
 		command: string
@@ -13,8 +13,8 @@ export class TerminalManager {
 			name: 'cliowrapper',
 			location: vscode.TerminalLocation.Panel,
 		});
-		const executeLogFilePath = this.extensionPath + Constants.executeLogFileName;
-		const executeResultFilePath = this.extensionPath + Constants.executeResultFileName;
+		const executeLogFilePath = Constants.extensionPath + Constants.executeLogFileName;
+		const executeResultFilePath = Constants.extensionPath + Constants.executeResultFileName;
 		terminal.show(true);
 		terminal.sendText("$share = ", false);
 		terminal.sendText(command + ` | Tee-Object -file ${executeLogFilePath} `, false);

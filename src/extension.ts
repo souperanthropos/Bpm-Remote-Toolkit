@@ -6,13 +6,13 @@ import * as cp from "child_process";
 import { EnvironmentsProvider } from './environments';
 import { GitHelper } from './git';
 import { serverSettings } from './interfaces';
-import { PackageManager } from './packagemanager';
-import { Constants } from './constants';
+import { PackageManager } from './managers/packagemanager';
+import { Constants, showErrorMessage, showInformationMessage } from './constants';
+import { ClioManager } from './managers/cliomanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
 let environments: serverSettings[] | undefined;
-let extensionPath: string;
 
 const execShell = (cmd: string) =>
 	new Promise<string>((resolve, reject) => {
@@ -50,31 +50,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 	checkWorkspaceSettings();
 
-	extensionPath = context.extensionPath;
+	Constants.extensionPath = context.extensionPath;
 
 	const gitHelper = new GitHelper(terminalLog);
-	const pm = new PackageManager(terminalLog, extensionPath);
+	const pm = new PackageManager(terminalLog);
+	const cm = new ClioManager(terminalLog);
 
-	pm.onCommandExecuteError = (message: string, showbutton: boolean) => {
-		const buttonShowLog = showbutton ? "Show log file" : '';
-		vscode.window.showErrorMessage(message, buttonShowLog)
-			.then(selection => {
-				if (selection === buttonShowLog) {
-					const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
-					vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
-				}
-			});
-	};
-	pm.onCommandExecuteComplete = (message: string, showbutton: boolean) => {
-		const buttonShowLog = showbutton ? "Show log file" : '';
-		vscode.window.showInformationMessage(message, buttonShowLog)
-			.then(selection => {
-				if (selection === buttonShowLog) {
-					const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
-					vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
-				}
-			});
-	};
+	pm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
+	pm.onCommandExecuteComplete = (message: string, showbutton: boolean) => showInformationMessage(message, showbutton);
+	cm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
 
 	const environmentsProvider = new EnvironmentsProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
@@ -95,24 +79,12 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(vscode.commands.registerCommand('clio.openSettings', () => {
-		terminal.show(true);
-		terminal.sendText("clear \n clio open-settings");
-		terminalLog.appendLine('Open settings...');
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand('clio.openSettings', () => cm.OpenSettings()));
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.restart', (server: serverSettings) => {
-		if (!server.isEnable) {
-			vscode.window.showInformationMessage(
-				"You cannot execute this command because server " + server.id + " is disabled."
-			);
-		} else {
-			terminal.show(true);
-			terminal.sendText(
-				"clear \n clio restart-web-app "
-				+ server.id);
-		}
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'bpmsoftEnvironments.restart',
+		(server: serverSettings) => cm.AppRestart(server))
+	);
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.redis.clear', (server: serverSettings) => {
 		if (!server.isEnable) {
