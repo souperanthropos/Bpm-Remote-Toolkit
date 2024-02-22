@@ -79,38 +79,26 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(vscode.commands.registerCommand('clio.openSettings', () => cm.OpenSettings()));
+	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
+		checkWorkspaceSettings();
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'clio.openSettings', 
+		() => cm.OpenSettings()));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmsoftEnvironments.restart',
-		(server: serverSettings) => cm.AppRestart(server))
+		(server: serverSettings) => cm.WebAppRestart(server))
 	);
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.redis.clear', (server: serverSettings) => {
-		if (!server.isEnable) {
-			vscode.window.showInformationMessage(
-				"You cannot execute this command because server " + server.id + " is disabled."
-			);
-		} else {
-			terminal.show(true);
-			terminal.sendText(
-				"clear \n clio clear-redis-db "
-				+ server.id);
-		}
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'bpmsoftEnvironments.redis.clear', 
+		(server: serverSettings) => cm.ClearRedisDb(server)));
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.compileConfiguration', (server: serverSettings) => {
-		if (!server.isEnable) {
-			vscode.window.showInformationMessage(
-				"You cannot execute this command because server " + server.id + " is disabled."
-			);
-		} else {
-			terminal.show(true);
-			terminal.sendText(
-				"clear \n clio compile-configuration "
-				+ server.id);
-		}
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'bpmsoftEnvironments.compileConfiguration', 
+		(server: serverSettings) => cm.CompileConfiguration(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.register', async (server: serverSettings) => {
 		const loginQuery = await vscode.window.showInputBox({
@@ -193,10 +181,6 @@ export function activate(context: vscode.ExtensionContext) {
 				"Command execute failed: check you .code-workspace file."
 			);
 		}
-	}));
-
-	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
-		checkWorkspaceSettings();
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri: vscode.Uri) => {
