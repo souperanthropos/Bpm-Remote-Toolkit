@@ -5,110 +5,70 @@ import * as cp from "child_process";
 
 import { EnvironmentsProvider } from './environments';
 import { GitHelper } from './git';
-import { serverSettings, packageSettings } from './interfaces';
+import { serverSettings } from './interfaces';
+import { PackageManager } from './packagemanager';
+import { Constants } from './constants';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
 let environments: serverSettings[] | undefined;
 
 const execShell = (cmd: string) =>
-    new Promise<string>((resolve, reject) => {
-        cp.exec(cmd, (err, out) => {
-            if (err) {
-                return reject(err);
-            }
-            return resolve(out);
-        });
-    });
+	new Promise<string>((resolve, reject) => {
+		cp.exec(cmd, (err, out) => {
+			if (err) {
+				return reject(err);
+			}
+			return resolve(out);
+		});
+	});
 
-function getDirectoryName(localPath: string) : string {
-	const path = require("path");
-	return path.basename(localPath);
-}
-
-function checkWorkspaceSettings(){
+function checkWorkspaceSettings() {
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
 	environments = serverConfig.get<serverSettings[]>('cwEnvironments');
 
-	if(environments && environments.length > 0){
+	if (environments && environments.length > 0) {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-	}else{
+	} else {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 	}
 
 	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 }
 
-async function createPackage(targetFolderPath: string) : Promise<boolean> {
-	const path = require("path");
-	const config = vscode.workspace.getConfiguration('clio');
-	const outputPath = config.get('outputPath');
-
-	terminalLog.appendLine('del ' + path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz'));
-	await execShell('del ' + path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz'));
-
-	terminalLog.appendLine('Execute: clio generate-pkg-zip ' + targetFolderPath + ' -d ' + path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz'));
-	try{
-		const result = await execShell("clio generate-pkg-zip " + targetFolderPath + " -d " + path.join(outputPath, getDirectoryName(targetFolderPath) + ".gz"));
-		terminalLog.appendLine('Result: ' + result);
-		return true;
-	}
-	catch(error){
-		terminalLog.appendLine('Error: ' + error);
-		return false;
-	}
-}
-
-function pushPackage(settings: packageSettings) {
-	const path = require("path");
-
-	if(settings.targetEnviroment === undefined || settings.targetEnviroment === ''){
-		terminalLog.appendLine('Error: target enviroment not found');
-		return;
-	}
-
-	const config = vscode.workspace.getConfiguration('clio');
-	const outputPath = config.get('outputPath');
-	
-	terminal.show(true);
-	terminal.sendText(
-		'clear \n $OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
-		'clio push-pkg ' 
-		+ path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz") 
-		+ ' -e ' + settings.targetEnviroment
-	);
-}
-
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	if( terminalLog === undefined){
+	if (terminalLog === undefined) {
 		terminalLog = vscode.window.createOutputChannel("cliowrapper");
 	}
-	if(terminal === undefined){
-		terminal = vscode.window.terminals.find(x=>x.name === 'cliowrapper') ?? vscode.window.createTerminal(`cliowrapper`);
+	if (terminal === undefined) {
+		terminal = vscode.window.terminals.find(x => x.name === 'cliowrapper') ?? vscode.window.createTerminal(`cliowrapper`);
 	}
 
 	checkWorkspaceSettings();
 
+	const extensionPath = context.extensionPath;
+
 	const gitHelper = new GitHelper(terminalLog);
+	const pm = new PackageManager(terminalLog, extensionPath);
 
 	const environmentsProvider = new EnvironmentsProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
 
 	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
-		if(environments){
-			environments?.forEach(env=>{
+		if (environments) {
+			environments?.forEach(env => {
 				var isReg = context.globalState.get(env.id);
-				if(isReg){
+				if (isReg) {
 					env.isRegister = true;
-				}else{
+				} else {
 					env.isRegister = false;
 				}
 			});
 			environmentsProvider.refresh(environments);
-		}else{
+		} else {
 			environmentsProvider.refresh([]);
 		}
 	});
@@ -120,11 +80,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.restart', (server: serverSettings) => {
-		if(!server.isEnable){
+		if (!server.isEnable) {
 			vscode.window.showInformationMessage(
 				"You cannot execute this command because server " + server.id + " is disabled."
-			  );
-		}else{
+			);
+		} else {
 			terminal.show(true);
 			terminal.sendText(
 				"clear \n clio restart-web-app "
@@ -133,11 +93,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.redis.clear', (server: serverSettings) => {
-		if(!server.isEnable){
+		if (!server.isEnable) {
 			vscode.window.showInformationMessage(
 				"You cannot execute this command because server " + server.id + " is disabled."
-			  );
-		}else{
+			);
+		} else {
 			terminal.show(true);
 			terminal.sendText(
 				"clear \n clio clear-redis-db "
@@ -146,11 +106,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.compileConfiguration', (server: serverSettings) => {
-		if(!server.isEnable){
+		if (!server.isEnable) {
 			vscode.window.showInformationMessage(
 				"You cannot execute this command because server " + server.id + " is disabled."
-			  );
-		}else{
+			);
+		} else {
 			terminal.show(true);
 			terminal.sendText(
 				"clear \n clio compile-configuration "
@@ -163,20 +123,20 @@ export function activate(context: vscode.ExtensionContext) {
 			placeHolder: "Login",
 			prompt: "Enter login for connecting to Bpmsoft"
 		});
-		if(loginQuery !== ''){
+		if (loginQuery !== '') {
 			const passwordQuery = await vscode.window.showInputBox({
 				placeHolder: "Password",
 				prompt: "Enter password for connecting to Bpmsoft",
 				password: true
 			});
-			if(passwordQuery !== ''){
+			if (passwordQuery !== '') {
 				vscode.window.withProgress(
 					{
-					  location: vscode.ProgressLocation.Window,
-					  title: 'Server registration'
+						location: vscode.ProgressLocation.Window,
+						title: 'Server registration'
 					},
 					async progress => {
-						try{
+						try {
 							terminalLog.show(true);
 
 							let result = await execShell(
@@ -186,17 +146,17 @@ export function activate(context: vscode.ExtensionContext) {
 								+ " -l " + loginQuery
 								+ " -p " + passwordQuery);
 							terminalLog.appendLine('Result: ' + result);
-		
+
 							result = await execShell(
 								"clio ping "
 								+ server.id);
 							terminalLog.appendLine('Result: ' + result);
-		
+
 							context.globalState.update(server.id, true);
 							vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
-						}catch(error){
+						} catch (error) {
 							terminalLog.appendLine('' + error);
-		
+
 							let result = await execShell(
 								"clio unreg-web-app "
 								+ server.id);
@@ -204,7 +164,7 @@ export function activate(context: vscode.ExtensionContext) {
 							vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 						}
 					}
-				  );
+				);
 			}
 		}
 	}));
@@ -217,62 +177,77 @@ export function activate(context: vscode.ExtensionContext) {
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
-	
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', async (uri:vscode.Uri) => {
+
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', async (uri: vscode.Uri) => {
 		console.log(uri.fsPath);
 		const path = require("path");
 		const config = vscode.workspace.getConfiguration('clio');
 		const outputPath = config.get<string>('outputPath');
 
-		if(environments){
-			const branches = environments.map(({ gitBranchName }) => gitBranchName ?? '' );
+		if (environments) {
+			const branches = environments.map(({ gitBranchName }) => gitBranchName ?? '');
 
-			if(await gitHelper.isPermittedBranch(branches)){
-				await createPackage(uri.fsPath);
-				if(outputPath){
-					vscode.env.openExternal(vscode.Uri.file(outputPath));
+			if (await gitHelper.isPermittedBranch(branches)) {
+				if (await pm.createPackage(uri.fsPath)) {
+					if (outputPath) {
+						vscode.env.openExternal(vscode.Uri.file(outputPath));
+					}
+				} else {
+					const buttonShowLog = "Show log file";
+					vscode.window.showInformationMessage('Create package failed', buttonShowLog)
+						.then(selection => {
+							if (selection === buttonShowLog) {
+								const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
+								vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+							}
+						});
 				}
 			}
-		}else{
+		} else {
 			vscode.window.showInformationMessage(
 				"Command execute failed: check you .code-workspace file."
-			  );
+			);
 		}
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
 		checkWorkspaceSettings();
-    }));
+	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri:vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri: vscode.Uri) => {
 		console.log(uri.fsPath);
 
 		const currentBranch = gitHelper.getCurrentBranch();
-		if(environments && currentBranch !== ''){
-			const arr = environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id );
-			const quickPickItems = arr.map(item => ( { label: item, iconPath: new vscode.ThemeIcon('device-desktop') } ) );
+		if (environments && currentBranch !== '') {
+			const arr = environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
+			const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
 			const qp = vscode.window.createQuickPick();
 			qp.canSelectMany = false;
 			qp.items = quickPickItems;
 			qp.onDidChangeSelection(async selection => {
 				const serverId = selection[0].label;
-				const serverConfig = environments?.find(e=>e.id === serverId);
+				const serverConfig = environments?.find(e => e.id === serverId);
 				qp.hide();
-				
-				if(serverConfig && serverConfig.gitBranchName){
-					if(await gitHelper.checkBranch(serverConfig.gitBranchName)){
-							var result = await createPackage(uri.fsPath);
-							if(result){
-								pushPackage({
-									targetFolderPath: uri.fsPath,
-									targetEnviroment: serverConfig.id
-								});
+
+				if (serverConfig && serverConfig.gitBranchName) {
+					if (await gitHelper.checkBranch(serverConfig.gitBranchName)) {
+						if (await pm.createPackage(uri.fsPath)) {
+							if (!await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id })) {
+								const buttonShowLog = "Show log file";
+								vscode.window.showInformationMessage('Send package failed', buttonShowLog)
+									.then(selection => {
+										if (selection === buttonShowLog) {
+											const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
+											vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+										}
+									});
 							}
+						}
 					}
-				}else{
+				} else {
 					vscode.window.showInformationMessage(
 						"Command execute failed: check you .code-workspace file."
-					  );
+					);
 				}
 			});
 			qp.onDidHide(() => qp.dispose());
@@ -282,4 +257,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
