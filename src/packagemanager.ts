@@ -10,6 +10,9 @@ import { rejects } from 'assert';
 export class PackageManager {
     private terminal: TerminalManager;
 
+    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
+
     constructor(private terminalLog: vscode.OutputChannel, 
         extensionPath: string) {
             this.terminal = new TerminalManager(extensionPath);
@@ -35,29 +38,46 @@ export class PackageManager {
             + fullPathFile
         );
 
-        return await this.terminal.callInInteractiveTerminal(
+        const result = await this.terminal.callInInteractiveTerminal(
             "clio generate-pkg-zip "
             + targetFolderPath + " -d "
             + fullPathFile
         );
+
+        if (!result && this.onCommandExecuteError) {
+            this.onCommandExecuteError('Create package failed.', true);
+        }
+
+        return result;
     }
 
-    public async pushPackage(settings: packageSettings): Promise<boolean> {
+    public async pushPackage(settings: packageSettings) {
         const path = require("path");
 
         if (settings.targetEnviroment === undefined || settings.targetEnviroment === '') {
             this.terminalLog.appendLine('Error: target enviroment not found');
-            throw new Error('Error: target enviroment not found');
+            if (this.onCommandExecuteError) {
+                this.onCommandExecuteError('Error: target enviroment not found.', false);
+            }
+            return;
         }
 
         const config = vscode.workspace.getConfiguration('clio');
         const outputPath = config.get('outputPath');
 
-        return await this.terminal.callInInteractiveTerminal(
+        const result = await this.terminal.callInInteractiveTerminal(
             '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
             'clio push-pkg '
             + path.join(outputPath, this.getDirectoryName(settings.targetFolderPath) + ".gz")
             + ' -e ' + settings.targetEnviroment
         );
+
+        if (!result && this.onCommandExecuteError) {
+            this.onCommandExecuteError('Send package failed.', true);
+        }
+
+        if (result && this.onCommandExecuteComplete) {
+            this.onCommandExecuteComplete('Send package completed.', true);
+        }
     }
 }

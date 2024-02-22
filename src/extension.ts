@@ -12,6 +12,7 @@ import { Constants } from './constants';
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
 let environments: serverSettings[] | undefined;
+let extensionPath: string;
 
 const execShell = (cmd: string) =>
 	new Promise<string>((resolve, reject) => {
@@ -49,10 +50,31 @@ export function activate(context: vscode.ExtensionContext) {
 
 	checkWorkspaceSettings();
 
-	const extensionPath = context.extensionPath;
+	extensionPath = context.extensionPath;
 
 	const gitHelper = new GitHelper(terminalLog);
 	const pm = new PackageManager(terminalLog, extensionPath);
+
+	pm.onCommandExecuteError = (message: string, showbutton: boolean) => {
+		const buttonShowLog = showbutton ? "Show log file" : '';
+		vscode.window.showErrorMessage(message, buttonShowLog)
+			.then(selection => {
+				if (selection === buttonShowLog) {
+					const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
+					vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+				}
+			});
+	};
+	pm.onCommandExecuteComplete = (message: string, showbutton: boolean) => {
+		const buttonShowLog = showbutton ? "Show log file" : '';
+		vscode.window.showInformationMessage(message, buttonShowLog)
+			.then(selection => {
+				if (selection === buttonShowLog) {
+					const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
+					vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+				}
+			});
+	};
 
 	const environmentsProvider = new EnvironmentsProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
@@ -192,15 +214,6 @@ export function activate(context: vscode.ExtensionContext) {
 					if (outputPath) {
 						vscode.env.openExternal(vscode.Uri.file(outputPath));
 					}
-				} else {
-					const buttonShowLog = "Show log file";
-					vscode.window.showInformationMessage('Create package failed', buttonShowLog)
-						.then(selection => {
-							if (selection === buttonShowLog) {
-								const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
-								vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
-							}
-						});
 				}
 			}
 		} else {
@@ -232,16 +245,7 @@ export function activate(context: vscode.ExtensionContext) {
 				if (serverConfig && serverConfig.gitBranchName) {
 					if (await gitHelper.checkBranch(serverConfig.gitBranchName)) {
 						if (await pm.createPackage(uri.fsPath)) {
-							if (!await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id })) {
-								const buttonShowLog = "Show log file";
-								vscode.window.showInformationMessage('Send package failed', buttonShowLog)
-									.then(selection => {
-										if (selection === buttonShowLog) {
-											const folderUri = vscode.Uri.file(extensionPath + Constants.executeLogFileName);
-											vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
-										}
-									});
-							}
+							await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id });
 						}
 					}
 				} else {
