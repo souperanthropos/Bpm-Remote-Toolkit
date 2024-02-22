@@ -18,8 +18,8 @@ export class TerminalManager {
 		terminal.show(true);
 		terminal.sendText("$share = ", false);
 		terminal.sendText(command + ` | Tee-Object -file ${executeLogFilePath} `, false);
-		terminal.sendText("; if($?){\"command succeeded\""
-			+ ` > ${executeResultFilePath} ` + "}else{\"command failed\""
+		terminal.sendText("; if($?){\"1\""
+			+ ` > ${executeResultFilePath} ` + "}else{\"0\""
 			+ ` > ${executeResultFilePath} ` + "}", false);
 		terminal.sendText("; exit");
 		return new Promise((resolve, reject) => {
@@ -29,9 +29,9 @@ export class TerminalManager {
 						disposeToken.dispose();
 						var pathFile = vscode.Uri.file(executeResultFilePath);
 						const readData = await vscode.workspace.fs.readFile(pathFile);
-						const readStatus = Buffer.from(readData).toString();
+						const readStatus = Buffer.from(readData).toString('utf8');
 						if (terminal.exitStatus !== undefined) {
-							if (readStatus.includes('succeeded')) {
+							if (readStatus.includes('1')) {
 								resolve(true);
 							} else {
 								resolve(false);
