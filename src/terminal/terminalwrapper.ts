@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Constants } from '../constants';
 
-export class TerminalManager {
+export class TerminalWrapper {
 
 	/*constructor(private extensionPath: string) {
 	}*/
