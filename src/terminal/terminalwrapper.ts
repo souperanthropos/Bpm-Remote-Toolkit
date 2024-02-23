@@ -6,9 +6,31 @@ export class TerminalWrapper {
 	/*constructor(private extensionPath: string) {
 	}*/
 
-	public async callInInteractiveTerminal(
-		command: string
-	): Promise<boolean> {
+	public async callInInteractiveTerminalWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
+		const terminal = vscode.window.createTerminal({
+			name: 'cliowrapper',
+			location: vscode.TerminalLocation.Panel,
+		});
+		terminal.show(true);
+		terminal.sendText(command, false);
+		terminal.sendText("; exit");
+		return new Promise((resolve, reject) => {
+			const disposeToken = vscode.window.onDidCloseTerminal(
+				async (closedTerminal) => {
+					if (closedTerminal === terminal) {
+						disposeToken.dispose();
+						if (terminal.exitStatus !== undefined) {
+							resolve(terminal.exitStatus);
+						} else {
+							reject("Terminal exited with undefined status");
+						}
+					}
+				}
+			);
+		});
+	}
+
+	public async callInInteractiveTerminal(command: string): Promise<boolean> {
 		const terminal = vscode.window.createTerminal({
 			name: 'cliowrapper',
 			location: vscode.TerminalLocation.Panel,

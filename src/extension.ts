@@ -1,28 +1,17 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as cp from "child_process";
 
 import { EnvironmentsProvider } from './environments';
 import { GitHelper } from './git';
 import { serverSettings } from './interfaces';
 import { PackageManager } from './managers/packagemanager';
-import { Constants, showErrorMessage, showInformationMessage } from './constants';
+import { Constants, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
 import { ClioManager } from './managers/cliomanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
 let environments: serverSettings[] | undefined;
-
-const execShell = (cmd: string) =>
-	new Promise<string>((resolve, reject) => {
-		cp.exec(cmd, (err, out) => {
-			if (err) {
-				return reject(err);
-			}
-			return resolve(out);
-		});
-	});
 
 function checkWorkspaceSettings() {
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
@@ -84,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'clio.openSettings', 
+		'clio.openSettings',
 		() => cm.OpenSettings()));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
@@ -93,89 +82,62 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmsoftEnvironments.redis.clear', 
+		'bpmsoftEnvironments.redis.clear',
 		(server: serverSettings) => cm.ClearRedisDb(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmsoftEnvironments.compileConfiguration', 
+		'bpmsoftEnvironments.compileConfiguration',
 		(server: serverSettings) => cm.CompileConfiguration(server)));
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.register', async (server: serverSettings) => {
-		const loginQuery = await vscode.window.showInputBox({
-			placeHolder: "Login",
-			prompt: "Enter login for connecting to Bpmsoft"
-		});
-		if (loginQuery !== '') {
-			const passwordQuery = await vscode.window.showInputBox({
-				placeHolder: "Password",
-				prompt: "Enter password for connecting to Bpmsoft",
-				password: true
-			});
-			if (passwordQuery !== '') {
-				vscode.window.withProgress(
-					{
-						location: vscode.ProgressLocation.Window,
-						title: 'Server registration'
-					},
-					async progress => {
-						try {
-							terminalLog.show(true);
-
-							let result = await execShell(
-								"clio reg-web-app "
-								+ server.id
-								+ " -u " + server.url
-								+ " -l " + loginQuery
-								+ " -p " + passwordQuery);
-							terminalLog.appendLine('Result: ' + result);
-
-							result = await execShell(
-								"clio ping "
-								+ server.id);
-							terminalLog.appendLine('Result: ' + result);
-
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'bpmsoftEnvironments.register',
+		async (server: serverSettings) => {
+			vscode.window.withProgress(
+				{
+					location: vscode.ProgressLocation.Notification,
+					title: 'Server registration'
+				},
+				async () => {
+					if (await cm.WebAppRegister(server)) {
+						if (await cm.WebAppPing(server)) {
 							context.globalState.update(server.id, true);
-							vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
-						} catch (error) {
-							terminalLog.appendLine('' + error);
-
-							let result = await execShell(
-								"clio unreg-web-app "
-								+ server.id);
+						} else {
+							await cm.WebAppUnregister(server, false);
 							context.globalState.update(server.id, false);
-							vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 						}
+						vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 					}
-				);
-			}
-		}
-	}));
+				}
+			);
+		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.unregister', async (server: serverSettings) => {
-		const result = await execShell(
-			"clio unreg-web-app "
-			+ server.id);
-		terminalLog.appendLine('Result: ' + result);
+		await cm.WebAppUnregister(server, true);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', async (uri: vscode.Uri) => {
-		console.log(uri.fsPath);
-		const path = require("path");
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', (uri: vscode.Uri) => {
 		const config = vscode.workspace.getConfiguration('clio');
 		const outputPath = config.get<string>('outputPath');
 
 		if (environments) {
 			const branches = environments.map(({ gitBranchName }) => gitBranchName ?? '');
-
-			if (await gitHelper.isPermittedBranch(branches)) {
-				if (await pm.createPackage(uri.fsPath)) {
-					if (outputPath) {
-						vscode.env.openExternal(vscode.Uri.file(outputPath));
+			vscode.window.withProgress(
+				{
+					location: vscode.ProgressLocation.Notification,
+					title: `Creating package: ${getDirectoryName(uri.fsPath)}.gz`
+				},
+				async () => {
+					if (await gitHelper.isPermittedBranch(branches)) {
+						if (await pm.createPackage(uri.fsPath)) {
+							if (outputPath) {
+								vscode.env.openExternal(vscode.Uri.file(outputPath));
+							}
+						}
 					}
 				}
-			}
+			);
 		} else {
 			vscode.window.showInformationMessage(
 				"Command execute failed: check you .code-workspace file."
@@ -184,8 +146,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri: vscode.Uri) => {
-		console.log(uri.fsPath);
-
 		const currentBranch = gitHelper.getCurrentBranch();
 		if (environments && currentBranch !== '') {
 			const arr = environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
@@ -199,11 +159,26 @@ export function activate(context: vscode.ExtensionContext) {
 				qp.hide();
 
 				if (serverConfig && serverConfig.gitBranchName) {
-					if (await gitHelper.checkBranch(serverConfig.gitBranchName)) {
-						if (await pm.createPackage(uri.fsPath)) {
-							await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id });
+					vscode.window.withProgress(
+						{
+							location: vscode.ProgressLocation.Notification,
+							title: 'Current operation'
+						},
+						async (progress) => {
+							if (await gitHelper.checkBranch(serverConfig.gitBranchName!)) {
+								progress.report({
+									message: `creating package ${getDirectoryName(uri.fsPath)}.gz`
+								});
+								if (await pm.createPackage(uri.fsPath)) {
+									progress.report({
+										message: `sending package ${getDirectoryName(uri.fsPath)}.gz`,
+										increment: 50
+									});
+									await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id });
+								}
+							}
 						}
-					}
+					);
 				} else {
 					vscode.window.showInformationMessage(
 						"Command execute failed: check you .code-workspace file."
