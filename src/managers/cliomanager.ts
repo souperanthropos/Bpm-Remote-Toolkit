@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
-import { TerminalManager } from './terminalmanager';
+import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { serverSettings } from '../interfaces';
 
 export class ClioManager {
-    private terminal: TerminalManager;
+    private terminal: TerminalWrapper;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalManager();
+        this.terminal = new TerminalWrapper();
     }
 
     public OpenSettings(){

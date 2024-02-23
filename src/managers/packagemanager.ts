@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
-import { TerminalManager } from './terminalmanager';
+import { TerminalWrapper } from '../terminal/terminalwrapper';
 
 export class PackageManager {
-    private terminal: TerminalManager;
+    private terminal: TerminalWrapper;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalManager();
+        this.terminal = new TerminalWrapper();
     }
 
     private getDirectoryName(localPath: string): string {
