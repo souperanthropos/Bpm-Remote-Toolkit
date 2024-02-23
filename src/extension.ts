@@ -95,13 +95,24 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
-					title: 'Server registration'
+					title: 'Current operation'
 				},
-				async () => {
+				async (progress) => {
+					progress.report({
+						message: 'server registration'
+					});
 					if (await cm.WebAppRegister(server)) {
+						progress.report({
+							message: 'check credential',
+							increment: 50
+						});
 						if (await cm.WebAppPing(server)) {
 							context.globalState.update(server.id, true);
 						} else {
+							progress.report({
+								message: 'check credential failed',
+								increment: 50
+							});
 							await cm.WebAppUnregister(server, false);
 							context.globalState.update(server.id, false);
 						}
