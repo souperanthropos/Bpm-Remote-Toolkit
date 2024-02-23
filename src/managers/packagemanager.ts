@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
+import { getDirectoryName } from '../constants';
 
 export class PackageManager {
     private terminal: TerminalWrapper;
@@ -12,16 +13,11 @@ export class PackageManager {
         this.terminal = new TerminalWrapper();
     }
 
-    private getDirectoryName(localPath: string): string {
-        const path = require("path");
-        return path.basename(localPath);
-    }
-
     public async createPackage(targetFolderPath: string): Promise<boolean> {
         const path = require("path");
         const config = vscode.workspace.getConfiguration('clio');
         const outputPath = config.get('outputPath');
-        const fullPathFile = path.join(outputPath, this.getDirectoryName(targetFolderPath) + '.gz');
+        const fullPathFile = path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz');
 
         this.terminalLog.appendLine('del ' + fullPathFile);
         await this.terminal.callInInteractiveTerminal('del ' + fullPathFile);
@@ -58,11 +54,12 @@ export class PackageManager {
 
         const config = vscode.workspace.getConfiguration('clio');
         const outputPath = config.get('outputPath');
+        const packageFilePath = path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
         const result = await this.terminal.callInInteractiveTerminal(
             '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
             'clio push-pkg '
-            + path.join(outputPath, this.getDirectoryName(settings.targetFolderPath) + ".gz")
+            + packageFilePath
             + ' -e ' + settings.targetEnviroment
         );
 
