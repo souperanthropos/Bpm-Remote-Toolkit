@@ -14,7 +14,7 @@ export class ClioManager {
     }
 
     public OpenSettings() {
-        this.terminal.callInInteractiveTerminal('clio open-settings');
+        this.terminal.callInInteractiveTerminalWithoutLog('clio open-settings');
     }
 
     public async WebAppRegister(server: serverSettings): Promise<boolean> {
