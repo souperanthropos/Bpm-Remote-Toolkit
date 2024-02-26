@@ -16,7 +16,7 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 
 	getTreeItem(element: serverSettings): vscode.TreeItem {
 		var treeItem = new serverTreeItem(
-			element.id,
+			`${element.id} - ${element.url}`,
 			element.id,
 			element.isEnable,
 			vscode.TreeItemCollapsibleState.None
