@@ -1,4 +1,5 @@
 export interface packageSettings {
+	folderName: string;
 	targetFolderPath: string;
 	targetEnviroment: string | undefined;
 }

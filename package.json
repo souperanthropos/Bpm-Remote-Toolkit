@@ -35,11 +35,16 @@
       }
     ],
     "views": {
-      "explorer": [
+      "scm": [
         {
           "id": "bpmsoftEnvironments",
           "name": "Bpmsoft Environments",
           "contextualTitle": "Environments Explorer"
+        },
+        {
+          "id": "packagesExplorer",
+          "name": "Packages Explorer",
+          "contextualTitle": "Packages Explorer"
         }
       ]
     },
@@ -56,6 +61,10 @@
       }
     },
     "commands": [
+      {
+        "command": "cliowrapper.package.add.packagesExplorer",
+        "title": "Add Folder To Packages Explorer"
+      },
       {
         "command": "cliowrapper.package.create",
         "title": "Create Package"
@@ -101,13 +110,18 @@
       "explorer/context": [
         {
           "command": "cliowrapper.package.create",
-          "when": "isShowContextMenu",
-          "group": "z_cliowrapper"
+          "when": "explorerResourceIsFolder && isShowContextMenu",
+          "group": "z_cliowrapper@1"
         },
         {
           "command": "cliowrapper.package.createandsend",
-          "when": "isShowContextMenu",
-          "group": "z_cliowrapper"
+          "when": "explorerResourceIsFolder && isShowContextMenu",
+          "group": "z_cliowrapper@2"
+        },
+        {
+          "command": "cliowrapper.package.add.packagesExplorer",
+          "when": "explorerResourceIsFolder && isShowContextMenu",
+          "group": "z_cliowrapper@3"
         }
       ],
       "view/title": [
