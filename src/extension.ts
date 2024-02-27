@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 
 import { EnvironmentsProvider } from './environments';
+import { PackageProvider } from './packageExplorer';
 import { GitHelper } from './git';
 import { serverSettings } from './interfaces';
 import { PackageManager } from './managers/packagemanager';
@@ -50,7 +51,9 @@ export function activate(context: vscode.ExtensionContext) {
 	cm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
 
 	const environmentsProvider = new EnvironmentsProvider();
+	const packageProvider = new PackageProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
+	vscode.window.registerTreeDataProvider('packagesExplorer', packageProvider);
 
 	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
 		if (environments) {
@@ -135,6 +138,10 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (uri: vscode.Uri) => {
+
+	}));
+
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', (uri: vscode.Uri) => {
 		const config = vscode.workspace.getConfiguration('clio');
 		const outputPath = config.get<string>('outputPath');
@@ -187,15 +194,22 @@ export function activate(context: vscode.ExtensionContext) {
 						async (progress) => {
 							vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 							if (await gitHelper.checkBranch(serverConfig.gitBranchName!)) {
+								var folderName = getDirectoryName(uri.fsPath);
 								progress.report({
-									message: `creating package ${getDirectoryName(uri.fsPath)}.gz`
+									message: `creating package ${folderName}.gz`
 								});
 								if (await pm.createPackage(uri.fsPath)) {
 									progress.report({
-										message: `sending package ${getDirectoryName(uri.fsPath)}.gz`,
+										message: `sending package ${folderName}.gz`,
 										increment: 50
 									});
-									await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id });
+									await pm.pushPackage(
+										{
+											folderName: folderName,
+											targetFolderPath: uri.fsPath,
+											targetEnviroment: serverConfig.id
+										}
+									);
 								}
 							}
 							vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
