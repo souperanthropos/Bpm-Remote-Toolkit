@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -70,6 +70,11 @@
         "icon": "$(settings-gear)"
       },
       {
+        "command": "clio.openLastLog",
+        "title": "Open last log",
+        "icon": "$(file-binary)"
+      },
+      {
         "command": "bpmsoftEnvironments.restart",
         "title": "Restart application"
       },
@@ -107,9 +112,14 @@
       ],
       "view/title": [
         {
+          "command": "clio.openLastLog",
+          "when": "view == bpmsoftEnvironments",
+          "group": "navigation@1"
+        },
+        {
           "command": "clio.openSettings",
           "when": "view == bpmsoftEnvironments",
-          "group": "navigation"
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [

@@ -73,6 +73,13 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
+		'clio.openLastLog',
+		() => {
+			const folderUri = vscode.Uri.file(Constants.extensionPath + Constants.executeLogFileName);
+			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+		}));
+
+	context.subscriptions.push(vscode.commands.registerCommand(
 		'clio.openSettings',
 		() => cm.OpenSettings()));
 
@@ -140,6 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
 					title: `Creating package: ${getDirectoryName(uri.fsPath)}.gz`
 				},
 				async () => {
+					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 					if (await gitHelper.isPermittedBranch(branches)) {
 						if (await pm.createPackage(uri.fsPath)) {
 							if (outputPath) {
@@ -147,6 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 							}
 						}
 					}
+					vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
 				}
 			);
 		} else {
@@ -176,6 +185,7 @@ export function activate(context: vscode.ExtensionContext) {
 							title: 'Current operation'
 						},
 						async (progress) => {
+							vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 							if (await gitHelper.checkBranch(serverConfig.gitBranchName!)) {
 								progress.report({
 									message: `creating package ${getDirectoryName(uri.fsPath)}.gz`
@@ -188,6 +198,7 @@ export function activate(context: vscode.ExtensionContext) {
 									await pm.pushPackage({ targetFolderPath: uri.fsPath, targetEnviroment: serverConfig.id });
 								}
 							}
+							vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
 						}
 					);
 				} else {
