@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "engines": {
     "vscode": "^1.85.0"
   },
