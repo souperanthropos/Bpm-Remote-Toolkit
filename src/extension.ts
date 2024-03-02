@@ -3,23 +3,20 @@
 import * as vscode from 'vscode';
 
 import { EnvironmentsProvider } from './environments';
-import { PackageProvider } from './packageExplorer';
-import { GitHelper } from './git';
+import { PackageExplorer, PackageProvider } from './packageExplorer';
 import { packageSettings, serverSettings } from './interfaces';
-import { PackageManager } from './managers/packagemanager';
-import { Constants, getDirectoryName, hash, showErrorMessage, showInformationMessage } from './constants';
+import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
 import { ClioManager } from './managers/cliomanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
-let environments: serverSettings[] | undefined;
 const bpmPackagesPattern = `${hash}_bpmPackages`;
 
 function checkWorkspaceSettings() {
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
-	environments = serverConfig.get<serverSettings[]>('cwEnvironments');
+	Constants.environments = serverConfig.get<serverSettings[]>('cwEnvironments');
 
-	if (environments && environments.length > 0) {
+	if (Constants.environments && Constants.environments.length > 0) {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
 	} else {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
@@ -44,12 +41,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	Constants.extensionPath = context.extensionPath;
 
-	const gitHelper = new GitHelper(terminalLog);
-	const pm = new PackageManager(terminalLog);
+	const pe = new PackageExplorer(terminalLog);
 	const cm = new ClioManager(terminalLog);
 
-	pm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
-	pm.onCommandExecuteComplete = (message: string, showbutton: boolean) => showInformationMessage(message, showbutton);
 	cm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
 
 	const environmentsProvider = new EnvironmentsProvider();
@@ -58,8 +52,8 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.window.registerTreeDataProvider('packagesExplorer', packageProvider);
 
 	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
-		if (environments) {
-			environments?.forEach(env => {
+		if (Constants.environments) {
+			Constants.environments?.forEach(env => {
 				var isReg = context.globalState.get(env.id);
 				if (isReg) {
 					env.isRegister = true;
@@ -67,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 					env.isRegister = false;
 				}
 			});
-			environmentsProvider.refresh(environments);
+			environmentsProvider.refresh(Constants.environments);
 		} else {
 			environmentsProvider.refresh([]);
 		}
@@ -89,6 +83,14 @@ export function activate(context: vscode.ExtensionContext) {
 			context.globalState.update(bpmPackagesPattern, packages);
 			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.create', (pkg: packageSettings) => {
+		pe.create(pkg.targetFolderPath);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createandsend', (pkg: packageSettings) => {
+		pe.createAndSend(pkg.targetFolderPath);
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
@@ -173,87 +175,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', (uri: vscode.Uri) => {
-		const config = vscode.workspace.getConfiguration('clio');
-		const outputPath = config.get<string>('outputPath');
-
-		if (environments) {
-			const branches = environments.map(({ gitBranchName }) => gitBranchName ?? '');
-			vscode.window.withProgress(
-				{
-					location: vscode.ProgressLocation.Notification,
-					title: `Creating package: ${getDirectoryName(uri.fsPath)}.gz`
-				},
-				async () => {
-					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
-					if (await gitHelper.isPermittedBranch(branches)) {
-						if (await pm.createPackage(uri.fsPath)) {
-							if (outputPath) {
-								vscode.env.openExternal(vscode.Uri.file(outputPath));
-							}
-						}
-					}
-					vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-				}
-			);
-		} else {
-			vscode.window.showInformationMessage(
-				"Command execute failed: check you .code-workspace file."
-			);
-		}
+		pe.create(uri.fsPath);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri: vscode.Uri) => {
-		const currentBranch = gitHelper.getCurrentBranch();
-		if (environments && currentBranch !== '') {
-			const arr = environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
-			const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
-			const qp = vscode.window.createQuickPick();
-			qp.canSelectMany = false;
-			qp.items = quickPickItems;
-			qp.onDidChangeSelection(async selection => {
-				const serverId = selection[0].label;
-				const serverConfig = environments?.find(e => e.id === serverId);
-				qp.hide();
-
-				if (serverConfig && serverConfig.gitBranchName) {
-					vscode.window.withProgress(
-						{
-							location: vscode.ProgressLocation.Notification,
-							title: 'Current operation'
-						},
-						async (progress) => {
-							vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
-							if (await gitHelper.checkBranch(serverConfig.gitBranchName!)) {
-								var folderName = getDirectoryName(uri.fsPath);
-								progress.report({
-									message: `creating package ${folderName}.gz`
-								});
-								if (await pm.createPackage(uri.fsPath)) {
-									progress.report({
-										message: `sending package ${folderName}.gz`,
-										increment: 50
-									});
-									await pm.pushPackage(
-										{
-											folderName: folderName,
-											targetFolderPath: uri.fsPath,
-											targetEnviroment: serverConfig.id
-										}
-									);
-								}
-							}
-							vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-						}
-					);
-				} else {
-					vscode.window.showInformationMessage(
-						"Command execute failed: check you .code-workspace file."
-					);
-				}
-			});
-			qp.onDidHide(() => qp.dispose());
-			qp.show();
-		}
+		pe.createAndSend(uri.fsPath);
 	}));
 }
 
