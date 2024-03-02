@@ -62,6 +62,13 @@
     },
     "commands": [
       {
+        "command": "bpmsoftEnvironments.refreshEntry",
+        "title": "Refresh"
+      },      {
+        "command": "packagesExplorer.refreshEntry",
+        "title": "Refresh"
+      },
+      {
         "command": "cliowrapper.package.add.packagesExplorer",
         "title": "Add Folder To Packages Explorer"
       },
@@ -190,7 +197,7 @@
         {
           "command": "packagesExplorer.remove",
           "when": "view == packagesExplorer",
-          "group": "inline@3"
+          "group": "pe_other@1"
         }
       ]
     }

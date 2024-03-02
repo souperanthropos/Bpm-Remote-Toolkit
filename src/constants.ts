@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
+import { serverSettings } from './interfaces';
 
 export class Constants {
 	static readonly executeResultFileName = '\\commandExecuteResult.log';
 	static readonly executeLogFileName = '\\commandExecute.log';
 	static extensionPath = '';
+	static environments: serverSettings[] | undefined;
 }
 
 export function getDirectoryName(localPath: string): string {
@@ -24,7 +26,7 @@ export const hash = function () {
 	return '';
 };
 
-export const matchingWorkspace = function (sourcePath: string) : boolean {
+export const isMatchingWorkspace = function (sourcePath: string) : boolean {
 	const path = require('path');
 	const wsFolder = vscode.workspace.workspaceFolders?.find(
 		(wf) => {
