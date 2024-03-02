@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { packageSettings } from './interfaces';
+import { matchingWorkspace } from './constants';
 
 export class PackageProvider implements vscode.TreeDataProvider<packageSettings> {
 	private _onDidChangeTreeData: vscode.EventEmitter<packageSettings | undefined | void> = new vscode.EventEmitter<packageSettings | undefined | void>();
@@ -18,7 +19,15 @@ export class PackageProvider implements vscode.TreeDataProvider<packageSettings>
 			element.targetFolderPath,
 			vscode.TreeItemCollapsibleState.None
 		);
-
+		treeItem.tooltip = element.targetFolderPath;
+		if(!matchingWorkspace(element.targetFolderPath)){
+			treeItem.contextValue += 'Enable';
+			treeItem.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
+		}else{
+			treeItem.contextValue += 'Disable';
+			treeItem.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor("bpmsoftEnvironment.disable"));
+		}
+		
 		return treeItem;
 	}
 

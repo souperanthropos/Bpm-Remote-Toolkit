@@ -15,6 +15,29 @@ export function isNullOrWhitespace(input: string | undefined) {
 	return !input || !input.trim();
 }
 
+export const hash = function () {
+	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+		const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
+		const crypto = require('crypto');
+		return crypto.createHash('md5').update(folder).digest('hex');
+	}
+	return '';
+};
+
+export const matchingWorkspace = function (sourcePath: string) : boolean {
+	const path = require('path');
+	const wsFolder = vscode.workspace.workspaceFolders?.find(
+		(wf) => {
+			const relative = path.relative(wf.uri.fsPath, sourcePath);
+			return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+		}
+	);
+	if(wsFolder){
+		return true;
+	}
+	return false;
+};
+
 export const showErrorMessage = (message: string, showbutton: boolean) => {
 	const buttonShowLog = showbutton ? "Show log file" : '';
 	vscode.window.showErrorMessage(message, buttonShowLog)
