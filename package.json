@@ -186,12 +186,12 @@
         },
         {
           "command": "packagesExplorer.create",
-          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable",
+          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@1"
         },
         {
           "command": "packagesExplorer.createandsend",
-          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable",
+          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@2"
         },
         {
