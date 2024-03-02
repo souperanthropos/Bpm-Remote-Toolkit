@@ -114,6 +114,11 @@
         "command": "packagesExplorer.createandsend",
         "title": "Create and send package",
         "icon": "$(repo-force-push)"
+      },
+      {
+        "command": "packagesExplorer.remove",
+        "title": "Remove from Packages Explorer",
+        "icon": "$(x)"
       }
     ],
     "menus": {
@@ -181,6 +186,11 @@
           "command": "packagesExplorer.createandsend",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable",
           "group": "inline@2"
+        },
+        {
+          "command": "packagesExplorer.remove",
+          "when": "view == packagesExplorer",
+          "group": "inline@3"
         }
       ]
     }
