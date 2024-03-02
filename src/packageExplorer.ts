@@ -20,7 +20,7 @@ export class PackageProvider implements vscode.TreeDataProvider<packageSettings>
 			vscode.TreeItemCollapsibleState.None
 		);
 		treeItem.tooltip = element.targetFolderPath;
-		if(!matchingWorkspace(element.targetFolderPath)){
+		if(matchingWorkspace(element.targetFolderPath)){
 			treeItem.contextValue += 'Enable';
 			treeItem.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
 		}else{

@@ -82,6 +82,15 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.remove', (pkg: packageSettings) => {
+		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
+		if (packages.length > 0) {
+			packages = packages.filter(item => { return item.folderName !== pkg.folderName; });
+			context.globalState.update(bpmPackagesPattern, packages);
+			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
+		}
+	}));
+
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
 		checkWorkspaceSettings();
 	}));
