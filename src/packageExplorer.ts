@@ -135,7 +135,17 @@ export class PackageProvider implements vscode.TreeDataProvider<packageSettings>
 			return Promise.resolve([]);
 		}
 
-		return Promise.resolve(this._packages);
+		return Promise.resolve(this._packages.sort((p1,p2) => {
+			if (p1.folderName > p2.folderName) {
+				return 1;
+			}
+		
+			if (p1.folderName < p2.folderName) {
+				return -1;
+			}
+		
+			return 0;
+		}));
 	}
 }
 
