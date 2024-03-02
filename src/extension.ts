@@ -5,14 +5,15 @@ import * as vscode from 'vscode';
 import { EnvironmentsProvider } from './environments';
 import { PackageProvider } from './packageExplorer';
 import { GitHelper } from './git';
-import { serverSettings } from './interfaces';
+import { packageSettings, serverSettings } from './interfaces';
 import { PackageManager } from './managers/packagemanager';
-import { Constants, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
+import { Constants, getDirectoryName, hash, showErrorMessage, showInformationMessage } from './constants';
 import { ClioManager } from './managers/cliomanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
 let environments: serverSettings[] | undefined;
+const bpmPackagesPattern = `${hash}_bpmPackages`;
 
 function checkWorkspaceSettings() {
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
@@ -25,6 +26,7 @@ function checkWorkspaceSettings() {
 	}
 
 	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+	vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 }
 
 // This method is called when your extension is activated
@@ -68,6 +70,15 @@ export function activate(context: vscode.ExtensionContext) {
 			environmentsProvider.refresh(environments);
 		} else {
 			environmentsProvider.refresh([]);
+		}
+	});
+
+	vscode.commands.registerCommand('packagesExplorer.refreshEntry', () => {
+		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
+		if (packages) {
+			packageProvider.refresh(packages);
+		} else {
+			packageProvider.refresh([]);
 		}
 	});
 
@@ -139,7 +150,17 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (uri: vscode.Uri) => {
-
+		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
+		const newPackage: packageSettings = {
+			folderName: getDirectoryName(uri.fsPath),
+			targetFolderPath: uri.fsPath,
+			targetEnviroment: undefined
+		};
+		if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
+			packages.push(newPackage);
+			context.globalState.update(bpmPackagesPattern, packages);
+			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', (uri: vscode.Uri) => {

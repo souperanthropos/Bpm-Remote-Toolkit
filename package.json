@@ -104,6 +104,16 @@
         "command": "bpmsoftEnvironments.unregister",
         "title": "Unregister",
         "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "packagesExplorer.create",
+        "title": "Create package",
+        "icon": "$(repo-pull)"
+      },
+      {
+        "command": "packagesExplorer.createandsend",
+        "title": "Create and send package",
+        "icon": "$(repo-force-push)"
       }
     ],
     "menus": {
@@ -160,6 +170,16 @@
         {
           "command": "bpmsoftEnvironments.unregister",
           "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "group": "inline@2"
+        },
+        {
+          "command": "packagesExplorer.create",
+          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable",
+          "group": "inline@1"
+        },
+        {
+          "command": "packagesExplorer.createandsend",
+          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable",
           "group": "inline@2"
         }
       ]
