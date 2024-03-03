@@ -57,7 +57,6 @@ export class PackageManager {
         const packageFilePath = path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
         const result = await this.terminal.executeCommand(
-            '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
             'clio push-pkg '
             + packageFilePath
             + ' -e ' + settings.targetEnviroment
