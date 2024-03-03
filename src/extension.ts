@@ -44,7 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const pe = new PackageExplorer(terminalLog);
 	const cm = new ClioManager(terminalLog);
 
-	cm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
+	cm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
+		showErrorMessage(message, showbutton, executeLogFilePath);
 
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
@@ -100,7 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'clio.openLastLog',
 		() => {
-			const folderUri = vscode.Uri.file(Constants.extensionPath + Constants.executeLogFileName);
+			const folderUri = vscode.Uri.file(cm.getLastExecuteLogPath());
 			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 		}));
 

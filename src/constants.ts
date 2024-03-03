@@ -2,8 +2,6 @@ import * as vscode from 'vscode';
 import { serverSettings } from './interfaces';
 
 export class Constants {
-	static readonly executeResultFileName = '\\commandExecuteResult.log';
-	static readonly executeLogFileName = '\\commandExecute.log';
 	static extensionPath = '';
 	static environments: serverSettings[] | undefined;
 }
@@ -40,23 +38,23 @@ export const isMatchingWorkspace = function (sourcePath: string) : boolean {
 	return false;
 };
 
-export const showErrorMessage = (message: string, showbutton: boolean) => {
+export const showErrorMessage = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) => {
 	const buttonShowLog = showbutton ? "Show log file" : '';
 	vscode.window.showErrorMessage(message, buttonShowLog)
 		.then(selection => {
-			if (selection === buttonShowLog) {
-				const folderUri = vscode.Uri.file(Constants.extensionPath + Constants.executeLogFileName);
+			if (selection === buttonShowLog && executeLogFilePath) {
+				const folderUri = vscode.Uri.file(executeLogFilePath);
 				vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 			}
 		});
 };
 
-export const showInformationMessage = (message: string, showbutton: boolean) => {
+export const showInformationMessage = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) => {
 	const buttonShowLog = showbutton ? "Show log file" : '';
 	vscode.window.showInformationMessage(message, buttonShowLog)
 		.then(selection => {
-			if (selection === buttonShowLog) {
-				const folderUri = vscode.Uri.file(Constants.extensionPath + Constants.executeLogFileName);
+			if (selection === buttonShowLog && executeLogFilePath) {
+				const folderUri = vscode.Uri.file(executeLogFilePath);
 				vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 			}
 		});
