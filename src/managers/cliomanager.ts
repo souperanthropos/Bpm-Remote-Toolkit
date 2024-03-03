@@ -18,7 +18,7 @@ export class ClioManager {
     }
 
     public OpenSettings() {
-        this.terminal.callInInteractiveTerminalWithoutLog('clio open-settings');
+        this.terminal.executeCommandWithoutLog('clio open-settings');
     }
 
     public async WebAppRegister(server: serverSettings): Promise<boolean> {
@@ -33,7 +33,7 @@ export class ClioManager {
                 password: true
             });
             if (!isNullOrWhitespace(passwordQuery)) {
-                return await this.terminal.callInInteractiveTerminal(
+                return await this.terminal.executeCommand(
                     `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery}`
                 );
             }
@@ -43,17 +43,17 @@ export class ClioManager {
 
     public async WebAppUnregister(server: serverSettings, isLogEnabled: boolean) {
         if(isLogEnabled){
-            const result = await this.terminal.callInInteractiveTerminal(`clio unreg-web-app ${server.id}`);
+            const result = await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Unregister web app failed.', true, this.terminal.executeLogFilePath);
             }
         }else{
-            await this.terminal.callInInteractiveTerminalWithoutLog(`clio unreg-web-app ${server.id}`);
+            await this.terminal.executeCommandWithoutLog(`clio unreg-web-app ${server.id}`);
         }
     }
 
     public async WebAppPing(server: serverSettings): Promise<boolean> {
-        const result = await this.terminal.callInInteractiveTerminal(`clio ping ${server.id}`);
+        const result = await this.terminal.executeCommand(`clio ping ${server.id}`);
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Ping web app failed.', true, this.terminal.executeLogFilePath);
         }
@@ -66,7 +66,7 @@ export class ClioManager {
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
-            const result = await this.terminal.callInInteractiveTerminal(`clio restart-web-app ${server.id}`);
+            const result = await this.terminal.executeCommand(`clio restart-web-app ${server.id}`);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Restart web app failed.', true, this.terminal.executeLogFilePath);
             }
@@ -79,7 +79,7 @@ export class ClioManager {
                 "You cannot execute this command because server " + server.id + " is disabled."
             );
         } else {
-            const result = await this.terminal.callInInteractiveTerminal(`clio clear-redis-db ${server.id}`);
+            const result = await this.terminal.executeCommand(`clio clear-redis-db ${server.id}`);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Clear redis db failed.', true, this.terminal.executeLogFilePath);
             }
@@ -92,7 +92,7 @@ export class ClioManager {
                 "You cannot execute this command because server " + server.id + " is disabled."
             );
         } else {
-            const result = await this.terminal.callInInteractiveTerminal(`clio compile-configuration ${server.id}`);
+            const result = await this.terminal.executeCommand(`clio compile-configuration ${server.id}`);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Compile configuration failed.', true, this.terminal.executeLogFilePath);
             }

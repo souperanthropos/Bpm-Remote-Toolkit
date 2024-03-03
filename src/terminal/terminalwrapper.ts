@@ -12,7 +12,7 @@ export class TerminalWrapper {
 		this.executeResultFilePath = `${this.outputPathLog}\\${this.executeResultFileName}`;
 	}
 
-	public async callInInteractiveTerminalWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
+	public async executeCommandWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
 		const terminal = vscode.window.createTerminal({
 			name: 'cliowrapper',
 			location: vscode.TerminalLocation.Panel,
@@ -36,7 +36,7 @@ export class TerminalWrapper {
 		});
 	}
 
-	public async callInInteractiveTerminal(command: string): Promise<boolean> {
+	public async executeCommand(command: string): Promise<boolean> {
 		const terminal = vscode.window.createTerminal({
 			name: 'cliowrapper',
 			location: vscode.TerminalLocation.Panel,

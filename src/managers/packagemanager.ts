@@ -20,7 +20,7 @@ export class PackageManager {
         const fullPathFile = path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz');
 
         this.terminalLog.appendLine('del ' + fullPathFile);
-        await this.terminal.callInInteractiveTerminal('del ' + fullPathFile);
+        await this.terminal.executeCommand('del ' + fullPathFile);
 
         this.terminalLog.appendLine(
             'Execute: clio generate-pkg-zip '
@@ -28,7 +28,7 @@ export class PackageManager {
             + fullPathFile
         );
 
-        const result = await this.terminal.callInInteractiveTerminal(
+        const result = await this.terminal.executeCommand(
             "clio generate-pkg-zip "
             + targetFolderPath + " -d "
             + fullPathFile
@@ -56,7 +56,7 @@ export class PackageManager {
         const outputPath = config.get('outputPath');
         const packageFilePath = path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
-        const result = await this.terminal.callInInteractiveTerminal(
+        const result = await this.terminal.executeCommand(
             '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
             'clio push-pkg '
             + packageFilePath
