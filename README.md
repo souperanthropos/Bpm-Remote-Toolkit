@@ -77,11 +77,8 @@ NONE
 
 ## Release Notes
 
-## 1.4.x
+## 1.5.x
 
 - Update README
-- [.code-workspace file] new structure of settings
-- Added view **Bpmsoft Environments**
-- Added new command - Open Last Log
-- Added url to environment name
-- Hide context menu if already running
+- Added view **Packages Explorer** in **Source Control**
+- Moved view **Bpmsoft Environments** to **Source Control**

@@ -1,12 +1,18 @@
 import * as vscode from 'vscode';
-import { Constants } from '../constants';
 
 export class TerminalWrapper {
+	private readonly executeResultFileName = 'commandExecuteResult.log';
+	private readonly executeLogFileName = 'commandExecute.log';
 
-	/*constructor(private extensionPath: string) {
-	}*/
+	public readonly executeLogFilePath: string;
+	public readonly executeResultFilePath: string;
 
-	public async callInInteractiveTerminalWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
+	constructor(private outputPathLog: string) {
+		this.executeLogFilePath = `${this.outputPathLog}\\${this.executeLogFileName}`;
+		this.executeResultFilePath = `${this.outputPathLog}\\${this.executeResultFileName}`;
+	}
+
+	public async executeCommandWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
 		const terminal = vscode.window.createTerminal({
 			name: 'cliowrapper',
 			location: vscode.TerminalLocation.Panel,
@@ -30,26 +36,25 @@ export class TerminalWrapper {
 		});
 	}
 
-	public async callInInteractiveTerminal(command: string): Promise<boolean> {
+	public async executeCommand(command: string): Promise<boolean> {
 		const terminal = vscode.window.createTerminal({
 			name: 'cliowrapper',
 			location: vscode.TerminalLocation.Panel,
 		});
-		const executeLogFilePath = Constants.extensionPath + Constants.executeLogFileName;
-		const executeResultFilePath = Constants.extensionPath + Constants.executeResultFileName;
+		
 		terminal.show(true);
 		terminal.sendText("$share = ", false);
-		terminal.sendText(command + ` | Tee-Object -file ${executeLogFilePath} `, false);
+		terminal.sendText(command + ` | Tee-Object -file ${this.executeLogFilePath} `, false);
 		terminal.sendText("; if($?){\"1\""
-			+ ` > ${executeResultFilePath} ` + "}else{\"0\""
-			+ ` > ${executeResultFilePath} ` + "}", false);
+			+ ` > ${this.executeResultFilePath} ` + "}else{\"0\""
+			+ ` > ${this.executeResultFilePath} ` + "}", false);
 		terminal.sendText("; exit");
 		return new Promise((resolve, reject) => {
 			const disposeToken = vscode.window.onDidCloseTerminal(
 				async (closedTerminal) => {
 					if (closedTerminal === terminal) {
 						disposeToken.dispose();
-						var pathFile = vscode.Uri.file(executeResultFilePath);
+						var pathFile = vscode.Uri.file(this.executeResultFilePath);
 						const readData = await vscode.workspace.fs.readFile(pathFile);
 						const readStatus = Buffer.from(readData).toString('utf8');
 						if (terminal.exitStatus !== undefined) {

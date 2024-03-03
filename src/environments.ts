@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-
 import { serverSettings } from './interfaces';
 
 export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSettings> {
@@ -22,11 +21,11 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 			vscode.TreeItemCollapsibleState.None
 		);
 		treeItem.contextValue += element.isRegister ? 'Unregister' : 'Register';
-		if(!treeItem.enable){
+		if (!treeItem.enable) {
 			treeItem.iconPath = new vscode.ThemeIcon('vm-outline', new vscode.ThemeColor("bpmsoftEnvironment.disable"));
-		}else if(element.isRegister){
+		} else if (element.isRegister) {
 			treeItem.iconPath = new vscode.ThemeIcon('vm-active', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
-		}else{
+		} else {
 			treeItem.iconPath = new vscode.ThemeIcon('vm', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
 		}
 		return treeItem;
@@ -43,12 +42,12 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 
 export class serverTreeItem extends vscode.TreeItem {
 	constructor(
-	  public readonly name: string,
-	  public readonly id: string,
-	  public readonly enable: boolean,
-	  public readonly collapsibleState: vscode.TreeItemCollapsibleState,
-	  public contextValue: string = 'serverTreeItem'
+		public readonly name: string,
+		public readonly id: string,
+		public readonly enable: boolean,
+		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+		public contextValue: string = 'serverTreeItem'
 	) {
-	  super(name, collapsibleState);
+		super(name, collapsibleState);
 	}
-  }
+}
