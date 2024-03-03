@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.4.6",
+  "version": "1.5.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -35,11 +35,16 @@
       }
     ],
     "views": {
-      "explorer": [
+      "scm": [
         {
           "id": "bpmsoftEnvironments",
           "name": "Bpmsoft Environments",
           "contextualTitle": "Environments Explorer"
+        },
+        {
+          "id": "packagesExplorer",
+          "name": "Packages Explorer",
+          "contextualTitle": "Packages Explorer"
         }
       ]
     },
@@ -56,6 +61,18 @@
       }
     },
     "commands": [
+      {
+        "command": "bpmsoftEnvironments.refreshEntry",
+        "title": "Refresh"
+      },
+      {
+        "command": "packagesExplorer.refreshEntry",
+        "title": "Refresh"
+      },
+      {
+        "command": "cliowrapper.package.add.packagesExplorer",
+        "title": "Add Folder To Packages Explorer"
+      },
       {
         "command": "cliowrapper.package.create",
         "title": "Create Package"
@@ -95,19 +112,39 @@
         "command": "bpmsoftEnvironments.unregister",
         "title": "Unregister",
         "icon": "$(debug-disconnect)"
+      },
+      {
+        "command": "packagesExplorer.create",
+        "title": "Create package",
+        "icon": "$(repo-pull)"
+      },
+      {
+        "command": "packagesExplorer.createandsend",
+        "title": "Create and send package",
+        "icon": "$(repo-force-push)"
+      },
+      {
+        "command": "packagesExplorer.remove",
+        "title": "Remove from Packages Explorer",
+        "icon": "$(x)"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "cliowrapper.package.create",
-          "when": "isShowContextMenu",
-          "group": "z_cliowrapper"
+          "when": "explorerResourceIsFolder && isShowContextMenu",
+          "group": "z_cliowrapper@1"
         },
         {
           "command": "cliowrapper.package.createandsend",
-          "when": "isShowContextMenu",
-          "group": "z_cliowrapper"
+          "when": "explorerResourceIsFolder && isShowContextMenu",
+          "group": "z_cliowrapper@2"
+        },
+        {
+          "command": "cliowrapper.package.add.packagesExplorer",
+          "when": "explorerResourceIsFolder && isShowContextMenu",
+          "group": "z_cliowrapper@3"
         }
       ],
       "view/title": [
@@ -147,6 +184,21 @@
           "command": "bpmsoftEnvironments.unregister",
           "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
           "group": "inline@2"
+        },
+        {
+          "command": "packagesExplorer.create",
+          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
+          "group": "inline@1"
+        },
+        {
+          "command": "packagesExplorer.createandsend",
+          "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
+          "group": "inline@2"
+        },
+        {
+          "command": "packagesExplorer.remove",
+          "when": "view == packagesExplorer",
+          "group": "pe_other@1"
         }
       ]
     }

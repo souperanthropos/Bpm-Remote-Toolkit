@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.4.x
+
+- Update README
+- [.code-workspace file] new structure of settings
+- Added view **Bpmsoft Environments**
+- Added new command - Open Last Log
+- Added url to environment name
+- Hide context menu if already running
+
 ## 1.3.1
 
 - Update README
