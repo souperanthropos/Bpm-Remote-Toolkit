@@ -10,7 +10,7 @@ export class PackageManager {
     public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalWrapper(Constants.extensionPath);
+        this.terminal = new TerminalWrapper(Constants.extensionPath, Constants.terminalName);
     }
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {

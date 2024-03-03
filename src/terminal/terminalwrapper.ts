@@ -7,16 +7,19 @@ export class TerminalWrapper {
 	public readonly executeLogFilePath: string;
 	public readonly executeResultFilePath: string;
 
-	constructor(private outputPathLog: string) {
+	constructor(private outputPathLog: string, private terminalName: string) {
 		this.executeLogFilePath = `${this.outputPathLog}\\${this.executeLogFileName}`;
 		this.executeResultFilePath = `${this.outputPathLog}\\${this.executeResultFileName}`;
 	}
 
 	public async executeCommandWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
-		const terminal = vscode.window.createTerminal({
-			name: 'cliowrapper',
-			location: vscode.TerminalLocation.Panel,
-		});
+		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
+        if (!terminal) {
+            terminal = vscode.window.createTerminal({
+				name: this.terminalName,
+				location: vscode.TerminalLocation.Panel,
+			});
+        }
 		terminal.show(true);
 		terminal.sendText(command, false);
 		terminal.sendText("; exit");
@@ -37,11 +40,13 @@ export class TerminalWrapper {
 	}
 
 	public async executeCommand(command: string): Promise<boolean> {
-		const terminal = vscode.window.createTerminal({
-			name: 'cliowrapper',
-			location: vscode.TerminalLocation.Panel,
-		});
-		
+		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
+        if (!terminal) {
+            terminal = vscode.window.createTerminal({
+				name: this.terminalName,
+				location: vscode.TerminalLocation.Panel,
+			});
+        }
 		terminal.show(true);
 		terminal.sendText("$share = ", false);
 		terminal.sendText(command + ` | Tee-Object -file ${this.executeLogFilePath} `, false);

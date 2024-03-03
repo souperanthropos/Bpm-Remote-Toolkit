@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { serverSettings } from './interfaces';
 
 export class Constants {
+	static terminalName = 'cliowrapper';
 	static extensionPath = '';
 	static environments: serverSettings[] | undefined;
 }
