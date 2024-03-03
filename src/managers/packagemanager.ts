@@ -1,16 +1,16 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
-import { getDirectoryName } from '../constants';
+import { Constants, getDirectoryName } from '../constants';
 
 export class PackageManager {
     private terminal: TerminalWrapper;
 
-    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
-    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalWrapper();
+        this.terminal = new TerminalWrapper(Constants.extensionPath);
     }
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
@@ -35,7 +35,7 @@ export class PackageManager {
         );
 
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Create package failed.', true);
+            this.onCommandExecuteError('Create package failed.', true, this.terminal.executeLogFilePath);
         }
 
         return result;
@@ -47,7 +47,7 @@ export class PackageManager {
         if (settings.targetEnviroment === undefined || settings.targetEnviroment === '') {
             this.terminalLog.appendLine('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
-                this.onCommandExecuteError('Error: target enviroment not found.', false);
+                this.onCommandExecuteError('Error: target enviroment not found.', false, undefined);
             }
             return;
         }
@@ -64,11 +64,11 @@ export class PackageManager {
         );
 
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Send package failed.', true);
+            this.onCommandExecuteError('Send package failed.', true, this.terminal.executeLogFilePath);
         }
 
         if (result && this.onCommandExecuteComplete) {
-            this.onCommandExecuteComplete('Send package completed.', true);
+            this.onCommandExecuteComplete('Send package completed.', true, this.terminal.executeLogFilePath);
         }
     }
 }

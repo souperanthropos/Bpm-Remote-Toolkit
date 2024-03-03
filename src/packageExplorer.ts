@@ -12,8 +12,10 @@ export class PackageExplorer {
 		this._gitHelper = new GitHelper(terminalLog);
 		this._pm = new PackageManager(terminalLog);
 
-		this._pm.onCommandExecuteError = (message: string, showbutton: boolean) => showErrorMessage(message, showbutton);
-		this._pm.onCommandExecuteComplete = (message: string, showbutton: boolean) => showInformationMessage(message, showbutton);
+		this._pm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
+			showErrorMessage(message, showbutton, executeLogFilePath);
+		this._pm.onCommandExecuteComplete = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
+			showInformationMessage(message, showbutton, executeLogFilePath);
 	}
 
 	public create(fsPath: string) {
@@ -135,15 +137,15 @@ export class PackageProvider implements vscode.TreeDataProvider<packageSettings>
 			return Promise.resolve([]);
 		}
 
-		return Promise.resolve(this._packages.sort((p1,p2) => {
+		return Promise.resolve(this._packages.sort((p1, p2) => {
 			if (p1.folderName > p2.folderName) {
 				return 1;
 			}
-		
+
 			if (p1.folderName < p2.folderName) {
 				return -1;
 			}
-		
+
 			return 0;
 		}));
 	}

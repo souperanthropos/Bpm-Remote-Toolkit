@@ -1,16 +1,20 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { serverSettings } from '../interfaces';
-import { isNullOrWhitespace } from '../constants';
+import { Constants, isNullOrWhitespace } from '../constants';
 
 export class ClioManager {
     private terminal: TerminalWrapper;
 
-    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
-    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalWrapper();
+        this.terminal = new TerminalWrapper(Constants.extensionPath);
+    }
+
+    public getLastExecuteLogPath(): string {
+        return this.terminal.executeLogFilePath;
     }
 
     public OpenSettings() {
@@ -41,7 +45,7 @@ export class ClioManager {
         if(isLogEnabled){
             const result = await this.terminal.callInInteractiveTerminal(`clio unreg-web-app ${server.id}`);
             if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Unregister web app failed.', true);
+                this.onCommandExecuteError('Unregister web app failed.', true, this.terminal.executeLogFilePath);
             }
         }else{
             await this.terminal.callInInteractiveTerminalWithoutLog(`clio unreg-web-app ${server.id}`);
@@ -51,7 +55,7 @@ export class ClioManager {
     public async WebAppPing(server: serverSettings): Promise<boolean> {
         const result = await this.terminal.callInInteractiveTerminal(`clio ping ${server.id}`);
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Ping web app failed.', true);
+            this.onCommandExecuteError('Ping web app failed.', true, this.terminal.executeLogFilePath);
         }
         return result;
     }
@@ -64,7 +68,7 @@ export class ClioManager {
         } else {
             const result = await this.terminal.callInInteractiveTerminal(`clio restart-web-app ${server.id}`);
             if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Restart web app failed.', true);
+                this.onCommandExecuteError('Restart web app failed.', true, this.terminal.executeLogFilePath);
             }
         }
     }
@@ -77,7 +81,7 @@ export class ClioManager {
         } else {
             const result = await this.terminal.callInInteractiveTerminal(`clio clear-redis-db ${server.id}`);
             if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Clear redis db failed.', true);
+                this.onCommandExecuteError('Clear redis db failed.', true, this.terminal.executeLogFilePath);
             }
         }
     }
@@ -90,7 +94,7 @@ export class ClioManager {
         } else {
             const result = await this.terminal.callInInteractiveTerminal(`clio compile-configuration ${server.id}`);
             if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Compile configuration failed.', true);
+                this.onCommandExecuteError('Compile configuration failed.', true, this.terminal.executeLogFilePath);
             }
         }
     }
