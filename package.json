@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.4.6",
+  "version": "1.5.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -64,7 +64,8 @@
       {
         "command": "bpmsoftEnvironments.refreshEntry",
         "title": "Refresh"
-      },      {
+      },
+      {
         "command": "packagesExplorer.refreshEntry",
         "title": "Refresh"
       },
