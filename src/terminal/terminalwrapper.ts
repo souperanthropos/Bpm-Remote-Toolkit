@@ -3,20 +3,24 @@ import * as vscode from 'vscode';
 export class TerminalWrapper {
 	private readonly executeResultFileName = 'commandExecuteResult.log';
 	private readonly executeLogFileName = 'commandExecute.log';
+	private readonly setEncodingUtf8 = '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding;';
 
 	public readonly executeLogFilePath: string;
 	public readonly executeResultFilePath: string;
 
-	constructor(private outputPathLog: string) {
+	constructor(private outputPathLog: string, private terminalName: string) {
 		this.executeLogFilePath = `${this.outputPathLog}\\${this.executeLogFileName}`;
 		this.executeResultFilePath = `${this.outputPathLog}\\${this.executeResultFileName}`;
 	}
 
 	public async executeCommandWithoutLog(command: string): Promise<vscode.TerminalExitStatus> {
-		const terminal = vscode.window.createTerminal({
-			name: 'cliowrapper',
-			location: vscode.TerminalLocation.Panel,
-		});
+		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
+		if (!terminal) {
+			terminal = vscode.window.createTerminal({
+				name: this.terminalName,
+				location: vscode.TerminalLocation.Panel,
+			});
+		}
 		terminal.show(true);
 		terminal.sendText(command, false);
 		terminal.sendText("; exit");
@@ -37,18 +41,18 @@ export class TerminalWrapper {
 	}
 
 	public async executeCommand(command: string): Promise<boolean> {
-		const terminal = vscode.window.createTerminal({
-			name: 'cliowrapper',
-			location: vscode.TerminalLocation.Panel,
-		});
+		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
+		if (!terminal) {
+			terminal = vscode.window.createTerminal({
+				name: this.terminalName,
+				location: vscode.TerminalLocation.Panel,
+			});
+		}
 		
 		terminal.show(true);
-		terminal.sendText("$share = ", false);
-		terminal.sendText(command + ` | Tee-Object -file ${this.executeLogFilePath} `, false);
-		terminal.sendText("; if($?){\"1\""
-			+ ` > ${this.executeResultFilePath} ` + "}else{\"0\""
-			+ ` > ${this.executeResultFilePath} ` + "}", false);
-		terminal.sendText("; exit");
+		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} | Tee-Object -file ${this.executeLogFilePath}; `, false);
+		terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}; `, false);
+		terminal.sendText("exit");
 		return new Promise((resolve, reject) => {
 			const disposeToken = vscode.window.onDidCloseTerminal(
 				async (closedTerminal) => {

@@ -10,7 +10,7 @@ export class PackageManager {
     public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalWrapper(Constants.extensionPath);
+        this.terminal = new TerminalWrapper(Constants.extensionPath, Constants.terminalName);
     }
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
@@ -57,7 +57,6 @@ export class PackageManager {
         const packageFilePath = path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
         const result = await this.terminal.executeCommand(
-            '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding \n' +
             'clio push-pkg '
             + packageFilePath
             + ' -e ' + settings.targetEnviroment
