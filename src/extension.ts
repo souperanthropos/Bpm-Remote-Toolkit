@@ -10,7 +10,7 @@ import { ClioManager } from './managers/cliomanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
-const bpmPackagesPattern = `${hash}_bpmPackages`;
+const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
 function checkWorkspaceSettings() {
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
