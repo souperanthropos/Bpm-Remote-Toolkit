@@ -82,3 +82,4 @@ NONE
 - Update README
 - Added view **Packages Explorer** in **Source Control**
 - Moved view **Bpmsoft Environments** to **Source Control**
+- Multi select for command `Add Folder To Packages Explorer`
