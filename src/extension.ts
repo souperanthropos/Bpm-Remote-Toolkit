@@ -161,18 +161,20 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (uri: vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
-		const newPackage: packageSettings = {
-			folderName: getDirectoryName(uri.fsPath),
-			targetFolderPath: uri.fsPath,
-			targetEnviroment: undefined
-		};
-		if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
-			packages.push(newPackage);
-			context.globalState.update(bpmPackagesPattern, packages);
-			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
-		}
+		allSelections.forEach(uri => {
+			const newPackage: packageSettings = {
+				folderName: getDirectoryName(uri.fsPath),
+				targetFolderPath: uri.fsPath,
+				targetEnviroment: undefined
+			};
+			if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
+				packages.push(newPackage);
+				context.globalState.update(bpmPackagesPattern, packages);
+			}
+		});
+		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', (uri: vscode.Uri) => {
