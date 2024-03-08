@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import fs from 'fs';
 
 import { EnvironmentsProvider } from './environments';
 import { PackageExplorer, PackageProvider } from './packageExplorer';
@@ -164,15 +165,17 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
 		allSelections.forEach(uri => {
-			const newPackage: packageSettings = {
-				folderName: getDirectoryName(uri.fsPath),
-				targetFolderPath: uri.fsPath,
-				targetEnviroment: undefined
-			};
-			if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
-				packages.push(newPackage);
-				context.globalState.update(bpmPackagesPattern, packages);
-			}
+			if(fs.lstatSync(uri.fsPath).isDirectory()){
+				const newPackage: packageSettings = {
+					folderName: getDirectoryName(uri.fsPath),
+					targetFolderPath: uri.fsPath,
+					targetEnviroment: undefined
+				};
+				if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
+					packages.push(newPackage);
+					context.globalState.update(bpmPackagesPattern, packages);
+				}
+			} 
 		});
 		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 	}));

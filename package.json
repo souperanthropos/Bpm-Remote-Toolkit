@@ -115,12 +115,12 @@
       },
       {
         "command": "packagesExplorer.create",
-        "title": "Create package",
+        "title": "Create Package",
         "icon": "$(repo-pull)"
       },
       {
         "command": "packagesExplorer.createandsend",
-        "title": "Create and send package",
+        "title": "Create Package And Send",
         "icon": "$(repo-force-push)"
       },
       {
