@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import fs from 'fs';
 
 import { EnvironmentsProvider } from './environments';
 import { PackageExplorer, PackageProvider } from './packageExplorer';
@@ -50,7 +51,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
 	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
-	vscode.window.registerTreeDataProvider('packagesExplorer', packageProvider);
+	//vscode.window.registerTreeDataProvider('packagesExplorer', packageProvider);
+
+	vscode.window.createTreeView('packagesExplorer', {
+		treeDataProvider: packageProvider,
+		canSelectMany: true
+	});
 
 	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
 		if (Constants.environments) {
@@ -77,10 +83,16 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.remove', (pkg: packageSettings) => {
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.remove', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
 		if (packages.length > 0) {
-			packages = packages.filter(item => { return item.folderName !== pkg.folderName; });
+			if(allSelections){
+				allSelections.forEach(pkg => {
+					packages = packages.filter(item => { return item.folderName !== pkg.folderName; });
+				});
+			}else{
+				packages = packages.filter(item => { return item.folderName !== contextSelection.folderName; });
+			}
 			context.globalState.update(bpmPackagesPattern, packages);
 			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 		}
@@ -164,14 +176,16 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
 		allSelections.forEach(uri => {
-			const newPackage: packageSettings = {
-				folderName: getDirectoryName(uri.fsPath),
-				targetFolderPath: uri.fsPath,
-				targetEnviroment: undefined
-			};
-			if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
-				packages.push(newPackage);
-				context.globalState.update(bpmPackagesPattern, packages);
+			if (fs.lstatSync(uri.fsPath).isDirectory()) {
+				const newPackage: packageSettings = {
+					folderName: getDirectoryName(uri.fsPath),
+					targetFolderPath: uri.fsPath,
+					targetEnviroment: undefined
+				};
+				if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
+					packages.push(newPackage);
+					context.globalState.update(bpmPackagesPattern, packages);
+				}
 			}
 		});
 		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
