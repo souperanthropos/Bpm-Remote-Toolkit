@@ -4,7 +4,7 @@
   "description": "Wrapper for CI/CD tools.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -115,12 +115,12 @@
       },
       {
         "command": "packagesExplorer.create",
-        "title": "Create package",
+        "title": "Create Package",
         "icon": "$(repo-pull)"
       },
       {
         "command": "packagesExplorer.createandsend",
-        "title": "Create and send package",
+        "title": "Create Package And Send",
         "icon": "$(repo-force-push)"
       },
       {
