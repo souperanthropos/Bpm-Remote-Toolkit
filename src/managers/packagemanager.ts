@@ -20,7 +20,7 @@ export class PackageManager {
         const fullPathFile = path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz');
 
         this.terminalLog.appendLine('del ' + fullPathFile);
-        await this.terminal.executeCommand('del ' + fullPathFile);
+        await this.terminal.executeCommand('del ' + fullPathFile, true);
 
         this.terminalLog.appendLine(
             'Execute: clio generate-pkg-zip '
@@ -31,7 +31,8 @@ export class PackageManager {
         const result = await this.terminal.executeCommand(
             "clio generate-pkg-zip "
             + targetFolderPath + " -d "
-            + fullPathFile
+            + fullPathFile,
+            true
         );
 
         if (!result && this.onCommandExecuteError) {
@@ -59,7 +60,8 @@ export class PackageManager {
         const result = await this.terminal.executeCommand(
             'clio push-pkg '
             + packageFilePath
-            + ' -e ' + settings.targetEnviroment
+            + ' -e ' + settings.targetEnviroment,
+            true
         );
 
         if (!result && this.onCommandExecuteError) {
