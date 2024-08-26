@@ -24,12 +24,12 @@ export class TerminalWrapper {
 		
 		terminal.show(true);
 		if(isLogging){
-			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} | Tee-Object -file ${this.executeLogFilePath}; `, false);
-			terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}} `, false);
+			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} | Tee-Object -file ${this.executeLogFilePath};`, false);
+			terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		}else{
 			terminal.sendText(command, false);
 		}
-		terminal.sendText(" ;exit");
+		terminal.sendText(";exit");
 		return new Promise((resolve, reject) => {
 			const disposeToken = vscode.window.onDidCloseTerminal(
 				async (closedTerminal) => {
