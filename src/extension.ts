@@ -8,6 +8,7 @@ import { PackageExplorer, PackageProvider } from './packageExplorer';
 import { packageSettings, serverSettings } from './interfaces';
 import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
 import { ClioManager } from './managers/cliomanager';
+import { FileManager } from './managers/filemanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
@@ -44,6 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const pe = new PackageExplorer(terminalLog);
 	const cm = new ClioManager(terminalLog);
+	const fm = new FileManager();
 
 	cm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
 		showErrorMessage(message, showbutton, executeLogFilePath);
@@ -80,6 +82,14 @@ export function activate(context: vscode.ExtensionContext) {
 			packageProvider.refresh(packages);
 		} else {
 			packageProvider.refresh([]);
+		}
+	});
+
+	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
+		const config = vscode.workspace.getConfiguration('clio');
+        const isAutoUpdateTime = config.get('autoUpdateTime');
+		if(isAutoUpdateTime){
+			await fm.UpdateTimeInDescriptor(document);
 		}
 	});
 
