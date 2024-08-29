@@ -51,8 +51,15 @@
     "configuration": {
       "title": "Clio wrapper",
       "properties": {
-        "clio.outputPath": {
+        "clio.autoUpdateTime": {
           "order": 0,
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
+        },
+        "clio.outputPath": {
+          "order": 1,
           "type": "string",
           "default": "C:\\",
           "scope": "application",
