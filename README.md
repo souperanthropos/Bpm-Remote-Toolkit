@@ -24,6 +24,7 @@ Install clio before using the extension:
 
 This extension contributes the following settings:
 
+* `clio.autoUpdateTime`: When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file.
 * `clio.outputPath`: Specify output full path for .gz file.
 
 ## Settings For .code-workspace file
@@ -77,9 +78,7 @@ NONE
 
 ## Release Notes
 
-## 1.5.x
+## 1.6.x
 
 - Update README
-- Added view **Packages Explorer** in **Source Control**
-- Moved view **Bpmsoft Environments** to **Source Control**
-- Multi select for command `Add Folder To Packages Explorer`
+- Added new extension setting: `clio.autoUpdateTime`
