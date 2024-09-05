@@ -11,3 +11,18 @@ export interface serverSettings {
     isEnable: boolean;
 	isRegister: boolean;
 }
+
+export interface IWebAppCommandExecutor {
+	openSettings(): void,
+	webAppRegister(server: serverSettings): Promise<boolean>,
+	webAppUnregister(server: serverSettings, isLogEnabled: boolean): void,
+	webAppPing(server: serverSettings): Promise<boolean>,
+	webAppRestart(server: serverSettings): void,
+	clearRedisDb(server: serverSettings): void,
+	compileConfiguration(server: serverSettings): void
+}
+
+export interface IPackageCommandExecutor {
+	createPackage(targetFolderPath: string): Promise<boolean>,
+	pushPackage(settings: packageSettings): void
+}
