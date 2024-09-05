@@ -3,8 +3,9 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 
-import { EnvironmentsProvider } from './implements/environments';
-import { PackageExplorer, PackageProvider } from './packageExplorer';
+import { PackageExplorer } from './packageExplorer';
+import { EnvironmentsProvider } from './implements/environmentsProvider';
+import { PackageProvider } from './implements/packageProvider';
 import { packageSettings, serverSettings } from './interfaces';
 import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
 import { ClioCommandExecutor } from './implements/clioCommandExecutor';
