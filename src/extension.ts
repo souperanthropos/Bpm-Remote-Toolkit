@@ -7,7 +7,7 @@ import { EnvironmentsProvider } from './environments';
 import { PackageExplorer, PackageProvider } from './packageExplorer';
 import { packageSettings, serverSettings } from './interfaces';
 import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
-import { ClioCommandExecutor } from './managers/cliomanager';
+import { ClioCommandExecutor } from './implements/clioCommandExecutor';
 import { FileManager } from './managers/filemanager';
 
 let terminalLog: vscode.OutputChannel;
