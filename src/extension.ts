@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import fs from 'fs';
 
-import { EnvironmentsProvider } from './environments';
+import { EnvironmentsProvider } from './implements/environments';
 import { PackageExplorer, PackageProvider } from './packageExplorer';
 import { packageSettings, serverSettings } from './interfaces';
 import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';

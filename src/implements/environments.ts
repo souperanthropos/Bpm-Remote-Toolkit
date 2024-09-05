@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { serverSettings } from './interfaces';
+import { serverSettings } from '../interfaces';
 
 export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSettings> {
 
