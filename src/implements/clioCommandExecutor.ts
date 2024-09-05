@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
-import { IWebAppCommandExecutor, serverSettings } from '../interfaces';
+import { IWrapperCommandExecutor, serverSettings } from '../interfaces';
 import { Constants, isNullOrWhitespace } from '../constants';
 
-export class ClioCommandExecutor implements IWebAppCommandExecutor {
+export class ClioCommandExecutor implements IWrapperCommandExecutor {
     private terminal: TerminalWrapper;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;

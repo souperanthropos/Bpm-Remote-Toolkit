@@ -13,13 +13,16 @@ export interface serverSettings {
 }
 
 export interface IWebAppCommandExecutor {
-	openSettings(): void,
 	webAppRegister(server: serverSettings): Promise<boolean>,
 	webAppUnregister(server: serverSettings, isLogEnabled: boolean): void,
 	webAppPing(server: serverSettings): Promise<boolean>,
 	webAppRestart(server: serverSettings): void,
 	clearRedisDb(server: serverSettings): void,
 	compileConfiguration(server: serverSettings): void
+}
+
+export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
+	openSettings(): void
 }
 
 export interface IPackageCommandExecutor {
