@@ -7,7 +7,7 @@ import { EnvironmentsProvider } from './environments';
 import { PackageExplorer, PackageProvider } from './packageExplorer';
 import { packageSettings, serverSettings } from './interfaces';
 import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
-import { ClioManager } from './managers/cliomanager';
+import { ClioCommandExecutor } from './managers/cliomanager';
 import { FileManager } from './managers/filemanager';
 
 let terminalLog: vscode.OutputChannel;
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 	Constants.extensionPath = context.extensionPath;
 
 	const pe = new PackageExplorer(terminalLog);
-	const cm = new ClioManager(terminalLog);
+	const cm = new ClioCommandExecutor(terminalLog);
 	const fm = new FileManager();
 
 	cm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
@@ -129,20 +129,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'clio.openSettings',
-		() => cm.OpenSettings()));
+		() => cm.openSettings()));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmsoftEnvironments.restart',
-		(server: serverSettings) => cm.WebAppRestart(server))
+		(server: serverSettings) => cm.webAppRestart(server))
 	);
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmsoftEnvironments.redis.clear',
-		(server: serverSettings) => cm.ClearRedisDb(server)));
+		(server: serverSettings) => cm.clearRedisDb(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmsoftEnvironments.compileConfiguration',
-		(server: serverSettings) => cm.CompileConfiguration(server)));
+		(server: serverSettings) => cm.compileConfiguration(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmsoftEnvironments.register',
@@ -156,19 +156,19 @@ export function activate(context: vscode.ExtensionContext) {
 					progress.report({
 						message: 'server registration'
 					});
-					if (await cm.WebAppRegister(server)) {
+					if (await cm.webAppRegister(server)) {
 						progress.report({
 							message: 'check credential',
 							increment: 50
 						});
-						if (await cm.WebAppPing(server)) {
+						if (await cm.webAppPing(server)) {
 							context.globalState.update(server.id, true);
 						} else {
 							progress.report({
 								message: 'check credential failed',
 								increment: 50
 							});
-							await cm.WebAppUnregister(server, false);
+							await cm.webAppUnregister(server, false);
 							context.globalState.update(server.id, false);
 						}
 						vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
@@ -178,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.unregister', async (server: serverSettings) => {
-		await cm.WebAppUnregister(server, true);
+		await cm.webAppUnregister(server, true);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));

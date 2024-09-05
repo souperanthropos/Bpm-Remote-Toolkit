@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
-import { serverSettings } from '../interfaces';
+import { IWebAppCommandExecutor, serverSettings } from '../interfaces';
 import { Constants, isNullOrWhitespace } from '../constants';
 
-export class ClioManager {
+export class ClioCommandExecutor implements IWebAppCommandExecutor {
     private terminal: TerminalWrapper;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
@@ -17,11 +17,11 @@ export class ClioManager {
         return this.terminal.executeLogFilePath;
     }
 
-    public OpenSettings() {
+    public openSettings() {
         this.terminal.executeCommand('clio open-settings', false);
     }
 
-    public async WebAppRegister(server: serverSettings): Promise<boolean> {
+    public async webAppRegister(server: serverSettings): Promise<boolean> {
         const loginQuery = await vscode.window.showInputBox({
             placeHolder: "Login",
             prompt: "Enter login for connecting to Bpmsoft"
@@ -42,7 +42,7 @@ export class ClioManager {
         return false;
     }
 
-    public async WebAppUnregister(server: serverSettings, isLogEnabled: boolean) {
+    public async webAppUnregister(server: serverSettings, isLogEnabled: boolean) {
         if(isLogEnabled){
             const result = await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, true);
             if (!result && this.onCommandExecuteError) {
@@ -53,7 +53,7 @@ export class ClioManager {
         }
     }
 
-    public async WebAppPing(server: serverSettings): Promise<boolean> {
+    public async webAppPing(server: serverSettings): Promise<boolean> {
         const result = await this.terminal.executeCommand(`clio ping ${server.id}`, true);
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Ping web app failed.', true, this.terminal.executeLogFilePath);
@@ -61,7 +61,7 @@ export class ClioManager {
         return result;
     }
 
-    public async WebAppRestart(server: serverSettings) {
+    public async webAppRestart(server: serverSettings) {
         if (!server.isEnable) {
             vscode.window.showInformationMessage(
                 `You cannot execute this command because server ${server.id} is disabled.`
@@ -74,7 +74,7 @@ export class ClioManager {
         }
     }
 
-    public async ClearRedisDb(server: serverSettings) {
+    public async clearRedisDb(server: serverSettings) {
         if (!server.isEnable) {
             vscode.window.showInformationMessage(
                 "You cannot execute this command because server " + server.id + " is disabled."
@@ -87,7 +87,7 @@ export class ClioManager {
         }
     }
 
-    public async CompileConfiguration(server: serverSettings) {
+    public async compileConfiguration(server: serverSettings) {
         if (!server.isEnable) {
             vscode.window.showInformationMessage(
                 "You cannot execute this command because server " + server.id + " is disabled."
