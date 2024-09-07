@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
-import { Constants, getDirectoryName } from '../constants';
+import { ExtensionSettings, getDirectoryName } from '../constants';
 
 export class PackageManager {
     private terminal: TerminalWrapper;
@@ -10,7 +10,7 @@ export class PackageManager {
     public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalWrapper(Constants.extensionPath, Constants.terminalName);
+        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
