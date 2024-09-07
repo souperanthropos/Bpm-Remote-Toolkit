@@ -100,49 +100,49 @@
         "title": "Create Package And Send"
       },
       {
-        "command": "clio.openSettings",
+        "command": "bpmEnvironments.openSettings",
         "title": "Settings",
         "icon": "$(settings-gear)"
       },
       {
-        "command": "clio.openLastLog",
+        "command": "bpmEnvironments.openLastLog",
         "title": "Open last log",
         "icon": "$(file-binary)"
       },
       {
-        "command": "bpmsoftEnvironments.restart",
+        "command": "bpmEnvironments.server.restart",
         "title": "Restart application"
       },
       {
-        "command": "bpmsoftEnvironments.redis.clear",
+        "command": "bpmEnvironments.server.redisClear",
         "title": "Clear redis database"
       },
       {
-        "command": "bpmsoftEnvironments.compileConfiguration",
+        "command": "bpmEnvironments.server.compileConfiguration",
         "title": "Compile configuration"
       },
       {
-        "command": "bpmsoftEnvironments.register",
+        "command": "bpmEnvironments.server.register",
         "title": "Register",
         "icon": "$(plug)"
       },
       {
-        "command": "bpmsoftEnvironments.unregister",
+        "command": "bpmEnvironments.server.unregister",
         "title": "Unregister",
         "icon": "$(debug-disconnect)"
       },
       {
-        "command": "packagesExplorer.create",
+        "command": "packagesExplorer.package.create",
         "title": "Create Package",
         "icon": "$(repo-pull)"
       },
       {
-        "command": "packagesExplorer.createandsend",
+        "command": "packagesExplorer.package.createAndSend",
         "title": "Create Package And Send",
         "icon": "$(repo-force-push)"
       },
       {
-        "command": "packagesExplorer.remove",
+        "command": "packagesExplorer.package.remove",
         "title": "Remove from Packages Explorer",
         "icon": "$(x)"
       }
@@ -167,54 +167,54 @@
       ],
       "view/title": [
         {
-          "command": "clio.openLastLog",
+          "command": "bpmEnvironments.openLastLog",
           "when": "view == bpmEnvironments",
           "group": "navigation@1"
         },
         {
-          "command": "clio.openSettings",
+          "command": "bpmEnvironments.openSettings",
           "when": "view == bpmEnvironments",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "bpmsoftEnvironments.restart",
+          "command": "bpmEnvironments.server.restart",
           "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@1"
         },
         {
-          "command": "bpmsoftEnvironments.compileConfiguration",
+          "command": "bpmEnvironments.server.compileConfiguration",
           "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@2"
         },
         {
-          "command": "bpmsoftEnvironments.redis.clear",
+          "command": "bpmEnvironments.server.redisClear",
           "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "cw_other@2"
         },
         {
-          "command": "bpmsoftEnvironments.register",
+          "command": "bpmEnvironments.server.register",
           "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister",
           "group": "inline@1"
         },
         {
-          "command": "bpmsoftEnvironments.unregister",
+          "command": "bpmEnvironments.server.unregister",
           "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.create",
+          "command": "packagesExplorer.package.create",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@1"
         },
         {
-          "command": "packagesExplorer.createandsend",
+          "command": "packagesExplorer.package.createAndSend",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.remove",
+          "command": "packagesExplorer.package.remove",
           "when": "view == packagesExplorer",
           "group": "pe_other@1"
         }
