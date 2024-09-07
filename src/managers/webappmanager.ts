@@ -5,8 +5,7 @@ export class WebAppManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
-    constructor(private terminalLog: vscode.OutputChannel,
-        private wrapper: IWrapperCommandExecutor) { }
+    constructor(private wrapper: IWrapperCommandExecutor) { }
 
     public openSettings() {
         this.wrapper.openSettings();

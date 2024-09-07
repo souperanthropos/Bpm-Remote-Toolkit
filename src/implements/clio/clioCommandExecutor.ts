@@ -6,7 +6,7 @@ import { ExtensionSettings, isNullOrWhitespace } from '../../constants';
 export class ClioCommandExecutor implements IWrapperCommandExecutor {
     private terminal: TerminalWrapper;
 
-    constructor(private terminalLog: vscode.OutputChannel) {
+    constructor() {
         this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
