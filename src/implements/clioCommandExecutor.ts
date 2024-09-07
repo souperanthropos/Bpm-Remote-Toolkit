@@ -6,19 +6,16 @@ import { Constants, isNullOrWhitespace } from '../constants';
 export class ClioCommandExecutor implements IWrapperCommandExecutor {
     private terminal: TerminalWrapper;
 
-    public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
-    public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
-
     constructor(private terminalLog: vscode.OutputChannel) {
         this.terminal = new TerminalWrapper(Constants.extensionPath, Constants.terminalName);
     }
 
-    public getLastExecuteLogPath(): string {
-        return this.terminal.executeLogFilePath;
-    }
-
     public openSettings() {
         this.terminal.executeCommand('clio open-settings', false);
+    }
+
+    public getLastExecuteLogPath(): string {
+        return this.terminal.executeLogFilePath;
     }
 
     public async webAppRegister(server: serverSettings): Promise<boolean> {
@@ -42,61 +39,23 @@ export class ClioCommandExecutor implements IWrapperCommandExecutor {
         return false;
     }
 
-    public async webAppUnregister(server: serverSettings, isLogEnabled: boolean) {
-        if(isLogEnabled){
-            const result = await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, true);
-            if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Unregister web app failed.', true, this.terminal.executeLogFilePath);
-            }
-        }else{
-            await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, false);
-        }
+    public async webAppUnregister(server: serverSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, true);
     }
 
     public async webAppPing(server: serverSettings): Promise<boolean> {
-        const result = await this.terminal.executeCommand(`clio ping ${server.id}`, true);
-        if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Ping web app failed.', true, this.terminal.executeLogFilePath);
-        }
-        return result;
+        return await this.terminal.executeCommand(`clio ping -e ${server.id}`, true);
     }
 
-    public async webAppRestart(server: serverSettings) {
-        if (!server.isEnable) {
-            vscode.window.showInformationMessage(
-                `You cannot execute this command because server ${server.id} is disabled.`
-            );
-        } else {
-            const result = await this.terminal.executeCommand(`clio restart-web-app ${server.id}`, true);
-            if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Restart web app failed.', true, this.terminal.executeLogFilePath);
-            }
-        }
+    public async webAppRestart(server: serverSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio restart-web-app -e ${server.id}`, true);
     }
 
-    public async clearRedisDb(server: serverSettings) {
-        if (!server.isEnable) {
-            vscode.window.showInformationMessage(
-                "You cannot execute this command because server " + server.id + " is disabled."
-            );
-        } else {
-            const result = await this.terminal.executeCommand(`clio clear-redis-db ${server.id}`, true);
-            if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Clear redis db failed.', true, this.terminal.executeLogFilePath);
-            }
-        }
+    public async clearRedisDb(server: serverSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio clear-redis-db -e ${server.id}`, true);
     }
 
-    public async compileConfiguration(server: serverSettings) {
-        if (!server.isEnable) {
-            vscode.window.showInformationMessage(
-                "You cannot execute this command because server " + server.id + " is disabled."
-            );
-        } else {
-            const result = await this.terminal.executeCommand(`clio compile-configuration ${server.id}`, true);
-            if (!result && this.onCommandExecuteError) {
-                this.onCommandExecuteError('Compile configuration failed.', true, this.terminal.executeLogFilePath);
-            }
-        }
+    public async compileConfiguration(server: serverSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio compile-configuration -e ${server.id}`, true);
     }
 }
