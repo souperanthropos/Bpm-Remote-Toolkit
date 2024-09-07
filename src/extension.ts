@@ -13,7 +13,6 @@ import { FileManager } from './managers/filemanager';
 import { WebAppManager } from './managers/webappmanager';
 
 let terminalLog: vscode.OutputChannel;
-let terminal: vscode.Terminal;
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
 function checkWorkspaceSettings() {
@@ -41,9 +40,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	if (terminalLog === undefined) {
 		terminalLog = vscode.window.createOutputChannel("cliowrapper");
-	}
-	if (terminal === undefined) {
-		terminal = vscode.window.terminals.find(x => x.name === 'cliowrapper') ?? vscode.window.createTerminal(`cliowrapper`);
 	}
 
 	checkWorkspaceSettings();
