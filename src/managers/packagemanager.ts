@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { IPackageCommandExecutor } from '../interfaces';
-import { ExtensionSettings, getDirectoryName } from '../constants';
+import { ExtensionSettings, getDirectoryName, Logger } from '../constants';
 
 export class PackageManager {
     private terminal: TerminalWrapper;
@@ -10,8 +10,7 @@ export class PackageManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
-    constructor(private terminalLog: vscode.OutputChannel,
-        private wrapper: IPackageCommandExecutor) {
+    constructor(private wrapper: IPackageCommandExecutor) {
         this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
@@ -32,7 +31,7 @@ export class PackageManager {
         const path = require("path");
 
         if (settings.targetEnviroment === undefined || settings.targetEnviroment === '') {
-            this.terminalLog.appendLine('Error: target enviroment not found');
+            Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
                 this.onCommandExecuteError('Error: target enviroment not found.', false, undefined);
             }

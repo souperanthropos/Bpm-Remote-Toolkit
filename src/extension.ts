@@ -12,7 +12,6 @@ import { ClioCommandExecutor } from './implements/clio/clioCommandExecutor';
 import { FileManager } from './managers/filemanager';
 import { WebAppManager } from './managers/webappmanager';
 
-let terminalLog: vscode.OutputChannel;
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
 function checkWorkspaceSettings() {
@@ -38,15 +37,11 @@ function checkWorkspaceSettings() {
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	if (terminalLog === undefined) {
-		terminalLog = vscode.window.createOutputChannel("cliowrapper");
-	}
-
 	checkWorkspaceSettings();
 
 	ExtensionSettings.extensionPath = context.extensionPath;
 
-	const pe = new PackageExplorer(terminalLog);
+	const pe = new PackageExplorer();
 	const cm = new ClioCommandExecutor();
 	const fm = new FileManager();
 	const wm = new WebAppManager(new ClioCommandExecutor());
