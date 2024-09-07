@@ -30,7 +30,7 @@ function checkWorkspaceSettings() {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 	}
 
-	vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+	vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 	vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 }
 
@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
-	vscode.window.registerTreeDataProvider('bpmsoftEnvironments', environmentsProvider);
+	vscode.window.registerTreeDataProvider('bpmEnvironments', environmentsProvider);
 	//vscode.window.registerTreeDataProvider('packagesExplorer', packageProvider);
 
 	vscode.window.createTreeView('packagesExplorer', {
@@ -64,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
 		canSelectMany: true
 	});
 
-	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
+	vscode.commands.registerCommand('bpmEnvironments.refreshEntry', () => {
 		if (ExtensionSettings.environments) {
 			ExtensionSettings.environments?.forEach(env => {
 				var isReg = context.globalState.get(env.id);
@@ -173,7 +173,7 @@ export function activate(context: vscode.ExtensionContext) {
 							await wm.webAppUnregister(server, false);
 							context.globalState.update(server.id, false);
 						}
-						vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+						vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 					}
 				}
 			);
@@ -182,10 +182,10 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.unregister', async (server: serverSettings) => {
 		await wm.webAppUnregister(server, true);
 		context.globalState.update(server.id, false);
-		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
+		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.add.packagesExplorer', (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
+	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.addPackage', (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
 		allSelections.forEach(uri => {
 			if (fs.lstatSync(uri.fsPath).isDirectory()) {
