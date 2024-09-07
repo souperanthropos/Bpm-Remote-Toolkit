@@ -7,6 +7,7 @@ export interface packageSettings {
 export interface serverSettings {
 	id: string;
     url: string | undefined;
+	isNetCore: boolean;
     gitBranchName: string | undefined;
     isEnable: boolean;
 	isRegister: boolean;
