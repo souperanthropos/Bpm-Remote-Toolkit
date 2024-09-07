@@ -18,9 +18,6 @@ export class PackageExplorer {
 	}
 
 	public create(fsPath: string) {
-		const config = vscode.workspace.getConfiguration('bpmwrapper.general');
-		const outputPath = config.get<string>('outputPath');
-
 		if (ExtensionSettings.environments) {
 			const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
 			vscode.window.withProgress(
@@ -32,8 +29,8 @@ export class PackageExplorer {
 					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 					if (await this._gitHelper.isPermittedBranch(branches)) {
 						if (await this._pm.createPackage(fsPath)) {
-							if (outputPath) {
-								vscode.env.openExternal(vscode.Uri.file(outputPath));
+							if (ExtensionSettings.outputPath) {
+								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath));
 							}
 						}
 					}

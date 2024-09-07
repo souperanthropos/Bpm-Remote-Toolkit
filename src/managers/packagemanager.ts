@@ -15,9 +15,7 @@ export class PackageManager {
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
         const path = require("path");
-        const config = vscode.workspace.getConfiguration('bpmwrapper.general');
-        const outputPath = config.get('outputPath');
-        const fullPathFile = path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz');
+        const fullPathFile = path.join(ExtensionSettings.outputPath, getDirectoryName(targetFolderPath) + '.gz');
 
         this.terminalLog.appendLine('del ' + fullPathFile);
         await this.terminal.executeCommand('del ' + fullPathFile, true);
@@ -53,9 +51,7 @@ export class PackageManager {
             return;
         }
 
-        const config = vscode.workspace.getConfiguration('bpmwrapper.general');
-        const outputPath = config.get('outputPath');
-        const packageFilePath = path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
+        const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
         const result = await this.terminal.executeCommand(
             'clio push-pkg '

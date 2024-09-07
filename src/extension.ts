@@ -17,6 +17,11 @@ let terminal: vscode.Terminal;
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
 function checkWorkspaceSettings() {
+	const generalConfig = vscode.workspace.getConfiguration('bpmwrapper.general');
+	ExtensionSettings.selectedUtility = generalConfig.get<string>('utility')!;
+	ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
+	ExtensionSettings.outputPath = generalConfig.get<string>('outputPath')!;
+
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
 	ExtensionSettings.environments = serverConfig.get<serverSettings[]>('cwEnvironments');
 
@@ -89,9 +94,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-		const config = vscode.workspace.getConfiguration('bpmwrapper.general');
-        const isAutoUpdateTime = config.get('autoUpdateTime');
-		if(isAutoUpdateTime){
+		if(ExtensionSettings.autoUpdateTime){
 			await fm.UpdateTimeInDescriptor(document);
 		}
 	});
