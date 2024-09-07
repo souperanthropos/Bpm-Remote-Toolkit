@@ -203,11 +203,11 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.create', (uri: vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.createPackage', (uri: vscode.Uri) => {
 		pe.create(uri.fsPath);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('cliowrapper.package.createandsend', (uri: vscode.Uri) => {
+	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.createAndSendPackage', (uri: vscode.Uri) => {
 		pe.createAndSend(uri.fsPath);
 	}));
 }

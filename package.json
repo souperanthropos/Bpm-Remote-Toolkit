@@ -92,11 +92,11 @@
         "title": "Add Folder To Packages Explorer"
       },
       {
-        "command": "cliowrapper.package.create",
+        "command": "explorer.folder.createPackage",
         "title": "Create Package"
       },
       {
-        "command": "cliowrapper.package.createandsend",
+        "command": "explorer.folder.createAndSendPackage",
         "title": "Create Package And Send"
       },
       {
@@ -150,12 +150,12 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "cliowrapper.package.create",
+          "command": "explorer.folder.createPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
           "group": "z_cliowrapper@1"
         },
         {
-          "command": "cliowrapper.package.createandsend",
+          "command": "explorer.folder.createAndSendPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
           "group": "z_cliowrapper@2"
         },
