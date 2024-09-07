@@ -89,7 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-		const config = vscode.workspace.getConfiguration('clio');
+		const config = vscode.workspace.getConfiguration('bpmwrapper.general');
         const isAutoUpdateTime = config.get('autoUpdateTime');
 		if(isAutoUpdateTime){
 			await fm.UpdateTimeInDescriptor(document);

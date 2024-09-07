@@ -51,7 +51,7 @@
     "configuration": {
       "title": "BPM Remote Access Wrapper",
       "properties": {
-        "clio.utility": {
+        "bpmwrapper.general.utility": {
           "order": 0,
           "type": "string",
           "default": "clio",
@@ -62,14 +62,14 @@
           ],
           "scope": "application"
         },
-        "clio.autoUpdateTime": {
+        "bpmwrapper.general.autoUpdateTime": {
           "order": 1,
           "type": "boolean",
           "default": false,
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
         },
-        "clio.outputPath": {
+        "bpmwrapper.package.outputPath": {
           "order": 2,
           "type": "string",
           "default": "C:\\",
