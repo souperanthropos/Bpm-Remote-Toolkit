@@ -31,7 +31,7 @@ export class ClioCommandExecutor implements IWrapperCommandExecutor {
             });
             if (!isNullOrWhitespace(passwordQuery)) {
                 return await this.terminal.executeCommand(
-                    `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery}`,
+                    `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery} -i ${server.isNetCore}`,
                     true
                 );
             }
