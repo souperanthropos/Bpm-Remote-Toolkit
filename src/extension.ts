@@ -47,9 +47,9 @@ export function activate(context: vscode.ExtensionContext) {
 	ExtensionSettings.extensionPath = context.extensionPath;
 
 	const pe = new PackageExplorer(terminalLog);
-	const cm = new ClioCommandExecutor(terminalLog);
+	const cm = new ClioCommandExecutor();
 	const fm = new FileManager();
-	const wm = new WebAppManager(terminalLog, new ClioCommandExecutor(terminalLog));
+	const wm = new WebAppManager(new ClioCommandExecutor());
 
 	wm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
 		showErrorMessage(message, showbutton, executeLogFilePath);
