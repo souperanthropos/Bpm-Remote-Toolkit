@@ -11,7 +11,7 @@ export class ClioCommandExecutor implements IWrapperCommandExecutor {
     }
 
     public openSettings() {
-        this.terminal.executeCommand('clio open-settings', false);
+        this.terminal.executeCommand('clio open-settings', true);
     }
 
     public getLastExecuteLogPath(): string {

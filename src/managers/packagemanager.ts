@@ -19,9 +19,6 @@ export class PackageManager {
         const path = require("path");
         const fullPathFile = path.join(ExtensionSettings.outputPath, getDirectoryName(targetFolderPath) + '.gz');
 
-        this.terminalLog.appendLine('del ' + fullPathFile);
-        await this.terminal.executeCommand('del ' + fullPathFile, true);
-
         const result = await this.wrapper.createPackage(targetFolderPath, fullPathFile);
 
         if (!result && this.onCommandExecuteError) {

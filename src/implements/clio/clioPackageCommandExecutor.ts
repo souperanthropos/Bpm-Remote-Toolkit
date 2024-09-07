@@ -11,11 +11,12 @@ export class clioPackageCommandExecutor implements IPackageCommandExecutor {
     }
 
     public async createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean> {
+        const result = await this.terminal.executeCommand('del ' + fullPathFile, true);
         return await this.terminal.executeCommand(
             "clio generate-pkg-zip "
             + targetFolderPath + " -d "
             + fullPathFile,
-            true
+            result
         );
     }
 
@@ -24,7 +25,7 @@ export class clioPackageCommandExecutor implements IPackageCommandExecutor {
             'clio push-pkg '
             + packageFilePath
             + ' -e ' + targetEnviroment,
-            true
+            false
         );
     }
 }
