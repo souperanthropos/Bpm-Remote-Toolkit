@@ -3,10 +3,10 @@ import { TerminalWrapper } from '../../terminal/terminalwrapper';
 import { IPackageCommandExecutor } from '../../interfaces';
 import { ExtensionSettings } from '../../constants';
 
-export class clioPackageCommandExecutor implements IPackageCommandExecutor {
+export class ClioPackageCommandExecutor implements IPackageCommandExecutor {
     private terminal: TerminalWrapper;
 
-    constructor(private terminalLog: vscode.OutputChannel) {
+    constructor() {
         this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
