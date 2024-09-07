@@ -95,7 +95,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.remove', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.remove', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
 		if (packages.length > 0) {
 			if(allSelections){
@@ -110,11 +110,11 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.create', (pkg: packageSettings) => {
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.create', (pkg: packageSettings) => {
 		pe.create(pkg.targetFolderPath);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createandsend', (pkg: packageSettings) => {
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.createAndSend', (pkg: packageSettings) => {
 		pe.createAndSend(pkg.targetFolderPath);
 	}));
 
@@ -123,31 +123,31 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'clio.openLastLog',
+		'bpmEnvironments.openLastLog',
 		() => {
 			const folderUri = vscode.Uri.file(cm.getLastExecuteLogPath());
 			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'clio.openSettings',
+		'bpmEnvironments.openSettings',
 		() => cm.openSettings()));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmsoftEnvironments.restart',
+		'bpmEnvironments.server.restart',
 		(server: serverSettings) => cm.webAppRestart(server))
 	);
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmsoftEnvironments.redis.clear',
+		'bpmEnvironments.server.redisClear',
 		(server: serverSettings) => cm.clearRedisDb(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmsoftEnvironments.compileConfiguration',
+		'bpmEnvironments.server.compileConfiguration',
 		(server: serverSettings) => cm.compileConfiguration(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmsoftEnvironments.register',
+		'bpmEnvironments.server.register',
 		async (server: serverSettings) => {
 			vscode.window.withProgress(
 				{
@@ -179,7 +179,7 @@ export function activate(context: vscode.ExtensionContext) {
 			);
 		}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.unregister', async (server: serverSettings) => {
+	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: serverSettings) => {
 		await wm.webAppUnregister(server, true);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
