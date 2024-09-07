@@ -8,7 +8,7 @@ import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { packageSettings, serverSettings } from './interfaces';
 import { ExtensionSettings, getDirectoryName, hash, showErrorMessage } from './constants';
-import { ClioCommandExecutor } from './implements/clioCommandExecutor';
+import { ClioCommandExecutor } from './implements/clio/clioCommandExecutor';
 import { FileManager } from './managers/filemanager';
 import { WebAppManager } from './managers/webappmanager';
 

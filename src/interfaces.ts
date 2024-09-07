@@ -27,6 +27,6 @@ export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
 }
 
 export interface IPackageCommandExecutor {
-	createPackage(targetFolderPath: string): Promise<boolean>,
-	pushPackage(settings: packageSettings): void
+	createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean>,
+	pushPackage(packageFilePath: string, targetEnviroment: string): Promise<boolean>
 }
