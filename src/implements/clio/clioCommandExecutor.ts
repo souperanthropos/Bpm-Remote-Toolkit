@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { TerminalWrapper } from '../terminal/terminalwrapper';
-import { IWrapperCommandExecutor, serverSettings } from '../interfaces';
-import { ExtensionSettings, isNullOrWhitespace } from '../constants';
+import { TerminalWrapper } from '../../terminal/terminalwrapper';
+import { IWrapperCommandExecutor, serverSettings } from '../../interfaces';
+import { ExtensionSettings, isNullOrWhitespace } from '../../constants';
 
 export class ClioCommandExecutor implements IWrapperCommandExecutor {
     private terminal: TerminalWrapper;

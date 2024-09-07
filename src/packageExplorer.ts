@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ExtensionSettings, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
 import { GitHelper } from './git';
 import { PackageManager } from './managers/packagemanager';
+import { clioPackageCommandExecutor } from './implements/clio/clioPackageCommandExecutor';
 
 export class PackageExplorer {
 	private readonly _gitHelper: GitHelper;
@@ -9,7 +10,7 @@ export class PackageExplorer {
 
 	constructor(private terminalLog: vscode.OutputChannel) {
 		this._gitHelper = new GitHelper(terminalLog);
-		this._pm = new PackageManager(terminalLog);
+		this._pm = new PackageManager(terminalLog, new clioPackageCommandExecutor(terminalLog));
 
 		this._pm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
 			showErrorMessage(message, showbutton, executeLogFilePath);

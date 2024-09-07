@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
+import { IPackageCommandExecutor } from '../interfaces';
 import { ExtensionSettings, getDirectoryName } from '../constants';
 
 export class PackageManager {
@@ -9,7 +10,8 @@ export class PackageManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
 
-    constructor(private terminalLog: vscode.OutputChannel) {
+    constructor(private terminalLog: vscode.OutputChannel,
+        private wrapper: IPackageCommandExecutor) {
         this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
@@ -20,18 +22,7 @@ export class PackageManager {
         this.terminalLog.appendLine('del ' + fullPathFile);
         await this.terminal.executeCommand('del ' + fullPathFile, true);
 
-        this.terminalLog.appendLine(
-            'Execute: clio generate-pkg-zip '
-            + targetFolderPath + ' -d '
-            + fullPathFile
-        );
-
-        const result = await this.terminal.executeCommand(
-            "clio generate-pkg-zip "
-            + targetFolderPath + " -d "
-            + fullPathFile,
-            true
-        );
+        const result = await this.wrapper.createPackage(targetFolderPath, fullPathFile);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true, this.terminal.executeLogFilePath);
@@ -53,12 +44,7 @@ export class PackageManager {
 
         const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
-        const result = await this.terminal.executeCommand(
-            'clio push-pkg '
-            + packageFilePath
-            + ' -e ' + settings.targetEnviroment,
-            true
-        );
+        const result = await this.wrapper.pushPackage(packageFilePath, settings.targetEnviroment);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Send package failed.', true, this.terminal.executeLogFilePath);
