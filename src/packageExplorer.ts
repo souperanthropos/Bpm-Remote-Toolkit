@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Constants, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
+import { ExtensionSettings, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
 import { GitHelper } from './git';
 import { PackageManager } from './managers/packagemanager';
 
@@ -21,8 +21,8 @@ export class PackageExplorer {
 		const config = vscode.workspace.getConfiguration('bpmwrapper.general');
 		const outputPath = config.get<string>('outputPath');
 
-		if (Constants.environments) {
-			const branches = Constants.environments.map(({ gitBranchName }) => gitBranchName ?? '');
+		if (ExtensionSettings.environments) {
+			const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
 			vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
@@ -49,15 +49,15 @@ export class PackageExplorer {
 
 	public createAndSend(fsPath: string) {
 		const currentBranch = this._gitHelper.getCurrentBranch();
-		if (Constants.environments && currentBranch !== '') {
-			const arr = Constants.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
+		if (ExtensionSettings.environments && currentBranch !== '') {
+			const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
 			const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
 			const qp = vscode.window.createQuickPick();
 			qp.canSelectMany = false;
 			qp.items = quickPickItems;
 			qp.onDidChangeSelection(async selection => {
 				const serverId = selection[0].label;
-				const serverConfig = Constants.environments?.find(e => e.id === serverId);
+				const serverConfig = ExtensionSettings.environments?.find(e => e.id === serverId);
 				qp.hide();
 
 				if (serverConfig && serverConfig.gitBranchName) {

@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { IWrapperCommandExecutor, serverSettings } from '../interfaces';
-import { Constants, isNullOrWhitespace } from '../constants';
+import { ExtensionSettings, isNullOrWhitespace } from '../constants';
 
 export class ClioCommandExecutor implements IWrapperCommandExecutor {
     private terminal: TerminalWrapper;
 
     constructor(private terminalLog: vscode.OutputChannel) {
-        this.terminal = new TerminalWrapper(Constants.extensionPath, Constants.terminalName);
+        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
     public openSettings() {

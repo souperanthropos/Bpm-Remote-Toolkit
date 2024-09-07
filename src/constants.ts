@@ -1,7 +1,11 @@
 import * as vscode from 'vscode';
 import { serverSettings } from './interfaces';
 
-export class Constants {
+export class ExtensionSettings {
+	static selectedUtility = '';
+	static autoUpdateTime = false;
+	static outputPath = '';
+
 	static terminalName = 'cliowrapper';
 	static extensionPath = '';
 	static environments: serverSettings[] | undefined;

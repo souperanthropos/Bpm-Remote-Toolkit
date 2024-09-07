@@ -7,7 +7,7 @@ import { PackageExplorer } from './packageExplorer';
 import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { packageSettings, serverSettings } from './interfaces';
-import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
+import { ExtensionSettings, getDirectoryName, hash, showErrorMessage } from './constants';
 import { ClioCommandExecutor } from './implements/clioCommandExecutor';
 import { FileManager } from './managers/filemanager';
 import { WebAppManager } from './managers/webappmanager';
@@ -18,9 +18,9 @@ const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
 function checkWorkspaceSettings() {
 	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
-	Constants.environments = serverConfig.get<serverSettings[]>('cwEnvironments');
+	ExtensionSettings.environments = serverConfig.get<serverSettings[]>('cwEnvironments');
 
-	if (Constants.environments && Constants.environments.length > 0) {
+	if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
 	} else {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
@@ -43,7 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	checkWorkspaceSettings();
 
-	Constants.extensionPath = context.extensionPath;
+	ExtensionSettings.extensionPath = context.extensionPath;
 
 	const pe = new PackageExplorer(terminalLog);
 	const cm = new ClioCommandExecutor(terminalLog);
@@ -64,8 +64,8 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('bpmsoftEnvironments.refreshEntry', () => {
-		if (Constants.environments) {
-			Constants.environments?.forEach(env => {
+		if (ExtensionSettings.environments) {
+			ExtensionSettings.environments?.forEach(env => {
 				var isReg = context.globalState.get(env.id);
 				if (isReg) {
 					env.isRegister = true;
@@ -73,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 					env.isRegister = false;
 				}
 			});
-			environmentsProvider.refresh(Constants.environments);
+			environmentsProvider.refresh(ExtensionSettings.environments);
 		} else {
 			environmentsProvider.refresh([]);
 		}
