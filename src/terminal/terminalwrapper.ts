@@ -24,7 +24,7 @@ export class TerminalWrapper {
 		
 		terminal.show(true);
 		if(isLogging){
-			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} | Tee-Object -file ${this.executeLogFilePath};`, false);
+			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath};`, false);
 			terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		}else{
 			terminal.sendText(command, false);
