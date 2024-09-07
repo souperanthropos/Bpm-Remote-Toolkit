@@ -14,15 +14,16 @@ export interface serverSettings {
 
 export interface IWebAppCommandExecutor {
 	webAppRegister(server: serverSettings): Promise<boolean>,
-	webAppUnregister(server: serverSettings, isLogEnabled: boolean): void,
+	webAppUnregister(server: serverSettings): Promise<boolean>,
 	webAppPing(server: serverSettings): Promise<boolean>,
-	webAppRestart(server: serverSettings): void,
-	clearRedisDb(server: serverSettings): void,
-	compileConfiguration(server: serverSettings): void
+	webAppRestart(server: serverSettings): Promise<boolean>,
+	clearRedisDb(server: serverSettings): Promise<boolean>,
+	compileConfiguration(server: serverSettings): Promise<boolean>
 }
 
 export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
-	openSettings(): void
+	openSettings(): void,
+	getLastExecuteLogPath(): string
 }
 
 export interface IPackageCommandExecutor {

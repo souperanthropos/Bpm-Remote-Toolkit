@@ -1,7 +1,7 @@
 {
   "name": "cliowrapper",
-  "displayName": "Clio Wrapper",
-  "description": "Wrapper for CI/CD tools.",
+  "displayName": "BPM Remote Access Wrapper",
+  "description": "Service program for remote work with BPMSoft or Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
   "version": "1.6.0",
@@ -49,17 +49,28 @@
       ]
     },
     "configuration": {
-      "title": "Clio wrapper",
+      "title": "BPM Remote Access Wrapper",
       "properties": {
-        "clio.autoUpdateTime": {
+        "clio.utility": {
           "order": 0,
+          "type": "string",
+          "default": "clio",
+          "enum": ["clio", "ubs"],
+          "enumDescriptions": [
+            "Service program for remote work with Creatio",
+            "Service program for remote work with BPMSoft"
+          ],
+          "scope": "application"
+        },
+        "clio.autoUpdateTime": {
+          "order": 1,
           "type": "boolean",
           "default": false,
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
         },
         "clio.outputPath": {
-          "order": 1,
+          "order": 2,
           "type": "string",
           "default": "C:\\",
           "scope": "application",

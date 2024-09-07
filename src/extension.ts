@@ -10,6 +10,7 @@ import { packageSettings, serverSettings } from './interfaces';
 import { Constants, getDirectoryName, hash, showErrorMessage } from './constants';
 import { ClioCommandExecutor } from './implements/clioCommandExecutor';
 import { FileManager } from './managers/filemanager';
+import { WebAppManager } from './managers/webappmanager';
 
 let terminalLog: vscode.OutputChannel;
 let terminal: vscode.Terminal;
@@ -47,8 +48,9 @@ export function activate(context: vscode.ExtensionContext) {
 	const pe = new PackageExplorer(terminalLog);
 	const cm = new ClioCommandExecutor(terminalLog);
 	const fm = new FileManager();
+	const wm = new WebAppManager(terminalLog, new ClioCommandExecutor(terminalLog));
 
-	cm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
+	wm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
 		showErrorMessage(message, showbutton, executeLogFilePath);
 
 	const environmentsProvider = new EnvironmentsProvider();
@@ -169,7 +171,7 @@ export function activate(context: vscode.ExtensionContext) {
 								message: 'check credential failed',
 								increment: 50
 							});
-							await cm.webAppUnregister(server, false);
+							await wm.webAppUnregister(server, false);
 							context.globalState.update(server.id, false);
 						}
 						vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
@@ -179,7 +181,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmsoftEnvironments.unregister', async (server: serverSettings) => {
-		await cm.webAppUnregister(server, true);
+		await wm.webAppUnregister(server, true);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmsoftEnvironments.refreshEntry');
 	}));
