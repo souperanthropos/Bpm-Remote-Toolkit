@@ -22,11 +22,11 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 		);
 		treeItem.contextValue += element.isRegister ? 'Unregister' : 'Register';
 		if (!treeItem.enable) {
-			treeItem.iconPath = new vscode.ThemeIcon('vm-outline', new vscode.ThemeColor("bpmsoftEnvironment.disable"));
+			treeItem.iconPath = new vscode.ThemeIcon('vm-outline', new vscode.ThemeColor("bpmEnvironment.disable"));
 		} else if (element.isRegister) {
-			treeItem.iconPath = new vscode.ThemeIcon('vm-active', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
+			treeItem.iconPath = new vscode.ThemeIcon('vm-active', new vscode.ThemeColor("bpmEnvironment.enable"));
 		} else {
-			treeItem.iconPath = new vscode.ThemeIcon('vm', new vscode.ThemeColor("bpmsoftEnvironment.enable"));
+			treeItem.iconPath = new vscode.ThemeIcon('vm', new vscode.ThemeColor("bpmEnvironment.enable"));
 		}
 		return treeItem;
 	}

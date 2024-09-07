@@ -18,7 +18,7 @@
   "contributes": {
     "colors": [
       {
-        "id": "bpmsoftEnvironment.enable",
+        "id": "bpmEnvironment.enable",
         "description": "Color for error message in the status bar.",
         "defaults": {
           "dark": "charts.green",
@@ -26,7 +26,7 @@
         }
       },
       {
-        "id": "bpmsoftEnvironment.disable",
+        "id": "bpmEnvironment.disable",
         "description": "Color for error message in the status bar.",
         "defaults": {
           "dark": "charts.red",
@@ -37,8 +37,8 @@
     "views": {
       "scm": [
         {
-          "id": "bpmsoftEnvironments",
-          "name": "Bpmsoft Environments",
+          "id": "bpmEnvironments",
+          "name": "Bpm Environments",
           "contextualTitle": "Environments Explorer"
         },
         {
@@ -80,7 +80,7 @@
     },
     "commands": [
       {
-        "command": "bpmsoftEnvironments.refreshEntry",
+        "command": "bpmEnvironments.refreshEntry",
         "title": "Refresh"
       },
       {
@@ -88,7 +88,7 @@
         "title": "Refresh"
       },
       {
-        "command": "cliowrapper.package.add.packagesExplorer",
+        "command": "explorer.folder.addPackage",
         "title": "Add Folder To Packages Explorer"
       },
       {
@@ -160,7 +160,7 @@
           "group": "z_cliowrapper@2"
         },
         {
-          "command": "cliowrapper.package.add.packagesExplorer",
+          "command": "explorer.folder.addPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
           "group": "z_cliowrapper@3"
         }
@@ -168,39 +168,39 @@
       "view/title": [
         {
           "command": "clio.openLastLog",
-          "when": "view == bpmsoftEnvironments",
+          "when": "view == bpmEnvironments",
           "group": "navigation@1"
         },
         {
           "command": "clio.openSettings",
-          "when": "view == bpmsoftEnvironments",
+          "when": "view == bpmEnvironments",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
           "command": "bpmsoftEnvironments.restart",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@1"
         },
         {
           "command": "bpmsoftEnvironments.compileConfiguration",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@2"
         },
         {
           "command": "bpmsoftEnvironments.redis.clear",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "cw_other@2"
         },
         {
           "command": "bpmsoftEnvironments.register",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemRegister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister",
           "group": "inline@1"
         },
         {
           "command": "bpmsoftEnvironments.unregister",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "inline@2"
         },
         {
