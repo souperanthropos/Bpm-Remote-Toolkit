@@ -69,7 +69,7 @@
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
         },
-        "bpmwrapper.package.outputPath": {
+        "bpmwrapper.general.outputPath": {
           "order": 2,
           "type": "string",
           "default": "C:\\",

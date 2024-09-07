@@ -15,7 +15,7 @@ export class PackageManager {
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
         const path = require("path");
-        const config = vscode.workspace.getConfiguration('bpmwrapper.package');
+        const config = vscode.workspace.getConfiguration('bpmwrapper.general');
         const outputPath = config.get('outputPath');
         const fullPathFile = path.join(outputPath, getDirectoryName(targetFolderPath) + '.gz');
 
@@ -53,7 +53,7 @@ export class PackageManager {
             return;
         }
 
-        const config = vscode.workspace.getConfiguration('bpmwrapper.package');
+        const config = vscode.workspace.getConfiguration('bpmwrapper.general');
         const outputPath = config.get('outputPath');
         const packageFilePath = path.join(outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
 
