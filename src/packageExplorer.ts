@@ -18,7 +18,7 @@ export class PackageExplorer {
 	}
 
 	public create(fsPath: string) {
-		const config = vscode.workspace.getConfiguration('bpmwrapper.package');
+		const config = vscode.workspace.getConfiguration('bpmwrapper.general');
 		const outputPath = config.get<string>('outputPath');
 
 		if (Constants.environments) {
