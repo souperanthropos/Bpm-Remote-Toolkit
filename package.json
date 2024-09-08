@@ -38,13 +38,11 @@
       "scm": [
         {
           "id": "bpmEnvironments",
-          "name": "Bpm Environments",
-          "contextualTitle": "Environments Explorer"
+          "name": "Bpm Environments"
         },
         {
           "id": "packagesExplorer",
-          "name": "Packages Explorer",
-          "contextualTitle": "Packages Explorer"
+          "name": "Packages Explorer"
         }
       ]
     },
