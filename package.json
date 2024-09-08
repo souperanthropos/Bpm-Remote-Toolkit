@@ -4,7 +4,7 @@
   "description": "Development and remote toolkit for BPMSoft or Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -53,7 +53,10 @@
           "order": 0,
           "type": "string",
           "default": "clio",
-          "enum": ["clio", "ubs"],
+          "enum": [
+            "clio",
+            "ubs"
+          ],
           "enumDescriptions": [
             "Service program for remote work with Creatio.",
             "Service program for remote work with BPMSoft."
