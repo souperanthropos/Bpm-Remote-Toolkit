@@ -15,13 +15,13 @@ import { WebAppManager } from './managers/webappmanager';
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
 function checkWorkspaceSettings() {
-	const generalConfig = vscode.workspace.getConfiguration('bpmwrapper.general');
+	const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
 	ExtensionSettings.selectedUtility = generalConfig.get<string>('utility')!;
 	ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
 	ExtensionSettings.outputPath = generalConfig.get<string>('outputPath')!;
 
-	const serverConfig = vscode.workspace.getConfiguration('cwSettings');
-	ExtensionSettings.environments = serverConfig.get<serverSettings[]>('cwEnvironments');
+	const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
+	ExtensionSettings.environments = serverConfig.get<serverSettings[]>('environments');
 
 	if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
 		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);

@@ -51,7 +51,7 @@
     "configuration": {
       "title": "BPM Remote Toolkit",
       "properties": {
-        "bpmwrapper.general.utility": {
+        "bpmtoolkit.general.utility": {
           "order": 0,
           "type": "string",
           "default": "clio",
@@ -62,14 +62,14 @@
           ],
           "scope": "application"
         },
-        "bpmwrapper.general.autoUpdateTime": {
+        "bpmtoolkit.general.autoUpdateTime": {
           "order": 1,
           "type": "boolean",
           "default": false,
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
         },
-        "bpmwrapper.general.outputPath": {
+        "bpmtoolkit.general.outputPath": {
           "order": 2,
           "type": "string",
           "default": "C:\\",
