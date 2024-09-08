@@ -2,15 +2,15 @@ import * as vscode from 'vscode';
 import { ExtensionSettings, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
 import { GitHelper } from './git';
 import { PackageManager } from './managers/packagemanager';
-import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommandExecutor';
+import { IPackageCommandExecutor } from './interfaces';
 
 export class PackageExplorer {
 	private readonly _gitHelper: GitHelper;
 	private readonly _pm: PackageManager;
 
-	constructor() {
+	constructor(private wrapper: IPackageCommandExecutor) {
 		this._gitHelper = new GitHelper();
-		this._pm = new PackageManager(new ClioPackageCommandExecutor());
+		this._pm = new PackageManager(wrapper);
 
 		this._pm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
 			showErrorMessage(message, showbutton, executeLogFilePath);
