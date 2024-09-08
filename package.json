@@ -1,7 +1,7 @@
 {
   "name": "cliowrapper",
-  "displayName": "BPM Remote Access Wrapper",
-  "description": "Service program for remote work with BPMSoft or Creatio.",
+  "displayName": "BPM Remote Toolkit",
+  "description": "Development and remote toolkit for BPMSoft or Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
   "version": "1.6.0",
@@ -49,7 +49,7 @@
       ]
     },
     "configuration": {
-      "title": "BPM Remote Access Wrapper",
+      "title": "BPM Remote Toolkit",
       "properties": {
         "bpmwrapper.general.utility": {
           "order": 0,
@@ -57,8 +57,8 @@
           "default": "clio",
           "enum": ["clio", "ubs"],
           "enumDescriptions": [
-            "Service program for remote work with Creatio",
-            "Service program for remote work with BPMSoft"
+            "Service program for remote work with Creatio.",
+            "Service program for remote work with BPMSoft."
           ],
           "scope": "application"
         },
