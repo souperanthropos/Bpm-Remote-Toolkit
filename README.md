@@ -35,7 +35,7 @@ Download Utilities Of BPMSoft and register this utility before using the extensi
 
 This extension contributes the following settings:
 
-* `bpmtoolkit.general.utility`: Select active utility
+* `bpmtoolkit.general.utility`: Select utility: **clio** or **ubs**
 * `bpmtoolkit.general.autoUpdateTime`: When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file.
 * `bpmtoolkit.general.outputPath`: Specify output full path for .gz file.
 
