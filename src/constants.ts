@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { serverSettings } from './interfaces';
 
 export class ExtensionSettings {
-	static selectedUtility = '';
 	static autoUpdateTime = false;
 	static outputPath = '';
 

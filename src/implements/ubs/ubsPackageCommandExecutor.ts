@@ -6,7 +6,7 @@ import { ExtensionSettings } from '../../constants';
 export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
     private terminal: TerminalWrapper;
 
-    constructor(private terminalLog: vscode.OutputChannel) {
+    constructor() {
         this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
     }
 
