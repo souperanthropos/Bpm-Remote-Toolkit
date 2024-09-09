@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.6.x
+
+- Update README
+- Added new extension setting: `clio.autoUpdateTime`
+
 ## 1.5.x
 
 - Update README

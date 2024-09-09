@@ -1,24 +1,20 @@
 import * as vscode from 'vscode';
+import { Logger } from './constants';
 
 export class GitHelper {
-
-    constructor(private terminalLog: vscode.OutputChannel) {
-	}
-
+    
     private getGitRepo() : any {
         const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
     
-        this.terminalLog.show(true);
-    
         if (!gitExtension.enabled) {
-            this.terminalLog.appendLine("Git extension not active");
+            Logger.writeToChannel("Git extension not active");
             return undefined;
         }
         
         const api = gitExtension.getAPI(1);
         const repo = api.repositories[0];
         if(repo === undefined){
-            this.terminalLog.appendLine("Git extension not active");
+            Logger.writeToChannel("Git extension not active");
         }
         return repo;
     }
@@ -34,7 +30,7 @@ export class GitHelper {
         const changes = await repo.diffWithHEAD();
         //Print out array of changes
         if(changes.length > 0){
-            this.terminalLog.appendLine('Error: Uncommitted changes detected.');
+            Logger.writeToChannel('Error: Uncommitted changes detected.');
             return false;
         }
 
@@ -62,7 +58,7 @@ export class GitHelper {
             }
         }
 
-        this.terminalLog.appendLine('Please select branch: ' + branchName);
+        Logger.writeToChannel('Please select branch: ' + branchName);
         return false;
     }
 
@@ -73,8 +69,8 @@ export class GitHelper {
             if(allowedBranches?.includes(currentBranch)){
                 return true;
             }else{
-                this.terminalLog.appendLine('Branch: ' + currentBranch + ' not permitted');
-                this.terminalLog.appendLine('Please select branch: ' + allowedBranches);
+                Logger.writeToChannel('Branch: ' + currentBranch + ' not permitted');
+                Logger.writeToChannel('Please select branch: ' + allowedBranches);
             }
         }
 
