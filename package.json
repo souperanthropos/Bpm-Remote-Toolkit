@@ -1,10 +1,10 @@
 {
   "name": "cliowrapper",
-  "displayName": "Clio Wrapper",
-  "description": "Wrapper for CI/CD tools.",
+  "displayName": "BPM Remote Toolkit",
+  "description": "Development and remote toolkit for BPMSoft or Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -18,7 +18,7 @@
   "contributes": {
     "colors": [
       {
-        "id": "bpmsoftEnvironment.enable",
+        "id": "bpmEnvironment.enable",
         "description": "Color for error message in the status bar.",
         "defaults": {
           "dark": "charts.green",
@@ -26,7 +26,7 @@
         }
       },
       {
-        "id": "bpmsoftEnvironment.disable",
+        "id": "bpmEnvironment.disable",
         "description": "Color for error message in the status bar.",
         "defaults": {
           "dark": "charts.red",
@@ -37,29 +37,41 @@
     "views": {
       "scm": [
         {
-          "id": "bpmsoftEnvironments",
-          "name": "Bpmsoft Environments",
-          "contextualTitle": "Environments Explorer"
+          "id": "bpmEnvironments",
+          "name": "Bpm Environments"
         },
         {
           "id": "packagesExplorer",
-          "name": "Packages Explorer",
-          "contextualTitle": "Packages Explorer"
+          "name": "Packages Explorer"
         }
       ]
     },
     "configuration": {
-      "title": "Clio wrapper",
+      "title": "BPM Remote Toolkit",
       "properties": {
-        "clio.autoUpdateTime": {
+        "bpmtoolkit.general.utility": {
           "order": 0,
+          "type": "string",
+          "default": "clio",
+          "enum": [
+            "clio",
+            "ubs"
+          ],
+          "enumDescriptions": [
+            "Service program for remote work with Creatio.",
+            "Service program for remote work with BPMSoft."
+          ],
+          "scope": "application"
+        },
+        "bpmtoolkit.general.autoUpdateTime": {
+          "order": 1,
           "type": "boolean",
           "default": false,
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
         },
-        "clio.outputPath": {
-          "order": 1,
+        "bpmtoolkit.general.outputPath": {
+          "order": 2,
           "type": "string",
           "default": "C:\\",
           "scope": "application",
@@ -69,7 +81,7 @@
     },
     "commands": [
       {
-        "command": "bpmsoftEnvironments.refreshEntry",
+        "command": "bpmEnvironments.refreshEntry",
         "title": "Refresh"
       },
       {
@@ -77,61 +89,61 @@
         "title": "Refresh"
       },
       {
-        "command": "cliowrapper.package.add.packagesExplorer",
+        "command": "explorer.folder.addPackage",
         "title": "Add Folder To Packages Explorer"
       },
       {
-        "command": "cliowrapper.package.create",
+        "command": "explorer.folder.createPackage",
         "title": "Create Package"
       },
       {
-        "command": "cliowrapper.package.createandsend",
+        "command": "explorer.folder.createAndSendPackage",
         "title": "Create Package And Send"
       },
       {
-        "command": "clio.openSettings",
+        "command": "bpmEnvironments.openSettings",
         "title": "Settings",
         "icon": "$(settings-gear)"
       },
       {
-        "command": "clio.openLastLog",
+        "command": "bpmEnvironments.openLastLog",
         "title": "Open last log",
         "icon": "$(file-binary)"
       },
       {
-        "command": "bpmsoftEnvironments.restart",
+        "command": "bpmEnvironments.server.restart",
         "title": "Restart application"
       },
       {
-        "command": "bpmsoftEnvironments.redis.clear",
+        "command": "bpmEnvironments.server.redisClear",
         "title": "Clear redis database"
       },
       {
-        "command": "bpmsoftEnvironments.compileConfiguration",
+        "command": "bpmEnvironments.server.compileConfiguration",
         "title": "Compile configuration"
       },
       {
-        "command": "bpmsoftEnvironments.register",
+        "command": "bpmEnvironments.server.register",
         "title": "Register",
         "icon": "$(plug)"
       },
       {
-        "command": "bpmsoftEnvironments.unregister",
+        "command": "bpmEnvironments.server.unregister",
         "title": "Unregister",
         "icon": "$(debug-disconnect)"
       },
       {
-        "command": "packagesExplorer.create",
+        "command": "packagesExplorer.package.create",
         "title": "Create Package",
         "icon": "$(repo-pull)"
       },
       {
-        "command": "packagesExplorer.createandsend",
+        "command": "packagesExplorer.package.createAndSend",
         "title": "Create Package And Send",
         "icon": "$(repo-force-push)"
       },
       {
-        "command": "packagesExplorer.remove",
+        "command": "packagesExplorer.package.remove",
         "title": "Remove from Packages Explorer",
         "icon": "$(x)"
       }
@@ -139,71 +151,71 @@
     "menus": {
       "explorer/context": [
         {
-          "command": "cliowrapper.package.create",
+          "command": "explorer.folder.createPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
           "group": "z_cliowrapper@1"
         },
         {
-          "command": "cliowrapper.package.createandsend",
+          "command": "explorer.folder.createAndSendPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
           "group": "z_cliowrapper@2"
         },
         {
-          "command": "cliowrapper.package.add.packagesExplorer",
+          "command": "explorer.folder.addPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
           "group": "z_cliowrapper@3"
         }
       ],
       "view/title": [
         {
-          "command": "clio.openLastLog",
-          "when": "view == bpmsoftEnvironments",
+          "command": "bpmEnvironments.openLastLog",
+          "when": "view == bpmEnvironments",
           "group": "navigation@1"
         },
         {
-          "command": "clio.openSettings",
-          "when": "view == bpmsoftEnvironments",
+          "command": "bpmEnvironments.openSettings",
+          "when": "view == bpmEnvironments",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "bpmsoftEnvironments.restart",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "command": "bpmEnvironments.server.restart",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@1"
         },
         {
-          "command": "bpmsoftEnvironments.compileConfiguration",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "command": "bpmEnvironments.server.compileConfiguration",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "navigation@2"
         },
         {
-          "command": "bpmsoftEnvironments.redis.clear",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "command": "bpmEnvironments.server.redisClear",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "cw_other@2"
         },
         {
-          "command": "bpmsoftEnvironments.register",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemRegister",
+          "command": "bpmEnvironments.server.register",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister",
           "group": "inline@1"
         },
         {
-          "command": "bpmsoftEnvironments.unregister",
-          "when": "view == bpmsoftEnvironments && viewItem == serverTreeItemUnregister",
+          "command": "bpmEnvironments.server.unregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.create",
+          "command": "packagesExplorer.package.create",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@1"
         },
         {
-          "command": "packagesExplorer.createandsend",
+          "command": "packagesExplorer.package.createAndSend",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.remove",
+          "command": "packagesExplorer.package.remove",
           "when": "view == packagesExplorer",
           "group": "pe_other@1"
         }

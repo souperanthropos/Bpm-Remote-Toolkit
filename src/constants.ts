@@ -1,10 +1,25 @@
 import * as vscode from 'vscode';
 import { serverSettings } from './interfaces';
 
-export class Constants {
-	static terminalName = 'cliowrapper';
+export class ExtensionSettings {
+	static autoUpdateTime = false;
+	static outputPath = '';
+
+	static terminalName = 'brawrapper';
 	static extensionPath = '';
 	static environments: serverSettings[] | undefined;
+}
+
+export class Logger {
+	private static terminalLog: vscode.OutputChannel;
+
+	public static writeToChannel(message: string) {
+		if (this.terminalLog === undefined) {
+			this.terminalLog = vscode.window.createOutputChannel(ExtensionSettings.terminalName);
+		}
+		this.terminalLog.show(true);
+		this.terminalLog.appendLine(message);
+	}
 }
 
 export function getDirectoryName(localPath: string): string {
