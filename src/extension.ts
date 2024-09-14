@@ -5,6 +5,7 @@ import fs from 'fs';
 
 import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
+import { QueuePackagesProvider } from './implements/queuePackagesProvider';
 import { packageSettings, serverSettings } from './interfaces';
 import { ExtensionSettings, getDirectoryName, hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
@@ -20,11 +21,17 @@ export function activate(context: vscode.ExtensionContext) {
     const bpmToolkit = new BpmToolkit();
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
+	const queuePackagesProvider = new QueuePackagesProvider();
 
 	vscode.window.registerTreeDataProvider('bpmEnvironments', environmentsProvider);
 
 	vscode.window.createTreeView('packagesExplorer', {
 		treeDataProvider: packageProvider,
+		canSelectMany: true
+	});
+
+	vscode.window.createTreeView('queuePackagesExplorer', {
+		treeDataProvider: queuePackagesProvider,
 		canSelectMany: true
 	});
 

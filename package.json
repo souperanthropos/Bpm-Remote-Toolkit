@@ -43,6 +43,10 @@
         {
           "id": "packagesExplorer",
           "name": "Packages Explorer"
+        },
+        {
+          "id": "queuePackagesExplorer",
+          "name": "Queue Packages Explorer"
         }
       ]
     },
@@ -143,6 +147,11 @@
         "icon": "$(repo-force-push)"
       },
       {
+        "command": "packagesExplorer.package.addQueue",
+        "title": "Add package to queue",
+        "icon": "$(add)"
+      },
+      {
         "command": "packagesExplorer.package.remove",
         "title": "Remove from Packages Explorer",
         "icon": "$(x)"
@@ -215,9 +224,14 @@
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.package.remove",
+          "command": "packagesExplorer.package.addQueue",
           "when": "view == packagesExplorer",
           "group": "pe_other@1"
+        },
+        {
+          "command": "packagesExplorer.package.remove",
+          "when": "view == packagesExplorer",
+          "group": "pe_other@2"
         }
       ]
     }

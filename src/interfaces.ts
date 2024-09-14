@@ -13,6 +13,12 @@ export interface serverSettings {
 	isRegister: boolean;
 }
 
+export interface queueItem {
+	environment: serverSettings;
+	package: packageSettings;
+	isRunning: boolean;
+}
+
 export interface IWebAppCommandExecutor {
 	webAppRegister(server: serverSettings): Promise<boolean>,
 	webAppUnregister(server: serverSettings): Promise<boolean>,
