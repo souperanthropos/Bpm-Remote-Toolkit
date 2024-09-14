@@ -60,6 +60,10 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	vscode.commands.registerCommand('queuePackagesExplorer.refreshEntry', () => {
+		queuePackagesProvider.refresh(bpmToolkit.queuePackagesManager.getItems());
+	});
+
 	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
 		if(ExtensionSettings.autoUpdateTime){
 			await bpmToolkit.fileManager.UpdateTimeInDescriptor(document);
@@ -180,6 +184,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.createAndSendPackage', (uri: vscode.Uri) => {
 		bpmToolkit.packageExplorer.createAndSend(uri.fsPath);
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addQueue', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
+		bpmToolkit.queuePackagesManager.addQueueItem(contextSelection);
 	}));
 }
 

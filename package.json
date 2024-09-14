@@ -93,6 +93,10 @@
         "title": "Refresh"
       },
       {
+        "command": "queuePackagesExplorer.refreshEntry",
+        "title": "Refresh"
+      },
+      {
         "command": "explorer.folder.addPackage",
         "title": "Add Folder To Packages Explorer"
       },
