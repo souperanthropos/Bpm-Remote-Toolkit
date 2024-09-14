@@ -8,8 +8,8 @@ export class QueuePackagesProvider implements vscode.TreeDataProvider<queueItem>
 
     private _queueItems!: queueItem[];
 
-    refresh(items: queueItem[]): void {
-		this._queueItems = items;
+    refresh(items: ReadonlyArray<queueItem>): void {
+		this._queueItems = items.concat();
 		this._onDidChangeTreeData.fire();
 	}
 
