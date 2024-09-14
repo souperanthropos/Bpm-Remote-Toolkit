@@ -5,7 +5,7 @@ export class ExtensionSettings {
 	static autoUpdateTime = false;
 	static outputPath = '';
 
-	static terminalName = 'brawrapper';
+	static terminalName = 'bpmtoolkit';
 	static extensionPath = '';
 	static environments: serverSettings[] | undefined;
 }
