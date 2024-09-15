@@ -3,6 +3,8 @@
 src/**
 .gitignore
 .yarnrc
+commandExecute.log
+commandExecuteResult.log
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
