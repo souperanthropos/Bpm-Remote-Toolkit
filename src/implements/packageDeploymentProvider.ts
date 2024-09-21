@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { queueItem, serverSettings, packageSettings } from '../interfaces';
 
-export class QueuePackagesProvider implements vscode.TreeDataProvider<queueItem>{
+export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueItem>{
 
     private _onDidChangeTreeData: vscode.EventEmitter<queueItem | undefined | void> = new vscode.EventEmitter<queueItem | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<queueItem | undefined | void> = this._onDidChangeTreeData.event;
@@ -20,8 +20,21 @@ export class QueuePackagesProvider implements vscode.TreeDataProvider<queueItem>
             element.package,
 			element.isRunning,
 			vscode.TreeItemCollapsibleState.None
+			
 		);
-
+		if(element.isRunning){
+			treeItem.iconPath = new vscode.ThemeIcon('loading~spin');
+		}else{
+			if(element.Completed){
+				if(element.Completed.isSuccess){
+					treeItem.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor("packageDeploymentManagement.successCompleted"));
+				}else{
+					treeItem.iconPath = new vscode.ThemeIcon('package', new vscode.ThemeColor("packageDeploymentManagement.errorCompleted"));
+				}
+			}else{
+				treeItem.iconPath = new vscode.ThemeIcon('package');
+			}
+		}
 		return treeItem;
 	}
 

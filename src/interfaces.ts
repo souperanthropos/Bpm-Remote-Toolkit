@@ -17,6 +17,7 @@ export interface queueItem {
 	environment: serverSettings;
 	package: packageSettings;
 	isRunning: boolean;
+	Completed: { isSuccess: boolean } | null
 }
 
 export interface IWebAppCommandExecutor {

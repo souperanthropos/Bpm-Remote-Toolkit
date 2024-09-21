@@ -8,11 +8,11 @@ import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExe
 import { WebAppManager } from './managers/webappmanager';
 import { ExtensionSettings, showErrorMessage } from './constants';
 import { serverSettings } from './interfaces';
-import { QueuePackagesManager } from './managers/queuePackagesManager';
+import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 
 export class BpmToolkit {
     private _fileManager: FileManager;
-    private _queuePackagesManager: QueuePackagesManager;
+    private _packageDeploymentManager: PackageDeploymentManager;
     private _packageExplorer!: PackageExplorer;
     private _webAppManager!: WebAppManager;
     private _selectedUtility: string;
@@ -21,8 +21,8 @@ export class BpmToolkit {
         return this._fileManager;
     }
 
-    public get queuePackagesManager(): QueuePackagesManager{
-        return this._queuePackagesManager;
+    public get packageDeploymentManager(): PackageDeploymentManager{
+        return this._packageDeploymentManager;
     }
 
     public get packageExplorer(): PackageExplorer{
@@ -36,7 +36,7 @@ export class BpmToolkit {
     constructor() {
         this._selectedUtility = '';
         this._fileManager = new FileManager();
-        this._queuePackagesManager = new QueuePackagesManager();
+        this._packageDeploymentManager = new PackageDeploymentManager();
         this.checkWorkspaceSettings();
     }
 
