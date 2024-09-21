@@ -1,7 +1,6 @@
-import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IPackageCommandExecutor } from '../../interfaces';
-import { ExtensionSettings } from '../../constants';
+import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
+import { ExtensionSettings, getDirectoryName } from '../../constants';
 
 export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
     private terminal: TerminalWrapper;
@@ -20,11 +19,13 @@ export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
         );
     }
 
-    public async pushPackage(packageFilePath: string, targetEnviroment: string): Promise<boolean> {
+    public async pushPackage(pkg: packageSettings): Promise<boolean> {
+        const path = require("path");
+        const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(pkg.targetFolderPath) + ".gz");
         return await this.terminal.executeCommand(
             'ubs push '
             + packageFilePath
-            + ' -e ' + targetEnviroment,
+            + ' -e ' + pkg.targetEnviroment?.id,
             false
         );
     }

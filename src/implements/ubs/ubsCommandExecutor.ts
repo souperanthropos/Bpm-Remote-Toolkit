@@ -19,15 +19,16 @@ export class UbsCommandExecutor implements IWrapperCommandExecutor {
     }
 
     public async webAppRegister(server: enviromentSettings): Promise<boolean> {
+        let yesPressed = false;
         await vscode.window
             .showInformationMessage('This command is not supported in the current version of the utility. You will need to manually add the server.', "Yes", "No")
             .then(answer => {
                 if (answer === "Yes") {
                     this.terminal.executeCommand('ubs settings', true);
-                    return true;
+                    yesPressed = true;
                 }
             });
-        return false;
+        return yesPressed;
     }
 
     public async webAppUnregister(server: enviromentSettings): Promise<boolean> {
