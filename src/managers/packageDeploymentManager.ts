@@ -68,6 +68,14 @@ export class PackageDeploymentManager {
     }
 
     public async startDeployment() {
+        let ignorePushError = false;
+        await vscode.window
+            .showInformationMessage('Ignore package installation errors?', "Yes", "No")
+            .then(answer => {
+                if (answer === "Yes") {
+                    ignorePushError = true;
+                }
+            });
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         for await (const element of this._queueItems) {
             element.isRunning = true;
@@ -84,6 +92,9 @@ export class PackageDeploymentManager {
                     element.isRunning = false;
                     element.Completed = { isSuccess: false };
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+                    if(!ignorePushError){
+                        break;
+                    }
                 }else{
                     element.Completed = { isSuccess: true };
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
