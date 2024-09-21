@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	ExtensionSettings.extensionPath = context.extensionPath;
 
-    const bpmToolkit = new BpmToolkit();
+	const bpmToolkit = new BpmToolkit();
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
 	const packageDeploymentProvider = new PackageDeploymentProvider();
@@ -65,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-		if(ExtensionSettings.autoUpdateTime){
+		if (ExtensionSettings.autoUpdateTime) {
 			await bpmToolkit.fileManager.UpdateTimeInDescriptor(document);
 		}
 	});
@@ -73,11 +73,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.remove', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
 		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
 		if (packages.length > 0) {
-			if(allSelections){
+			if (allSelections) {
 				allSelections.forEach(pkg => {
 					packages = packages.filter(item => { return item.folderName !== pkg.folderName; });
 				});
-			}else{
+			} else {
 				packages = packages.filter(item => { return item.folderName !== contextSelection.folderName; });
 			}
 			context.globalState.update(bpmPackagesPattern, packages);
@@ -193,6 +193,10 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'packageDeploymentManagement.startDeployment',
 		() => bpmToolkit.packageDeploymentManager.startDeployment()));
+
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'packageDeploymentManagement.clear',
+		() => bpmToolkit.packageDeploymentManager.clear()));
 }
 
 // This method is called when your extension is deactivated

@@ -180,6 +180,11 @@
         "command": "packageDeploymentManagement.startDeployment",
         "title": "Start deployment",
         "icon": "$(play)"
+      },
+      {
+        "command": "packageDeploymentManagement.clear",
+        "title": "Clear",
+        "icon": "$(x)"
       }
     ],
     "menus": {
@@ -215,6 +220,11 @@
           "command": "packageDeploymentManagement.startDeployment",
           "when": "view == packageDeploymentManagement && isShowStartDeploymentCommand",
           "group": "navigation@1"
+        },
+        {
+          "command": "packageDeploymentManagement.clear",
+          "when": "view == packageDeploymentManagement && isShowClearDeploymentCommand",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
