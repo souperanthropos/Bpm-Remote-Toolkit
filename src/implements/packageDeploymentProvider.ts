@@ -16,12 +16,12 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
     getTreeItem(element: queueItem): vscode.TreeItem {
 		var treeItem = new queueTreeItem(
 			element.package.folderName,
-			element.environment,
             element.package,
 			element.isRunning,
 			vscode.TreeItemCollapsibleState.None
 			
 		);
+		treeItem.tooltip = element.package.targetFolderPath;
 		if(element.isRunning){
 			treeItem.iconPath = new vscode.ThemeIcon('loading~spin');
 		}else{
@@ -50,7 +50,6 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 export class queueTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string,
-		public readonly environment: enviromentSettings,
         public readonly pkg: packageSettings,
 		public readonly isRunning: boolean,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,

@@ -27,9 +27,7 @@ export class PackageManager {
     }
 
     public async pushPackage(settings: packageSettings): Promise<boolean>  {
-        const path = require("path");
-
-        if (settings.targetEnviroment === undefined || settings.targetEnviroment === '') {
+        if (settings.targetEnviroment === null) {
             Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
                 this.onCommandExecuteError('Error: target enviroment not found.', false, undefined);
@@ -37,9 +35,7 @@ export class PackageManager {
             return false;
         }
 
-        const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
-
-        const result = await this.wrapper.pushPackage(packageFilePath, settings.targetEnviroment);
+        const result = await this.wrapper.pushPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Send package failed.', true, this.terminal.executeLogFilePath);

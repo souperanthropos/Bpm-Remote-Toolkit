@@ -167,7 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const newPackage: packageSettings = {
 					folderName: getDirectoryName(uri.fsPath),
 					targetFolderPath: uri.fsPath,
-					targetEnviroment: undefined
+					targetEnviroment: null
 				};
 				if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
 					packages.push(newPackage);

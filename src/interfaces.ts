@@ -1,7 +1,7 @@
 export interface packageSettings {
 	folderName: string;
 	targetFolderPath: string;
-	targetEnviroment: string | undefined;
+	targetEnviroment: enviromentSettings | null;
 }
 
 export interface enviromentSettings {
@@ -14,7 +14,6 @@ export interface enviromentSettings {
 }
 
 export interface queueItem {
-	environment: enviromentSettings;
 	package: packageSettings;
 	isRunning: boolean;
 	Completed: { isSuccess: boolean } | null
@@ -36,5 +35,5 @@ export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
 
 export interface IPackageCommandExecutor {
 	createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean>,
-	pushPackage(packageFilePath: string, targetEnviroment: string): Promise<boolean>
+	pushPackage(pkg: packageSettings): Promise<boolean>
 }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { serverSettings } from './interfaces';
+import { enviromentSettings } from './interfaces';
 
 export class ExtensionSettings {
 	static autoUpdateTime = false;
@@ -7,7 +7,7 @@ export class ExtensionSettings {
 
 	static terminalName = 'bpmtoolkit';
 	static extensionPath = '';
-	static environments: serverSettings[] | undefined;
+	static environments: enviromentSettings[] | undefined;
 }
 
 export class Logger {

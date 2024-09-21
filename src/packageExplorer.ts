@@ -79,7 +79,7 @@ export class PackageExplorer {
 										{
 											folderName: folderName,
 											targetFolderPath: fsPath,
-											targetEnviroment: serverConfig.id
+											targetEnviroment: serverConfig
 										}
 									);
 								}

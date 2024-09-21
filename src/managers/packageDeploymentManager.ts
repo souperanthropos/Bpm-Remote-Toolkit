@@ -23,7 +23,6 @@ export class PackageDeploymentManager {
 
     private addItem(pkg: packageSettings) {
         const newItem: queueItem = {
-            environment: this.selectedServer,
             package: pkg,
             isRunning: false,
             Completed: null
@@ -50,6 +49,7 @@ export class PackageDeploymentManager {
                     const server = ExtensionSettings.environments!.find(e => e.id === serverId);
                     if(server){
                         this.selectedServer = server;
+                        pkg.targetEnviroment = server;
                         this.addItem(pkg);
                         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', true);
                     }
@@ -60,6 +60,7 @@ export class PackageDeploymentManager {
                 qp.show();
             }else{
                 if (!this._queueItems.find(p => p.package === pkg)) {
+                    pkg.targetEnviroment = this.selectedServer;
                     this.addItem(pkg);
 				}
             }
