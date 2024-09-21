@@ -9,12 +9,15 @@ import { WebAppManager } from './managers/webappmanager';
 import { ExtensionSettings, showErrorMessage } from './constants';
 import { serverSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
+import { PackageManager } from './managers/packagemanager';
 
 export class BpmToolkit {
     private _fileManager: FileManager;
-    private _packageDeploymentManager: PackageDeploymentManager;
+    private _packageDeploymentManager!: PackageDeploymentManager;
     private _packageExplorer!: PackageExplorer;
     private _webAppManager!: WebAppManager;
+
+    private _packageManager!: PackageManager;
     private _selectedUtility: string;
 
     public get fileManager(): FileManager{
@@ -36,7 +39,6 @@ export class BpmToolkit {
     constructor() {
         this._selectedUtility = '';
         this._fileManager = new FileManager();
-        this._packageDeploymentManager = new PackageDeploymentManager();
         this.checkWorkspaceSettings();
     }
 
@@ -47,14 +49,16 @@ export class BpmToolkit {
         if(this._selectedUtility !== utilityName){
             switch(utilityName){
                 case `clio`:
-                    this._packageExplorer = new PackageExplorer(new ClioPackageCommandExecutor());
+                    this._packageManager = new PackageManager(new ClioPackageCommandExecutor());
                     this._webAppManager = new WebAppManager(new ClioCommandExecutor());
                     break;
                 case `ubs`:
                 default:
-                    this._packageExplorer = new PackageExplorer(new UbsPackageCommandExecutor());
+                    this._packageManager = new PackageManager(new UbsPackageCommandExecutor());
                     this._webAppManager = new WebAppManager(new UbsCommandExecutor());
             }
+            this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
+            this._packageExplorer = new PackageExplorer(this._packageManager);
             this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
                 showErrorMessage(message, showbutton, executeLogFilePath);
             this._selectedUtility = utilityName;
