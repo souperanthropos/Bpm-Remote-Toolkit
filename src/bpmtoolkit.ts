@@ -7,7 +7,7 @@ import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
 import { ExtensionSettings, showErrorMessage } from './constants';
-import { serverSettings } from './interfaces';
+import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
 
@@ -68,7 +68,7 @@ export class BpmToolkit {
         ExtensionSettings.outputPath = generalConfig.get<string>('outputPath')!;
     
         const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
-        ExtensionSettings.environments = serverConfig.get<serverSettings[]>('environments');
+        ExtensionSettings.environments = serverConfig.get<enviromentSettings[]>('environments');
     
         if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
             vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);

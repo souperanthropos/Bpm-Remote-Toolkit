@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { IWrapperCommandExecutor, serverSettings } from '../interfaces';
+import { IWrapperCommandExecutor, enviromentSettings } from '../interfaces';
 
 export class WebAppManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
@@ -15,11 +15,11 @@ export class WebAppManager {
         return this.wrapper.getLastExecuteLogPath();
     }
 
-    public async webAppRegister(server: serverSettings): Promise<boolean> {
+    public async webAppRegister(server: enviromentSettings): Promise<boolean> {
         return await this.wrapper.webAppRegister(server);
     }
 
-    public async webAppUnregister(server: serverSettings, isLogEnabled: boolean) {
+    public async webAppUnregister(server: enviromentSettings, isLogEnabled: boolean) {
         const result = await this.wrapper.webAppUnregister(server);
         if (isLogEnabled) {
             if (!result && this.onCommandExecuteError) {
@@ -28,7 +28,7 @@ export class WebAppManager {
         }
     }
 
-    public async webAppPing(server: serverSettings): Promise<boolean> {
+    public async webAppPing(server: enviromentSettings): Promise<boolean> {
         const result = await this.wrapper.webAppPing(server);
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Ping web app failed.', true, this.wrapper.getLastExecuteLogPath());
@@ -36,7 +36,7 @@ export class WebAppManager {
         return result;
     }
 
-    public async webAppRestart(server: serverSettings) {
+    public async webAppRestart(server: enviromentSettings) {
         if (!server.isEnable) {
             vscode.window.showInformationMessage(
                 `You cannot execute this command because server ${server.id} is disabled.`
@@ -49,7 +49,7 @@ export class WebAppManager {
         }
     }
 
-    public async clearRedisDb(server: serverSettings) {
+    public async clearRedisDb(server: enviromentSettings) {
         if (!server.isEnable) {
             vscode.window.showInformationMessage(
                 "You cannot execute this command because server " + server.id + " is disabled."
@@ -62,7 +62,7 @@ export class WebAppManager {
         }
     }
 
-    public async compileConfiguration(server: serverSettings) {
+    public async compileConfiguration(server: enviromentSettings) {
         if (!server.isEnable) {
             vscode.window.showInformationMessage(
                 "You cannot execute this command because server " + server.id + " is disabled."

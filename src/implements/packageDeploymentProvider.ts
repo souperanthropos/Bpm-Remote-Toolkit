@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { queueItem, serverSettings, packageSettings } from '../interfaces';
+import { queueItem, enviromentSettings, packageSettings } from '../interfaces';
 
 export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueItem>{
 
@@ -50,7 +50,7 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 export class queueTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string,
-		public readonly environment: serverSettings,
+		public readonly environment: enviromentSettings,
         public readonly pkg: packageSettings,
 		public readonly isRunning: boolean,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,

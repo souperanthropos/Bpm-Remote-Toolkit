@@ -4,7 +4,7 @@ export interface packageSettings {
 	targetEnviroment: string | undefined;
 }
 
-export interface serverSettings {
+export interface enviromentSettings {
 	id: string;
     url: string | undefined;
 	isNetCore: boolean;
@@ -14,19 +14,19 @@ export interface serverSettings {
 }
 
 export interface queueItem {
-	environment: serverSettings;
+	environment: enviromentSettings;
 	package: packageSettings;
 	isRunning: boolean;
 	Completed: { isSuccess: boolean } | null
 }
 
 export interface IWebAppCommandExecutor {
-	webAppRegister(server: serverSettings): Promise<boolean>,
-	webAppUnregister(server: serverSettings): Promise<boolean>,
-	webAppPing(server: serverSettings): Promise<boolean>,
-	webAppRestart(server: serverSettings): Promise<boolean>,
-	clearRedisDb(server: serverSettings): Promise<boolean>,
-	compileConfiguration(server: serverSettings): Promise<boolean>
+	webAppRegister(server: enviromentSettings): Promise<boolean>,
+	webAppUnregister(server: enviromentSettings): Promise<boolean>,
+	webAppPing(server: enviromentSettings): Promise<boolean>,
+	webAppRestart(server: enviromentSettings): Promise<boolean>,
+	clearRedisDb(server: enviromentSettings): Promise<boolean>,
+	compileConfiguration(server: enviromentSettings): Promise<boolean>
 }
 
 export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
