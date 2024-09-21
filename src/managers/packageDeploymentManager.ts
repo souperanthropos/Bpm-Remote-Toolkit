@@ -71,10 +71,23 @@ export class PackageDeploymentManager {
         for await (const element of this._queueItems) {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
-            await this.delay(5000);
-            element.isRunning = false;
-            element.Completed = { isSuccess: true };
-            vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+            var result = await this._pm.createPackage(element.package.targetFolderPath);
+            if(!result){
+                element.isRunning = false;
+                element.Completed = { isSuccess: false };
+                vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+                break;
+            }else{
+                result = await this._pm.pushPackage(element.package);
+                if(!result){
+                    element.isRunning = false;
+                    element.Completed = { isSuccess: false };
+                    vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+                }else{
+                    element.Completed = { isSuccess: true };
+                    vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+                }
+            }
         }
     }
 }

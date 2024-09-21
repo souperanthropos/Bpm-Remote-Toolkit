@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { IPackageCommandExecutor } from '../interfaces';
@@ -27,7 +26,7 @@ export class PackageManager {
         return result;
     }
 
-    public async pushPackage(settings: packageSettings) {
+    public async pushPackage(settings: packageSettings): Promise<boolean>  {
         const path = require("path");
 
         if (settings.targetEnviroment === undefined || settings.targetEnviroment === '') {
@@ -35,7 +34,7 @@ export class PackageManager {
             if (this.onCommandExecuteError) {
                 this.onCommandExecuteError('Error: target enviroment not found.', false, undefined);
             }
-            return;
+            return false;
         }
 
         const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
@@ -49,5 +48,7 @@ export class PackageManager {
         if (result && this.onCommandExecuteComplete) {
             this.onCommandExecuteComplete('Send package completed.', true, this.terminal.executeLogFilePath);
         }
+
+        return result;
     }
 }
