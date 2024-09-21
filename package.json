@@ -32,6 +32,22 @@
           "dark": "charts.red",
           "light": "charts.red"
         }
+      },
+      {
+        "id": "packageDeploymentManagement.successCompleted",
+        "description": "Color for error message in the status bar.",
+        "defaults": {
+          "dark": "charts.green",
+          "light": "charts.green"
+        }
+      },
+      {
+        "id": "packageDeploymentManagement.errorCompleted",
+        "description": "Color for error message in the status bar.",
+        "defaults": {
+          "dark": "charts.red",
+          "light": "charts.red"
+        }
       }
     ],
     "views": {
@@ -45,8 +61,8 @@
           "name": "Packages Explorer"
         },
         {
-          "id": "queuePackagesExplorer",
-          "name": "Queue Packages Explorer"
+          "id": "packageDeploymentManagement",
+          "name": "Package Deployment Management"
         }
       ]
     },
@@ -93,7 +109,7 @@
         "title": "Refresh"
       },
       {
-        "command": "queuePackagesExplorer.refreshEntry",
+        "command": "packageDeploymentManagement.refreshEntry",
         "title": "Refresh"
       },
       {
@@ -151,14 +167,19 @@
         "icon": "$(repo-force-push)"
       },
       {
-        "command": "packagesExplorer.package.addQueue",
-        "title": "Add package to queue",
+        "command": "packagesExplorer.package.addDeployment",
+        "title": "Add package to deployment",
         "icon": "$(add)"
       },
       {
         "command": "packagesExplorer.package.remove",
         "title": "Remove from Packages Explorer",
         "icon": "$(x)"
+      },
+      {
+        "command": "packageDeploymentManagement.startDeployment",
+        "title": "Start deployment",
+        "icon": "$(play)"
       }
     ],
     "menus": {
@@ -189,6 +210,11 @@
           "command": "bpmEnvironments.openSettings",
           "when": "view == bpmEnvironments",
           "group": "navigation@2"
+        },
+        {
+          "command": "packageDeploymentManagement.startDeployment",
+          "when": "view == packageDeploymentManagement && isShowStartDeploymentCommand",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -228,7 +254,7 @@
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.package.addQueue",
+          "command": "packagesExplorer.package.addDeployment",
           "when": "view == packagesExplorer",
           "group": "pe_other@1"
         },

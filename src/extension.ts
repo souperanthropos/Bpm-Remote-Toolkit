@@ -5,7 +5,7 @@ import fs from 'fs';
 
 import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
-import { QueuePackagesProvider } from './implements/queuePackagesProvider';
+import { PackageDeploymentProvider } from './implements/packageDeploymentProvider';
 import { packageSettings, serverSettings } from './interfaces';
 import { ExtensionSettings, getDirectoryName, hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
     const bpmToolkit = new BpmToolkit();
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
-	const queuePackagesProvider = new QueuePackagesProvider();
+	const packageDeploymentProvider = new PackageDeploymentProvider();
 
 	vscode.window.registerTreeDataProvider('bpmEnvironments', environmentsProvider);
 
@@ -30,8 +30,8 @@ export function activate(context: vscode.ExtensionContext) {
 		canSelectMany: true
 	});
 
-	vscode.window.createTreeView('queuePackagesExplorer', {
-		treeDataProvider: queuePackagesProvider,
+	vscode.window.createTreeView('packageDeploymentManagement', {
+		treeDataProvider: packageDeploymentProvider,
 		canSelectMany: true
 	});
 
@@ -60,8 +60,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	vscode.commands.registerCommand('queuePackagesExplorer.refreshEntry', () => {
-		queuePackagesProvider.refresh(bpmToolkit.queuePackagesManager.getItems());
+	vscode.commands.registerCommand('packageDeploymentManagement.refreshEntry', () => {
+		packageDeploymentProvider.refresh(bpmToolkit.packageDeploymentManager.getItems());
 	});
 
 	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
@@ -186,9 +186,13 @@ export function activate(context: vscode.ExtensionContext) {
 		bpmToolkit.packageExplorer.createAndSend(uri.fsPath);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addQueue', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
-		bpmToolkit.queuePackagesManager.addQueueItem(contextSelection);
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
+		bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection);
 	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand(
+		'packageDeploymentManagement.startDeployment',
+		() => bpmToolkit.packageDeploymentManager.startDeployment()));
 }
 
 // This method is called when your extension is deactivated
