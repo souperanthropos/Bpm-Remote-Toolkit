@@ -2,15 +2,14 @@ import * as vscode from 'vscode';
 import { ExtensionSettings, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
 import { GitHelper } from './git';
 import { PackageManager } from './managers/packagemanager';
-import { IPackageCommandExecutor } from './interfaces';
 
 export class PackageExplorer {
 	private readonly _gitHelper: GitHelper;
 	private readonly _pm: PackageManager;
 
-	constructor(private wrapper: IPackageCommandExecutor) {
+	constructor(packageManager: PackageManager) {
 		this._gitHelper = new GitHelper();
-		this._pm = new PackageManager(wrapper);
+		this._pm = packageManager;
 
 		this._pm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
 			showErrorMessage(message, showbutton, executeLogFilePath);

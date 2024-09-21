@@ -2,16 +2,23 @@ import * as vscode from 'vscode';
 import { GitHelper } from '../git';
 import { packageSettings, queueItem, serverSettings } from '../interfaces';
 import { ExtensionSettings } from '../constants';
+import { PackageManager } from './packagemanager';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
+    private readonly _pm: PackageManager;
     private readonly _queueItems: queueItem[];
 
     private selectedServer!: serverSettings;
 
-    constructor(){
+    constructor(packageManager: PackageManager){
         this._gitHelper = new GitHelper();
+        this._pm = packageManager;
         this._queueItems = new Array();
+    }
+
+    private delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
     }
 
     private addItem(pkg: packageSettings) {
@@ -59,9 +66,15 @@ export class PackageDeploymentManager {
 		}
     }
 
-    public startDeployment() {
+    public async startDeployment() {
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
-        this._queueItems[0].isRunning = true;
-        vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+        for await (const element of this._queueItems) {
+            element.isRunning = true;
+            vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+            await this.delay(5000);
+            element.isRunning = false;
+            element.Completed = { isSuccess: true };
+            vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+        }
     }
 }
