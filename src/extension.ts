@@ -6,7 +6,7 @@ import fs from 'fs';
 import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { PackageDeploymentProvider } from './implements/packageDeploymentProvider';
-import { packageSettings, serverSettings } from './interfaces';
+import { packageSettings, enviromentSettings } from './interfaces';
 import { ExtensionSettings, getDirectoryName, hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
 
@@ -110,20 +110,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.restart',
-		(server: serverSettings) => bpmToolkit.webAppManager.webAppRestart(server))
+		(server: enviromentSettings) => bpmToolkit.webAppManager.webAppRestart(server))
 	);
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.redisClear',
-		(server: serverSettings) => bpmToolkit.webAppManager.clearRedisDb(server)));
+		(server: enviromentSettings) => bpmToolkit.webAppManager.clearRedisDb(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.compileConfiguration',
-		(server: serverSettings) => bpmToolkit.webAppManager.compileConfiguration(server)));
+		(server: enviromentSettings) => bpmToolkit.webAppManager.compileConfiguration(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.register',
-		async (server: serverSettings) => {
+		async (server: enviromentSettings) => {
 			vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
@@ -154,7 +154,7 @@ export function activate(context: vscode.ExtensionContext) {
 			);
 		}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: serverSettings) => {
+	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: enviromentSettings) => {
 		await bpmToolkit.webAppManager.webAppUnregister(server, true);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');

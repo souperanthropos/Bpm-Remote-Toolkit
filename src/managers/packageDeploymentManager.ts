@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { GitHelper } from '../git';
-import { packageSettings, queueItem, serverSettings } from '../interfaces';
+import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
 import { ExtensionSettings } from '../constants';
 import { PackageManager } from './packagemanager';
 
@@ -9,7 +9,7 @@ export class PackageDeploymentManager {
     private readonly _pm: PackageManager;
     private readonly _queueItems: queueItem[];
 
-    private selectedServer!: serverSettings;
+    private selectedServer!: enviromentSettings;
 
     constructor(packageManager: PackageManager){
         this._gitHelper = new GitHelper();
