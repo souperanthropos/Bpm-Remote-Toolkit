@@ -6,7 +6,7 @@ import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommand
 import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
-import { ExtensionSettings, showErrorMessage } from './constants';
+import { ExtensionSettings, showErrorMessage, showInformationMessage } from './constants';
 import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
@@ -59,6 +59,10 @@ export class BpmToolkit {
             }
             this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
             this._packageExplorer = new PackageExplorer(this._packageManager);
+            this._packageManager.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
+                showErrorMessage(message, showbutton, executeLogFilePath);
+            this._packageManager.onCommandExecuteComplete = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
+                showInformationMessage(message, showbutton, executeLogFilePath);
             this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
                 showErrorMessage(message, showbutton, executeLogFilePath);
             this._selectedUtility = utilityName;

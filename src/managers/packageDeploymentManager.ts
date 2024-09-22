@@ -17,10 +17,6 @@ export class PackageDeploymentManager {
         this._queueItems = new Array();
     }
 
-    private delay(ms: number) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     private addItem(pkg: packageSettings) {
         const newItem: queueItem = {
             package: pkg,
