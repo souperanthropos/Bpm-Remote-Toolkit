@@ -132,7 +132,7 @@
       {
         "command": "packagesExplorer.openLastLog",
         "title": "Open last log",
-        "icon": "$(file-binary)"
+        "icon": "$(output)"
       },
       {
         "command": "bpmEnvironments.server.restart",
