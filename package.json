@@ -130,7 +130,7 @@
         "icon": "$(settings-gear)"
       },
       {
-        "command": "bpmEnvironments.openLastLog",
+        "command": "packagesExplorer.openLastLog",
         "title": "Open last log",
         "icon": "$(file-binary)"
       },
@@ -207,14 +207,14 @@
       ],
       "view/title": [
         {
-          "command": "bpmEnvironments.openLastLog",
+          "command": "bpmEnvironments.openSettings",
           "when": "view == bpmEnvironments",
           "group": "navigation@1"
         },
         {
-          "command": "bpmEnvironments.openSettings",
-          "when": "view == bpmEnvironments",
-          "group": "navigation@2"
+          "command": "packagesExplorer.openLastLog",
+          "when": "view == packagesExplorer",
+          "group": "navigation@1"
         },
         {
           "command": "packageDeploymentManagement.startDeployment",
