@@ -98,7 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
-		'bpmEnvironments.openLastLog',
+		'packagesExplorer.openLastLog',
 		() => {
 			const folderUri = vscode.Uri.file(bpmToolkit.webAppManager.getLastExecuteLogPath());
 			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
