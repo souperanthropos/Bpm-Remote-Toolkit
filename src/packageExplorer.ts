@@ -10,11 +10,6 @@ export class PackageExplorer {
 	constructor(packageManager: PackageManager) {
 		this._gitHelper = new GitHelper();
 		this._pm = packageManager;
-
-		this._pm.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
-			showErrorMessage(message, showbutton, executeLogFilePath);
-		this._pm.onCommandExecuteComplete = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
-			showInformationMessage(message, showbutton, executeLogFilePath);
 	}
 
 	public create(fsPath: string) {
