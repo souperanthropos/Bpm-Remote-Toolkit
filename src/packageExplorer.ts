@@ -24,8 +24,8 @@ export class PackageExplorer {
 					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 					if (await this._gitHelper.isPermittedBranch(branches)) {
 						if (await this._pm.createPackage(fsPath)) {
-							if (ExtensionSettings.outputPath) {
-								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath));
+							if (ExtensionSettings.outputPath()) {
+								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath()));
 							}
 						}
 					}

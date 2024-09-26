@@ -6,12 +6,15 @@ import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommand
 import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
-import { ExtensionSettings, showErrorMessage, showInformationMessage } from './constants';
+import { ExtensionSettings, Logger, showErrorMessage, showInformationMessage } from './constants';
 import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
+import { TerminalWrapper } from './terminal/terminalwrapper';
 
 export class BpmToolkit {
+    private _logger: Logger;
+    private _terminalWrapper: TerminalWrapper;
     private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
     private _packageExplorer!: PackageExplorer;
@@ -38,8 +41,14 @@ export class BpmToolkit {
 
     constructor() {
         this._selectedUtility = '';
+        this._logger = new Logger();
+        this._terminalWrapper = new TerminalWrapper(this._logger);
         this._fileManager = new FileManager();
         this.checkWorkspaceSettings();
+    }
+
+    public getLastExecuteLogPath(): string {
+        return this._terminalWrapper.executeLogFilePath;
     }
 
     public checkWorkspaceSettings() {
@@ -49,27 +58,26 @@ export class BpmToolkit {
         if(this._selectedUtility !== utilityName){
             switch(utilityName){
                 case `clio`:
-                    this._packageManager = new PackageManager(new ClioPackageCommandExecutor());
-                    this._webAppManager = new WebAppManager(new ClioCommandExecutor());
+                    this._packageManager = new PackageManager(new ClioPackageCommandExecutor(this._terminalWrapper));
+                    this._webAppManager = new WebAppManager(new ClioCommandExecutor(this._terminalWrapper));
                     break;
                 case `ubs`:
                 default:
-                    this._packageManager = new PackageManager(new UbsPackageCommandExecutor());
-                    this._webAppManager = new WebAppManager(new UbsCommandExecutor());
+                    this._packageManager = new PackageManager(new UbsPackageCommandExecutor(this._terminalWrapper));
+                    this._webAppManager = new WebAppManager(new UbsCommandExecutor(this._terminalWrapper));
             }
             this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
             this._packageExplorer = new PackageExplorer(this._packageManager);
-            this._packageManager.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
-                showErrorMessage(message, showbutton, executeLogFilePath);
-            this._packageManager.onCommandExecuteComplete = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
-                showInformationMessage(message, showbutton, executeLogFilePath);
-            this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
-                showErrorMessage(message, showbutton, executeLogFilePath);
+            this._packageManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
+                showErrorMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
+            this._packageManager.onCommandExecuteComplete = (message: string, showbutton: boolean) =>
+                showInformationMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
+            this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
+                showErrorMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
             this._selectedUtility = utilityName;
         }
     
         ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-        ExtensionSettings.outputPath = generalConfig.get<string>('outputPath')!;
     
         const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
         ExtensionSettings.environments = serverConfig.get<enviromentSettings[]>('environments');

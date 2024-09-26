@@ -19,6 +19,13 @@ export interface queueItem {
 	Completed: { isSuccess: boolean } | null
 }
 
+export interface ILoggerConfig {
+	terminalName: string;
+	outputPathLog: string;
+	executeLogFileName: string;
+	executeResultFileName: string;
+}
+
 export interface IWebAppCommandExecutor {
 	webAppRegister(server: enviromentSettings): Promise<boolean>,
 	webAppUnregister(server: enviromentSettings): Promise<boolean>,
@@ -29,8 +36,7 @@ export interface IWebAppCommandExecutor {
 }
 
 export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
-	openSettings(): void,
-	getLastExecuteLogPath(): string
+	openSettings(): void
 }
 
 export interface IPackageCommandExecutor {
