@@ -1,23 +1,22 @@
 import * as vscode from 'vscode';
+import { ILoggerConfig } from '../interfaces';
 
 export class TerminalWrapper {
-	private readonly executeResultFileName = 'commandExecuteResult.log';
-	private readonly executeLogFileName = 'commandExecute.log';
 	private readonly setEncodingUtf8 = '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding;';
+	private readonly executeResultFilePath: string;
 
 	public readonly executeLogFilePath: string;
-	public readonly executeResultFilePath: string;
 
-	constructor(private outputPathLog: string, private terminalName: string) {
-		this.executeLogFilePath = `${this.outputPathLog}\\${this.executeLogFileName}`;
-		this.executeResultFilePath = `${this.outputPathLog}\\${this.executeResultFileName}`;
+	constructor(private config: ILoggerConfig) {
+		this.executeLogFilePath = `${config.outputPathLog}\\${config.executeLogFileName}`;
+		this.executeResultFilePath = `${config.outputPathLog}\\${config.executeResultFileName}`;
 	}
 
 	public async executeCommand(command: string, rewriteLogFile: boolean): Promise<boolean> {
-		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
+		let terminal = vscode.window.terminals.find(i => i.name === this.config.terminalName);
 		if (!terminal) {
 			terminal = vscode.window.createTerminal({
-				name: this.terminalName,
+				name: this.config.terminalName,
 				location: vscode.TerminalLocation.Panel,
 			});
 		}

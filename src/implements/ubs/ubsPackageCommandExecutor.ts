@@ -3,11 +3,8 @@ import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
 import { ExtensionSettings, getDirectoryName } from '../../constants';
 
 export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
-    private terminal: TerminalWrapper;
-
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
+    
+    constructor(private terminal: TerminalWrapper) {}
 
     public async createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean> {
         const result = await this.terminal.executeCommand('del ' + fullPathFile, true);
@@ -21,7 +18,7 @@ export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
 
     public async pushPackage(pkg: packageSettings): Promise<boolean> {
         const path = require("path");
-        const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(pkg.targetFolderPath) + ".gz");
+        const packageFilePath = path.join(ExtensionSettings.outputPath(), getDirectoryName(pkg.targetFolderPath) + ".gz");
         return await this.terminal.executeCommand(
             'ubs push '
             + packageFilePath

@@ -1,26 +1,22 @@
 import { packageSettings } from '../interfaces';
-import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { IPackageCommandExecutor } from '../interfaces';
 import { ExtensionSettings, getDirectoryName, Logger } from '../constants';
 
 export class PackageManager {
-    private terminal: TerminalWrapper;
 
-    public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
-    public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
+    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private wrapper: IPackageCommandExecutor) {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
+    constructor(private wrapper: IPackageCommandExecutor) {}
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
         const path = require("path");
-        const fullPathFile = path.join(ExtensionSettings.outputPath, getDirectoryName(targetFolderPath) + '.gz');
+        const fullPathFile = path.join(ExtensionSettings.outputPath(), getDirectoryName(targetFolderPath) + '.gz');
 
         const result = await this.wrapper.createPackage(targetFolderPath, fullPathFile);
 
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Create package failed.', true, this.terminal.executeLogFilePath);
+            this.onCommandExecuteError('Create package failed.', true);
         }
 
         return result;
@@ -30,7 +26,7 @@ export class PackageManager {
         if (settings.targetEnviroment === null) {
             Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
-                this.onCommandExecuteError('Error: target enviroment not found.', false, undefined);
+                this.onCommandExecuteError('Error: target enviroment not found.', false);
             }
             return false;
         }
@@ -38,11 +34,11 @@ export class PackageManager {
         const result = await this.wrapper.pushPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Send package failed.', true, this.terminal.executeLogFilePath);
+            this.onCommandExecuteError('Send package failed.', true);
         }
 
         if (result && this.onCommandExecuteComplete) {
-            this.onCommandExecuteComplete('Send package completed.', true, this.terminal.executeLogFilePath);
+            this.onCommandExecuteComplete('Send package completed.', true);
         }
 
         return result;

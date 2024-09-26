@@ -1,21 +1,13 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
 import { IWrapperCommandExecutor, enviromentSettings } from '../../interfaces';
-import { ExtensionSettings } from '../../constants';
 
 export class UbsCommandExecutor implements IWrapperCommandExecutor {
-    private terminal: TerminalWrapper;
-
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
+    
+    constructor(private terminal: TerminalWrapper) {}
 
     public openSettings() {
         this.terminal.executeCommand('ubs settings', true);
-    }
-
-    public getLastExecuteLogPath(): string {
-        return this.terminal.executeLogFilePath;
     }
 
     public async webAppRegister(server: enviromentSettings): Promise<boolean> {

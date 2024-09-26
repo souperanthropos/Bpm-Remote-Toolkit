@@ -1,21 +1,14 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
 import { IWrapperCommandExecutor, enviromentSettings } from '../../interfaces';
-import { ExtensionSettings, isNullOrWhitespace } from '../../constants';
+import { isNullOrWhitespace } from '../../constants';
 
 export class ClioCommandExecutor implements IWrapperCommandExecutor {
-    private terminal: TerminalWrapper;
 
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
+    constructor(private terminal: TerminalWrapper) {}
 
     public openSettings() {
         this.terminal.executeCommand('clio open-settings', true);
-    }
-
-    public getLastExecuteLogPath(): string {
-        return this.terminal.executeLogFilePath;
     }
 
     public async webAppRegister(server: enviromentSettings): Promise<boolean> {

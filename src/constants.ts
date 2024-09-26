@@ -1,17 +1,28 @@
 import * as vscode from 'vscode';
-import { enviromentSettings } from './interfaces';
+import { enviromentSettings, ILoggerConfig } from './interfaces';
+
+export type OperationResult = { isSuccess: boolean, message: string };
 
 export class ExtensionSettings {
-	static autoUpdateTime = false;
-	static outputPath = '';
+	private static readonly workDir = 'temp';
 
+	static autoUpdateTime = false;
 	static terminalName = 'bpmtoolkit';
 	static extensionPath = '';
 	static environments: enviromentSettings[] | undefined;
+
+	public static outputPath(): string {
+		return `${this.extensionPath}\\${this.workDir}`; 
+	}
 }
 
-export class Logger {
+export class Logger implements ILoggerConfig {
 	private static terminalLog: vscode.OutputChannel;
+
+	public terminalName = ExtensionSettings.terminalName;
+	public outputPathLog = ExtensionSettings.outputPath();
+	public executeResultFileName = 'commandExecuteResult.log';
+	public executeLogFileName = 'commandExecute.log';
 
 	public static writeToChannel(message: string) {
 		if (this.terminalLog === undefined) {
