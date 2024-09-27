@@ -16,9 +16,7 @@ const bpmPackagesPattern = `${hash()}_bpmPackages`;
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	ExtensionSettings.extensionPath = context.extensionPath;
-
-	const bpmToolkit = new BpmToolkit();
+	const bpmToolkit = new BpmToolkit(context.extensionPath);
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
 	const packageDeploymentProvider = new PackageDeploymentProvider();

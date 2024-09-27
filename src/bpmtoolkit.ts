@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { FileManager } from './managers/filemanager';
 import { PackageExplorer } from './packageExplorer';
 import { ClioCommandExecutor } from './implements/clio/clioCommandExecutor';
@@ -39,12 +40,21 @@ export class BpmToolkit {
         return this._webAppManager;
     }
 
-    constructor() {
+    constructor(extensionPath: string) {
+        ExtensionSettings.extensionPath = extensionPath;
         this._selectedUtility = '';
         this._logger = new Logger();
         this._terminalWrapper = new TerminalWrapper(this._logger);
         this._fileManager = new FileManager();
+        this.createTempDir();
         this.checkWorkspaceSettings();
+    }
+
+    private createTempDir() {
+        const dir = ExtensionSettings.outputPath();
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
     }
 
     public getLastExecuteLogPath(): string {
