@@ -1,10 +1,9 @@
 .vscode/**
 .vscode-test/**
 src/**
+temp/**
 .gitignore
 .yarnrc
-commandExecute.log
-commandExecuteResult.log
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
