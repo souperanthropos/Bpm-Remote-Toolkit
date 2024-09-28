@@ -3,16 +3,33 @@ import { enviromentSettings, ILoggerConfig } from './interfaces';
 
 export type OperationResult = { isSuccess: boolean, message: string };
 
+export enum FolderType {
+	default,
+	terminal,
+	package
+}
+
 export class ExtensionSettings {
 	private static readonly workDir = 'temp';
+	private static readonly pkgDir = 'packages';
+	private static readonly logDir = 'logs';
 
 	static autoUpdateTime = false;
 	static terminalName = 'bpmtoolkit';
 	static extensionPath = '';
 	static environments: enviromentSettings[] | undefined;
 
-	public static outputPath(): string {
-		return `${this.extensionPath}\\${this.workDir}`; 
+	public static outputPath(folderType: FolderType): string {
+		const workPath = `${this.extensionPath}\\${this.workDir}`;
+		switch(folderType) {
+			case FolderType.terminal:
+				return `${workPath}\\${this.logDir}`;
+			case FolderType.package:
+				return `${workPath}\\${this.pkgDir}`;
+			default:
+				return workPath; 
+
+		}
 	}
 }
 
@@ -20,7 +37,7 @@ export class Logger implements ILoggerConfig {
 	private static terminalLog: vscode.OutputChannel;
 
 	public terminalName = ExtensionSettings.terminalName;
-	public outputPathLog = ExtensionSettings.outputPath();
+	public outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
 	public executeResultFileName = 'commandExecuteResult.log';
 	public executeLogFileName = 'commandExecute.log';
 

@@ -1,6 +1,6 @@
 import { packageSettings } from '../interfaces';
 import { IPackageCommandExecutor } from '../interfaces';
-import { ExtensionSettings, getDirectoryName, Logger } from '../constants';
+import { ExtensionSettings, FolderType, getDirectoryName, Logger } from '../constants';
 
 export class PackageManager {
 
@@ -11,7 +11,7 @@ export class PackageManager {
 
     public async createPackage(targetFolderPath: string): Promise<boolean> {
         const path = require("path");
-        const fullPathFile = path.join(ExtensionSettings.outputPath(), getDirectoryName(targetFolderPath) + '.gz');
+        const fullPathFile = path.join(ExtensionSettings.outputPath(FolderType.package), getDirectoryName(targetFolderPath) + '.gz');
 
         const result = await this.wrapper.createPackage(targetFolderPath, fullPathFile);
 

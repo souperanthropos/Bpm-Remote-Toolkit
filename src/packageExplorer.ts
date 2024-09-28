@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ExtensionSettings, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
+import { ExtensionSettings, FolderType, getDirectoryName, showErrorMessage, showInformationMessage } from './constants';
 import { GitHelper } from './git';
 import { PackageManager } from './managers/packagemanager';
 
@@ -24,8 +24,8 @@ export class PackageExplorer {
 					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 					if (await this._gitHelper.isPermittedBranch(branches)) {
 						if (await this._pm.createPackage(fsPath)) {
-							if (ExtensionSettings.outputPath()) {
-								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath()));
+							if (ExtensionSettings.outputPath(FolderType.package)) {
+								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath(FolderType.package)));
 							}
 						}
 					}
