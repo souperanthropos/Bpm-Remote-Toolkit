@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { queueItem, enviromentSettings, packageSettings } from '../interfaces';
+import { queueItem, packageSettings } from '../interfaces';
 
 export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueItem>{
 

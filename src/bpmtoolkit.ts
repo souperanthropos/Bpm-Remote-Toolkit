@@ -1,27 +1,27 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { FileManager } from './managers/filemanager';
-import { PackageExplorer } from './packageExplorer';
 import { ClioCommandExecutor } from './implements/clio/clioCommandExecutor';
 import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommandExecutor';
 import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
-import { ExtensionSettings, Logger, FolderType, showErrorMessage, showInformationMessage } from './constants';
+import { FolderType, showErrorMessage, showInformationMessage } from './constants';
 import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
 import { TerminalWrapper } from './terminal/terminalwrapper';
+import { ExtensionSettings } from './common/extensionSettings';
+import { Logger } from './common/logger';
 
 export class BpmToolkit {
     private _logger: Logger;
     private _terminalWrapper: TerminalWrapper;
     private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
-    private _packageExplorer!: PackageExplorer;
     private _webAppManager!: WebAppManager;
-
     private _packageManager!: PackageManager;
+
     private _selectedUtility: string;
 
     public get fileManager(): FileManager{
@@ -32,8 +32,8 @@ export class BpmToolkit {
         return this._packageDeploymentManager;
     }
 
-    public get packageExplorer(): PackageExplorer{
-        return this._packageExplorer;
+    public get packageManager(): PackageManager{
+        return this._packageManager;
     }
 
     public get webAppManager(): WebAppManager{
@@ -85,7 +85,6 @@ export class BpmToolkit {
                     this._webAppManager = new WebAppManager(new UbsCommandExecutor(this._terminalWrapper));
             }
             this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
-            this._packageExplorer = new PackageExplorer(this._packageManager);
             this._packageManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
                 showErrorMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
             this._packageManager.onCommandExecuteComplete = (message: string, showbutton: boolean) =>
