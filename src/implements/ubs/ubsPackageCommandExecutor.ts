@@ -1,6 +1,6 @@
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
 import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
-import { ExtensionSettings, getDirectoryName } from '../../constants';
+import { ExtensionSettings, FolderType, getDirectoryName } from '../../constants';
 
 export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
     
@@ -18,7 +18,7 @@ export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
 
     public async pushPackage(pkg: packageSettings): Promise<boolean> {
         const path = require("path");
-        const packageFilePath = path.join(ExtensionSettings.outputPath(), getDirectoryName(pkg.targetFolderPath) + ".gz");
+        const packageFilePath = path.join(ExtensionSettings.outputPath(FolderType.package), getDirectoryName(pkg.targetFolderPath) + ".gz");
         return await this.terminal.executeCommand(
             'ubs push '
             + packageFilePath

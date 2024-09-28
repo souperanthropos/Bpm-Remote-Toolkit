@@ -7,7 +7,7 @@ import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommand
 import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
-import { ExtensionSettings, Logger, showErrorMessage, showInformationMessage } from './constants';
+import { ExtensionSettings, Logger, FolderType, showErrorMessage, showInformationMessage } from './constants';
 import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
@@ -51,7 +51,15 @@ export class BpmToolkit {
     }
 
     private createTempDir() {
-        const dir = ExtensionSettings.outputPath();
+        let dir = ExtensionSettings.outputPath(FolderType.default);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        dir = ExtensionSettings.outputPath(FolderType.package);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        dir = ExtensionSettings.outputPath(FolderType.terminal);
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
