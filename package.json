@@ -117,14 +117,6 @@
         "title": "Add Folder To Packages Explorer"
       },
       {
-        "command": "explorer.folder.createPackage",
-        "title": "Create Package"
-      },
-      {
-        "command": "explorer.folder.createAndSendPackage",
-        "title": "Create Package And Send"
-      },
-      {
         "command": "bpmEnvironments.openSettings",
         "title": "Settings",
         "icon": "$(settings-gear)"
@@ -189,16 +181,6 @@
     ],
     "menus": {
       "explorer/context": [
-        {
-          "command": "explorer.folder.createPackage",
-          "when": "explorerResourceIsFolder && isShowContextMenu",
-          "group": "z_cliowrapper@1"
-        },
-        {
-          "command": "explorer.folder.createAndSendPackage",
-          "when": "explorerResourceIsFolder && isShowContextMenu",
-          "group": "z_cliowrapper@2"
-        },
         {
           "command": "explorer.folder.addPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
