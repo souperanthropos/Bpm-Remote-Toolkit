@@ -1,6 +1,7 @@
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
 import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
-import { ExtensionSettings, FolderType, getDirectoryName } from '../../constants';
+import { FolderType, getDirectoryName } from '../../constants';
+import { ExtensionSettings } from '../../common/extensionSettings';
 
 export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
     

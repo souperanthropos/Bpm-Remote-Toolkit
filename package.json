@@ -149,12 +149,12 @@
         "icon": "$(debug-disconnect)"
       },
       {
-        "command": "packagesExplorer.package.create",
+        "command": "packagesExplorer.createPackageWithProgress",
         "title": "Create Package",
         "icon": "$(repo-pull)"
       },
       {
-        "command": "packagesExplorer.package.createAndSend",
+        "command": "packagesExplorer.deployPackageToSelectedServer",
         "title": "Create Package And Send",
         "icon": "$(repo-force-push)"
       },
@@ -236,12 +236,12 @@
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.package.create",
+          "command": "packagesExplorer.createPackageWithProgress",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@1"
         },
         {
-          "command": "packagesExplorer.package.createAndSend",
+          "command": "packagesExplorer.deployPackageToSelectedServer",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@2"
         },

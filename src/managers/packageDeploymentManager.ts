@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { GitHelper } from '../git';
 import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
-import { ExtensionSettings } from '../constants';
 import { PackageManager } from './packagemanager';
+import { GitHelper } from '../common/git';
+import { ExtensionSettings } from '../common/extensionSettings';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;

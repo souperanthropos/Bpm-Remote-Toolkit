@@ -1,6 +1,7 @@
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
 import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
-import { ExtensionSettings, getDirectoryName, FolderType } from '../../constants';
+import { getDirectoryName, FolderType } from '../../constants';
+import { ExtensionSettings } from '../../common/extensionSettings';
 
 export class ClioPackageCommandExecutor implements IPackageCommandExecutor {
     

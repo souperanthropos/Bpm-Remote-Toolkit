@@ -7,8 +7,9 @@ import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { PackageDeploymentProvider } from './implements/packageDeploymentProvider';
 import { packageSettings, enviromentSettings } from './interfaces';
-import { ExtensionSettings, getDirectoryName, hash } from './constants';
+import { getDirectoryName, hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
+import { ExtensionSettings } from './common/extensionSettings';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
@@ -83,12 +84,12 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.create', (pkg: packageSettings) => {
-		bpmToolkit.packageExplorer.create(pkg.targetFolderPath);
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createPackageWithProgress', (pkg: packageSettings) => {
+		bpmToolkit.packageManager.createPackageWithProgress(pkg.targetFolderPath);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.createAndSend', (pkg: packageSettings) => {
-		bpmToolkit.packageExplorer.createAndSend(pkg.targetFolderPath);
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', (pkg: packageSettings) => {
+		bpmToolkit.packageManager.deployPackageToSelectedServer(pkg.targetFolderPath);
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
