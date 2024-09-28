@@ -176,14 +176,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.createPackage', (uri: vscode.Uri) => {
-		bpmToolkit.packageExplorer.create(uri.fsPath);
-	}));
-
-	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.createAndSendPackage', (uri: vscode.Uri) => {
-		bpmToolkit.packageExplorer.createAndSend(uri.fsPath);
-	}));
-
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
 		bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection);
 	}));
