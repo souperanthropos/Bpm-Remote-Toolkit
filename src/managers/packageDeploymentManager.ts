@@ -84,12 +84,18 @@ export class PackageDeploymentManager {
         if(abortDeployment){
             return;
         }
+        const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+		statusBarItem.show();
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
         for await (const element of this._queueItems) {
+            if (!await this._gitHelper.checkBranch(element.package.targetEnviroment!.gitBranchName!)){
+                break;
+            }
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+            statusBarItem.text = '$(loading~spin) Create package...';
             var result = await this._pm.createPackage(element.package.targetFolderPath);
             if (!result) {
                 element.isRunning = false;
@@ -97,6 +103,7 @@ export class PackageDeploymentManager {
                 vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                 break;
             } else {
+                statusBarItem.text = '$(loading~spin) Sending package...';
                 result = await this._pm.pushPackage(element.package);
                 if (!result) {
                     element.isRunning = false;
@@ -111,6 +118,7 @@ export class PackageDeploymentManager {
                 }
             }
         }
+        statusBarItem.hide();
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', true);
     }
