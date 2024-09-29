@@ -89,7 +89,9 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', (pkg: packageSettings) => {
-		bpmToolkit.packageManager.deployPackageToSelectedServer(pkg.targetFolderPath);
+		//bpmToolkit.packageManager.deployPackageToSelectedServer(pkg.targetFolderPath);
+		bpmToolkit.packageDeploymentManager.clear();
+		bpmToolkit.packageDeploymentManager.addQueueItem(pkg, true);
 	}));
 
 	context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(event => {
@@ -178,7 +180,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
-		bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection);
+		bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(

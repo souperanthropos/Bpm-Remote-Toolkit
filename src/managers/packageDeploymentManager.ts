@@ -31,7 +31,7 @@ export class PackageDeploymentManager {
         return this._queueItems;
     }
 
-    public addQueueItem(pkg: packageSettings) {
+    public addQueueItem(pkg: packageSettings, forceStartDeployment: boolean) {
         const currentBranch = this._gitHelper.getCurrentBranch();
         if (ExtensionSettings.environments && currentBranch !== '') {
             if (!this.selectedServer) {
@@ -51,7 +51,9 @@ export class PackageDeploymentManager {
                         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', true);
                     }
                     qp.hide();
-
+                    if(forceStartDeployment){
+                        this.startDeployment();
+                    }
                 });
                 qp.onDidHide(() => qp.dispose());
                 qp.show();
@@ -66,13 +68,22 @@ export class PackageDeploymentManager {
 
     public async startDeployment() {
         let ignorePushError = false;
-        await vscode.window
-            .showInformationMessage('Ignore package installation errors?', "Yes", "No")
+        let abortDeployment = false;
+        if(this._queueItems.length > 1){
+            const options: vscode.MessageOptions = { modal: true };
+            await vscode.window
+            .showInformationMessage('Ignore package installation errors?', options, "Yes", "No")
             .then(answer => {
                 if (answer === "Yes") {
                     ignorePushError = true;
+                }else if (answer === undefined){
+                    abortDeployment = true;
                 }
             });
+        }
+        if(abortDeployment){
+            return;
+        }
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
