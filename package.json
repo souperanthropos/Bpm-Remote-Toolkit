@@ -212,27 +212,27 @@
       "view/item/context": [
         {
           "command": "bpmEnvironments.server.restart",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "navigation@1"
         },
         {
           "command": "bpmEnvironments.server.compileConfiguration",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "navigation@2"
         },
         {
           "command": "bpmEnvironments.server.redisClear",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "cw_other@2"
         },
         {
           "command": "bpmEnvironments.server.register",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister && isShowContextMenu",
           "group": "inline@1"
         },
         {
           "command": "bpmEnvironments.server.unregister",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "inline@2"
         },
         {
