@@ -43,60 +43,6 @@ export class PackageManager {
 		}
 	}
 
-    public deployPackageToSelectedServer(fsPath: string) {
-		const currentBranch = this._gitHelper.getCurrentBranch();
-		if (ExtensionSettings.environments && currentBranch !== '') {
-			const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
-			const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
-			const qp = vscode.window.createQuickPick();
-			qp.canSelectMany = false;
-			qp.items = quickPickItems;
-			qp.onDidChangeSelection(async selection => {
-				const serverId = selection[0].label;
-				const serverConfig = ExtensionSettings.environments?.find(e => e.id === serverId);
-				qp.hide();
-
-				if (serverConfig && serverConfig.gitBranchName) {
-					vscode.window.withProgress(
-						{
-							location: vscode.ProgressLocation.Notification,
-							title: 'Current operation'
-						},
-						async (progress) => {
-							vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
-							if (await this._gitHelper.checkBranch(serverConfig.gitBranchName!)) {
-								var folderName = getDirectoryName(fsPath);
-								progress.report({
-									message: `creating package ${folderName}.gz`
-								});
-								if (await this.createPackage(fsPath)) {
-									progress.report({
-										message: `sending package ${folderName}.gz`,
-										increment: 50
-									});
-									await this.pushPackage(
-										{
-											folderName: folderName,
-											targetFolderPath: fsPath,
-											targetEnviroment: serverConfig
-										}
-									);
-								}
-							}
-							vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-						}
-					);
-				} else {
-					vscode.window.showInformationMessage(
-						"Command execute failed: check you .code-workspace file."
-					);
-				}
-			});
-			qp.onDidHide(() => qp.dispose());
-			qp.show();
-		}
-	}
-
     public async createPackage(targetFolderPath: string): Promise<boolean> {
         const path = require("path");
         const fullPathFile = path.join(ExtensionSettings.outputPath(FolderType.package), getDirectoryName(targetFolderPath) + '.gz');
