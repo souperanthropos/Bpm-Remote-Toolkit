@@ -73,6 +73,7 @@ export class PackageDeploymentManager {
                     ignorePushError = true;
                 }
             });
+        vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
         for await (const element of this._queueItems) {
@@ -99,6 +100,7 @@ export class PackageDeploymentManager {
                 }
             }
         }
+        vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', true);
     }
 
