@@ -1,22 +1,22 @@
 import * as vscode from 'vscode';
-import { IWrapperCommandExecutor, enviromentSettings } from '../interfaces';
+import { IIntegratedCommandExecutor, enviromentSettings } from '../interfaces';
 
 export class WebAppManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private wrapper: IWrapperCommandExecutor) { }
+    constructor(private commandExecutor: IIntegratedCommandExecutor) { }
 
     public openSettings() {
-        this.wrapper.openSettings();
+        this.commandExecutor.openSettings();
     }
 
     public async webAppRegister(server: enviromentSettings): Promise<boolean> {
-        return await this.wrapper.webAppRegister(server);
+        return await this.commandExecutor.webAppRegister(server);
     }
 
     public async webAppUnregister(server: enviromentSettings, isLogEnabled: boolean) {
-        const result = await this.wrapper.webAppUnregister(server);
+        const result = await this.commandExecutor.webAppUnregister(server);
         if (isLogEnabled) {
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Unregister web app failed.', true);
@@ -25,7 +25,7 @@ export class WebAppManager {
     }
 
     public async webAppPing(server: enviromentSettings): Promise<boolean> {
-        const result = await this.wrapper.webAppPing(server);
+        const result = await this.commandExecutor.webAppPing(server);
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Ping web app failed.', true);
         }
@@ -38,7 +38,7 @@ export class WebAppManager {
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
-            const result = await this.wrapper.webAppRestart(server);
+            const result = await this.commandExecutor.webAppRestart(server);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Restart web app failed.', true);
             }
@@ -51,7 +51,7 @@ export class WebAppManager {
                 "You cannot execute this command because server " + server.id + " is disabled."
             );
         } else {
-            const result = await this.wrapper.clearRedisDb(server);
+            const result = await this.commandExecutor.clearRedisDb(server);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Clear redis db failed.', true);
             }
@@ -64,7 +64,7 @@ export class WebAppManager {
                 "You cannot execute this command because server " + server.id + " is disabled."
             );
         } else {
-            const result = await this.wrapper.compileConfiguration(server);
+            const result = await this.commandExecutor.compileConfiguration(server);
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Compile configuration failed.', true);
             }

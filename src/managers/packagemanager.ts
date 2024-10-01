@@ -12,7 +12,7 @@ export class PackageManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private wrapper: IPackageCommandExecutor) {
+    constructor(private commandExecutor: IPackageCommandExecutor) {
         this._gitHelper = new GitHelper();
     }
 
@@ -47,7 +47,7 @@ export class PackageManager {
         const path = require("path");
         const fullPathFile = path.join(ExtensionSettings.outputPath(FolderType.package), getDirectoryName(targetFolderPath) + '.gz');
 
-        const result = await this.wrapper.createPackage(targetFolderPath, fullPathFile);
+        const result = await this.commandExecutor.createPackage(targetFolderPath, fullPathFile);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true);
@@ -65,7 +65,7 @@ export class PackageManager {
             return false;
         }
 
-        const result = await this.wrapper.pushPackage(settings);
+        const result = await this.commandExecutor.pushPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Send package failed.', true);

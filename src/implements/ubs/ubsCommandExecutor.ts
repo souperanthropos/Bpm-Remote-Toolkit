@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IWrapperCommandExecutor, enviromentSettings } from '../../interfaces';
+import { IIntegratedCommandExecutor, enviromentSettings } from '../../interfaces';
 
-export class UbsCommandExecutor implements IWrapperCommandExecutor {
+export class UbsCommandExecutor implements IIntegratedCommandExecutor {
     
     constructor(private terminal: TerminalWrapper) {}
 
