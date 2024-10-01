@@ -6,14 +6,14 @@ import { ExtensionSettings } from '../common/extensionSettings';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
-    private readonly _pm: PackageManager;
+    private readonly _packageManager: PackageManager;
     private readonly _queueItems: queueItem[];
 
     private selectedServer?: enviromentSettings;
 
     constructor(packageManager: PackageManager) {
         this._gitHelper = new GitHelper();
-        this._pm = packageManager;
+        this._packageManager = packageManager;
         this._queueItems = new Array();
     }
 
@@ -96,7 +96,7 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            var result = await this._pm.createPackage(element.package.targetFolderPath);
+            var result = await this._packageManager.createPackage(element.package.targetFolderPath);
             if (!result) {
                 element.isRunning = false;
                 element.Completed = { isSuccess: false };
@@ -104,7 +104,7 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
-                result = await this._pm.pushPackage(element.package);
+                result = await this._packageManager.pushPackage(element.package);
                 if (!result) {
                     element.isRunning = false;
                     element.Completed = { isSuccess: false };

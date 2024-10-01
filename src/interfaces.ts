@@ -35,9 +35,11 @@ export interface IWebAppCommandExecutor {
 	compileConfiguration(server: enviromentSettings): Promise<boolean>
 }
 
-export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
+export interface IAppCommandExecutor {
 	openSettings(): void
 }
+
+export interface IIntegratedCommandExecutor extends IAppCommandExecutor, IWebAppCommandExecutor {}
 
 export interface IPackageCommandExecutor {
 	createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean>,
