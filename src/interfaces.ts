@@ -39,7 +39,7 @@ export interface IAppCommandExecutor {
 	openSettings(): void
 }
 
-export interface IIntegratedCommandExecutor extends IAppCommandExecutor, IWebAppCommandExecutor {}
+export interface ICommandExecutor extends IAppCommandExecutor, IWebAppCommandExecutor {}
 
 export interface IPackageCommandExecutor {
 	createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean>,
