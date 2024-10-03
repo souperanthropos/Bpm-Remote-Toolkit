@@ -6,10 +6,10 @@ import { FolderType } from '../constants';
 export class Logger implements ILoggerConfig {
 	private static terminalLog: vscode.OutputChannel;
 
-	public terminalName = ExtensionSettings.terminalName;
-	public outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
-	public executeResultFileName = 'commandExecuteResult.log';
-	public executeLogFileName = 'commandExecute.log';
+	public readonly terminalName = ExtensionSettings.terminalName;
+	public readonly outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
+	public readonly executeResultFileName = 'commandExecuteResult.log';
+	public readonly executeLogFileName = 'commandExecute.log';
 
 	public static writeToChannel(message: string) {
 		if (this.terminalLog === undefined) {

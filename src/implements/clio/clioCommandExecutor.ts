@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IIntegratedCommandExecutor, enviromentSettings } from '../../interfaces';
+import { ICommandExecutor, enviromentSettings } from '../../interfaces';
 import { isNullOrWhitespace } from '../../constants';
 
-export class ClioCommandExecutor implements IIntegratedCommandExecutor {
+export class ClioCommandExecutor implements ICommandExecutor {
 
     constructor(private terminal: TerminalWrapper) {}
 

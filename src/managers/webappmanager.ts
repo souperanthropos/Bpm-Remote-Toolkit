@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { IIntegratedCommandExecutor, enviromentSettings } from '../interfaces';
+import { ICommandExecutor, enviromentSettings } from '../interfaces';
 
 export class WebAppManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private commandExecutor: IIntegratedCommandExecutor) { }
+    constructor(private commandExecutor: ICommandExecutor) { }
 
     public openSettings() {
         this.commandExecutor.openSettings();
