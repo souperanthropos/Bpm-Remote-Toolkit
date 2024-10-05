@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Logger } from '../common/logger';
 
 export abstract class TerminalWrapper {
-	abstract executeCommand(command: string, rewriteLogFile: boolean): Promise<boolean>;
+	abstract executeCommand(command: string): Promise<boolean>;
 }
 
 export class PowerShellWrapper extends TerminalWrapper {
@@ -11,14 +11,14 @@ export class PowerShellWrapper extends TerminalWrapper {
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
 
-	constructor() {
+	constructor(private rewriteLogFile: boolean = true) {
 		super();
 		this.executeLogFilePath = Logger.getExecuteLogFilePath();
 		this.executeResultFilePath = Logger.getExecuteResultFileName();
 		this.terminalName = Logger.terminalName;
 	}
 
-	public async executeCommand(command: string, rewriteLogFile: boolean): Promise<boolean> {
+	public async executeCommand(command: string): Promise<boolean> {
 		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
 		if (!terminal) {
 			terminal = vscode.window.createTerminal({
@@ -28,7 +28,7 @@ export class PowerShellWrapper extends TerminalWrapper {
 		}
 		
 		terminal.show(true);
-		if(rewriteLogFile){
+		if(this.rewriteLogFile){
 			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath};`, false);
 		}else{
 			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);

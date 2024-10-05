@@ -8,7 +8,7 @@ export class ClioCommandExecutor implements ICommandExecutor {
     constructor(private terminal: TerminalWrapper) {}
 
     public openSettings() {
-        this.terminal.executeCommand('clio open-settings', true);
+        this.terminal.executeCommand('clio open-settings');
     }
 
     public async webAppRegister(server: enviromentSettings): Promise<boolean> {
@@ -24,8 +24,7 @@ export class ClioCommandExecutor implements ICommandExecutor {
             });
             if (!isNullOrWhitespace(passwordQuery)) {
                 return await this.terminal.executeCommand(
-                    `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery} -i ${server.isNetCore}`,
-                    true
+                    `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery} -i ${server.isNetCore}`
                 );
             }
         }
@@ -33,22 +32,22 @@ export class ClioCommandExecutor implements ICommandExecutor {
     }
 
     public async webAppUnregister(server: enviromentSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, true);
+        return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`);
     }
 
     public async webAppPing(server: enviromentSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio ping -e ${server.id}`, true);
+        return await this.terminal.executeCommand(`clio ping -e ${server.id}`);
     }
 
     public async webAppRestart(server: enviromentSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio restart-web-app -e ${server.id}`, true);
+        return await this.terminal.executeCommand(`clio restart-web-app -e ${server.id}`);
     }
 
     public async clearRedisDb(server: enviromentSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio clear-redis-db -e ${server.id}`, true);
+        return await this.terminal.executeCommand(`clio clear-redis-db -e ${server.id}`);
     }
 
     public async compileConfiguration(server: enviromentSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio compile-configuration -e ${server.id}`, true);
+        return await this.terminal.executeCommand(`clio compile-configuration -e ${server.id}`);
     }
 }
