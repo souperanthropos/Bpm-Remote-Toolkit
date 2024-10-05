@@ -15,7 +15,6 @@ import { ExtensionSettings } from './common/extensionSettings';
 import { Logger } from './common/logger';
 
 export class BpmToolkit {
-    private _terminalWrapper: TerminalWrapper;
     private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
     private _webAppManager!: WebAppManager;
@@ -42,7 +41,6 @@ export class BpmToolkit {
     constructor(extensionPath: string) {
         ExtensionSettings.extensionPath = extensionPath;
         this._selectedUtility = '';
-        this._terminalWrapper = new PowerShellWrapper();
         this._fileManager = new FileManager();
         this.createTempDir();
         this.checkWorkspaceSettings();
@@ -70,13 +68,13 @@ export class BpmToolkit {
         if(this._selectedUtility !== utilityName){
             switch(utilityName){
                 case `clio`:
-                    this._packageManager = new PackageManager(new ClioPackageCommandExecutor(this._terminalWrapper));
-                    this._webAppManager = new WebAppManager(new ClioCommandExecutor(this._terminalWrapper));
+                    this._packageManager = new PackageManager(new ClioPackageCommandExecutor(new PowerShellWrapper(false)));
+                    this._webAppManager = new WebAppManager(new ClioCommandExecutor(new PowerShellWrapper(true)));
                     break;
                 case `ubs`:
                 default:
-                    this._packageManager = new PackageManager(new UbsPackageCommandExecutor(this._terminalWrapper));
-                    this._webAppManager = new WebAppManager(new UbsCommandExecutor(this._terminalWrapper));
+                    this._packageManager = new PackageManager(new UbsPackageCommandExecutor(new PowerShellWrapper(false)));
+                    this._webAppManager = new WebAppManager(new UbsCommandExecutor(new PowerShellWrapper(true)));
             }
             this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
             this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
