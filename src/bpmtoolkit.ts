@@ -10,7 +10,7 @@ import { FolderType, showErrorMessage } from './constants';
 import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
-import { TerminalWrapper } from './terminal/terminalwrapper';
+import { PowerShellWrapper, TerminalWrapper } from './terminal/terminalwrapper';
 import { ExtensionSettings } from './common/extensionSettings';
 import { Logger } from './common/logger';
 
@@ -42,7 +42,7 @@ export class BpmToolkit {
     constructor(extensionPath: string) {
         ExtensionSettings.extensionPath = extensionPath;
         this._selectedUtility = '';
-        this._terminalWrapper = new TerminalWrapper();
+        this._terminalWrapper = new PowerShellWrapper();
         this._fileManager = new FileManager();
         this.createTempDir();
         this.checkWorkspaceSettings();

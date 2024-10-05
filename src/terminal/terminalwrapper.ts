@@ -1,13 +1,18 @@
 import * as vscode from 'vscode';
 import { Logger } from '../common/logger';
 
-export class TerminalWrapper {
+export abstract class TerminalWrapper {
+	abstract executeCommand(command: string, rewriteLogFile: boolean): Promise<boolean>;
+}
+
+export class PowerShellWrapper extends TerminalWrapper {
 	private readonly setEncodingUtf8 = '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding;';
 	private readonly executeResultFilePath: string;
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
 
 	constructor() {
+		super();
 		this.executeLogFilePath = Logger.getExecuteLogFilePath();
 		this.executeResultFilePath = Logger.getExecuteResultFileName();
 		this.terminalName = Logger.terminalName;
