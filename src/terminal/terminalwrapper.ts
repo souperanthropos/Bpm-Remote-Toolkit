@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { Logger } from '../common/logger';
 
 export abstract class TerminalWrapper {
+	abstract addTextToLogFile(message: string): Promise<boolean>;
 	abstract executeCommand(command: string): Promise<boolean>;
 }
 
@@ -16,6 +17,10 @@ export class PowerShellWrapper extends TerminalWrapper {
 		this.executeLogFilePath = Logger.getExecuteLogFilePath();
 		this.executeResultFilePath = Logger.getExecuteResultFileName();
 		this.terminalName = Logger.terminalName;
+	}
+
+	public async addTextToLogFile(message: string): Promise<boolean> {
+		return await this.executeCommand(`$content =  (Get-Date -Format "dd/MM/yyyy HH:mm:ss").ToString() + ' - ${message}'; Add-Content -Path ${this.executeLogFilePath} -Value $content`);
 	}
 
 	public async executeCommand(command: string): Promise<boolean> {
