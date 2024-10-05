@@ -1,15 +1,28 @@
 import * as vscode from 'vscode';
-import { ILoggerConfig } from '../interfaces';
 import { ExtensionSettings } from './extensionSettings';
 import { FolderType } from '../constants';
 
-export class Logger implements ILoggerConfig {
+export class Logger {
 	private static terminalLog: vscode.OutputChannel;
+	private static outputPathLog = '';
+	private static readonly executeResultFileName = 'commandExecuteResult.log';
+	private static executeLogFileName = 'commandExecute.log';
 
-	public readonly terminalName = ExtensionSettings.terminalName;
-	public readonly outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
-	public readonly executeResultFileName = 'commandExecuteResult.log';
-	public readonly executeLogFileName = 'commandExecute.log';
+	public static readonly terminalName = ExtensionSettings.terminalName;
+
+	public static getExecuteLogFilePath() : string {
+		if(Logger.outputPathLog === ''){
+			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
+		}
+		return `${Logger.outputPathLog}\\${Logger.executeLogFileName}`;
+	}
+
+	public static getExecuteResultFileName() : string {
+		if(Logger.outputPathLog === ''){
+			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
+		}
+		return `${Logger.outputPathLog}\\${Logger.executeResultFileName}`;
+	}
 
 	public static writeToChannel(message: string) {
 		if (this.terminalLog === undefined) {

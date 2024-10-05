@@ -19,13 +19,6 @@ export interface queueItem {
 	Completed: { isSuccess: boolean } | null
 }
 
-export interface ILoggerConfig {
-	terminalName: string;
-	outputPathLog: string;
-	executeLogFileName: string;
-	executeResultFileName: string;
-}
-
 export interface IWebAppCommandExecutor {
 	webAppRegister(server: enviromentSettings): Promise<boolean>,
 	webAppUnregister(server: enviromentSettings): Promise<boolean>,

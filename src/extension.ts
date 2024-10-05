@@ -10,6 +10,7 @@ import { packageSettings, enviromentSettings } from './interfaces';
 import { getDirectoryName, hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
 import { ExtensionSettings } from './common/extensionSettings';
+import { Logger } from './common/logger';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
@@ -101,7 +102,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'packagesExplorer.openLastLog',
 		() => {
-			const folderUri = vscode.Uri.file(bpmToolkit.getLastExecuteLogPath());
+			const folderUri = vscode.Uri.file(Logger.getExecuteLogFilePath());
 			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 		}));
 
