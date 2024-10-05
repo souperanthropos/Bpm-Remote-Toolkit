@@ -3,6 +3,8 @@ import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
 import { PackageManager } from './packagemanager';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
+import { showErrorMessage } from '../constants';
+import { Logger } from '../common/logger';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
@@ -117,6 +119,10 @@ export class PackageDeploymentManager {
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                 }
             }
+        }
+        const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
+        if(deployErrorCount > 0){
+            showErrorMessage('Package deployment failed with an error.', true, Logger.getExecuteLogFilePath());
         }
         statusBarItem.hide();
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);

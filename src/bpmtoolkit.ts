@@ -6,7 +6,7 @@ import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommand
 import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
-import { FolderType, showErrorMessage, showInformationMessage } from './constants';
+import { FolderType, showErrorMessage } from './constants';
 import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
@@ -15,7 +15,6 @@ import { ExtensionSettings } from './common/extensionSettings';
 import { Logger } from './common/logger';
 
 export class BpmToolkit {
-    private _logger: Logger;
     private _terminalWrapper: TerminalWrapper;
     private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
@@ -43,8 +42,7 @@ export class BpmToolkit {
     constructor(extensionPath: string) {
         ExtensionSettings.extensionPath = extensionPath;
         this._selectedUtility = '';
-        this._logger = new Logger();
-        this._terminalWrapper = new TerminalWrapper(this._logger);
+        this._terminalWrapper = new TerminalWrapper();
         this._fileManager = new FileManager();
         this.createTempDir();
         this.checkWorkspaceSettings();
@@ -65,10 +63,6 @@ export class BpmToolkit {
         }
     }
 
-    public getLastExecuteLogPath(): string {
-        return this._terminalWrapper.executeLogFilePath;
-    }
-
     public checkWorkspaceSettings() {
         const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
     
@@ -85,12 +79,8 @@ export class BpmToolkit {
                     this._webAppManager = new WebAppManager(new UbsCommandExecutor(this._terminalWrapper));
             }
             this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
-            this._packageManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
-                showErrorMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
-            this._packageManager.onCommandExecuteComplete = (message: string, showbutton: boolean) =>
-                showInformationMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
             this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
-                showErrorMessage(message, showbutton, this._terminalWrapper.executeLogFilePath);
+                showErrorMessage(message, showbutton, Logger.getExecuteLogFilePath());
             this._selectedUtility = utilityName;
         }
     
