@@ -35,6 +35,6 @@ export interface IAppCommandExecutor {
 export interface ICommandExecutor extends IAppCommandExecutor, IWebAppCommandExecutor {}
 
 export interface IPackageCommandExecutor {
-	createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean>,
+	createPackage(pkg: packageSettings): Promise<boolean>,
 	pushPackage(pkg: packageSettings): Promise<boolean>
 }

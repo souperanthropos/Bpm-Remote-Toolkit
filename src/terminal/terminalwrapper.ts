@@ -20,7 +20,7 @@ export class PowerShellWrapper extends TerminalWrapper {
 	}
 
 	public async addTextToLogFile(message: string): Promise<boolean> {
-		return await this.executeCommand(`$content =  (Get-Date -Format "dd/MM/yyyy HH:mm:ss").ToString() + ' - ${message}'; Add-Content -Path ${this.executeLogFilePath} -Value $content`);
+		return await this.executeCommand(`$content =  (Get-Date -Format "dd/MM/yyyy HH:mm:ss.fff").ToString() + ' - ${message}'; Add-Content -Path ${this.executeLogFilePath} -Value $content`);
 	}
 
 	public async executeCommand(command: string): Promise<boolean> {
