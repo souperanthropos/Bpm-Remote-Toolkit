@@ -89,8 +89,8 @@ export function activate(context: vscode.ExtensionContext) {
 		bpmToolkit.packageManager.createPackageWithProgress(pkg);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', (pkg: packageSettings) => {
-		//bpmToolkit.packageManager.deployPackageToSelectedServer(pkg.targetFolderPath);
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: packageSettings) => {
+		await bpmToolkit.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
 		bpmToolkit.packageDeploymentManager.clear();
 		bpmToolkit.packageDeploymentManager.addQueueItem(pkg, true);
 	}));
@@ -186,7 +186,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'packageDeploymentManagement.startDeployment',
-		() => bpmToolkit.packageDeploymentManager.startDeployment()));
+		async () => {
+			await bpmToolkit.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
+			bpmToolkit.packageDeploymentManager.startDeployment();
+		}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'packageDeploymentManagement.clear',
