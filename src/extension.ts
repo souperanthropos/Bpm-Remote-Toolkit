@@ -86,7 +86,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createPackageWithProgress', (pkg: packageSettings) => {
-		bpmToolkit.packageManager.createPackageWithProgress(pkg.targetFolderPath);
+		bpmToolkit.packageManager.createPackageWithProgress(pkg);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', (pkg: packageSettings) => {

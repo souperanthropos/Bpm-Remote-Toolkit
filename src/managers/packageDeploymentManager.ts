@@ -98,7 +98,7 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            var result = await this._packageManager.createPackage(element.package.targetFolderPath);
+            var result = await this._packageManager.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
                 element.Completed = { isSuccess: false };

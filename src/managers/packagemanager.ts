@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { IPackageCommandExecutor } from '../interfaces';
-import { FolderType, getDirectoryName } from '../constants';
+import { FolderType } from '../constants';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
 import { Logger } from '../common/logger';
@@ -16,18 +16,18 @@ export class PackageManager {
         this._gitHelper = new GitHelper();
     }
 
-    public createPackageWithProgress(fsPath: string) {
+    public createPackageWithProgress(pkg: packageSettings) {
 		if (ExtensionSettings.environments) {
 			const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
 			vscode.window.withProgress(
 				{
 					location: vscode.ProgressLocation.Notification,
-					title: `Creating package: ${getDirectoryName(fsPath)}.gz`
+					title: `Creating package: ${pkg.folderName}.gz`
 				},
 				async () => {
 					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 					if (await this._gitHelper.isPermittedBranch(branches)) {
-						if (await this.createPackage(fsPath)) {
+						if (await this.createPackage(pkg)) {
 							if (ExtensionSettings.outputPath(FolderType.package)) {
 								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath(FolderType.package)));
 							}
@@ -43,11 +43,8 @@ export class PackageManager {
 		}
 	}
 
-    public async createPackage(targetFolderPath: string): Promise<boolean> {
-        const path = require("path");
-        const fullPathFile = path.join(ExtensionSettings.outputPath(FolderType.package), getDirectoryName(targetFolderPath) + '.gz');
-
-        const result = await this.commandExecutor.createPackage(targetFolderPath, fullPathFile);
+    public async createPackage(settings: packageSettings): Promise<boolean> {
+        const result = await this.commandExecutor.createPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true);
