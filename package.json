@@ -1,7 +1,7 @@
 {
   "name": "cliowrapper",
   "displayName": "BPM Remote Toolkit",
-  "description": "Development and remote toolkit for BPMSoft or Creatio.",
+  "description": "Development and remote toolkit for BPMSoft and Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
   "version": "1.7.0",
@@ -19,7 +19,7 @@
     "colors": [
       {
         "id": "bpmEnvironment.enable",
-        "description": "Color for error message in the status bar.",
+        "description": "If environment is enable.",
         "defaults": {
           "dark": "charts.green",
           "light": "charts.green"
@@ -27,7 +27,7 @@
       },
       {
         "id": "bpmEnvironment.disable",
-        "description": "Color for error message in the status bar.",
+        "description": "If environment is enable.",
         "defaults": {
           "dark": "charts.red",
           "light": "charts.red"
@@ -35,7 +35,7 @@
       },
       {
         "id": "packageDeploymentManagement.successCompleted",
-        "description": "Color for error message in the status bar.",
+        "description": "Package deployment is success.",
         "defaults": {
           "dark": "charts.green",
           "light": "charts.green"
@@ -43,7 +43,7 @@
       },
       {
         "id": "packageDeploymentManagement.errorCompleted",
-        "description": "Color for error message in the status bar.",
+        "description": "Package deployment is error.",
         "defaults": {
           "dark": "charts.red",
           "light": "charts.red"
@@ -93,9 +93,9 @@
         "bpmtoolkit.general.outputPath": {
           "order": 2,
           "type": "string",
-          "default": "C:\\",
+          "default": "",
           "scope": "application",
-          "description": "Specify output full path for .gz file."
+          "description": "Specify output full path for .gz file. If empty, the extension folder is used."
         }
       }
     },
