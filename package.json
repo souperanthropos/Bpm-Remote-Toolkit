@@ -1,10 +1,10 @@
 {
   "name": "cliowrapper",
   "displayName": "BPM Remote Toolkit",
-  "description": "Development and remote toolkit for BPMSoft or Creatio.",
+  "description": "Development and remote toolkit for BPMSoft and Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -19,7 +19,7 @@
     "colors": [
       {
         "id": "bpmEnvironment.enable",
-        "description": "Color for error message in the status bar.",
+        "description": "If environment is enable.",
         "defaults": {
           "dark": "charts.green",
           "light": "charts.green"
@@ -27,7 +27,23 @@
       },
       {
         "id": "bpmEnvironment.disable",
-        "description": "Color for error message in the status bar.",
+        "description": "If environment is enable.",
+        "defaults": {
+          "dark": "charts.red",
+          "light": "charts.red"
+        }
+      },
+      {
+        "id": "packageDeploymentManagement.successCompleted",
+        "description": "Package deployment is success.",
+        "defaults": {
+          "dark": "charts.green",
+          "light": "charts.green"
+        }
+      },
+      {
+        "id": "packageDeploymentManagement.errorCompleted",
+        "description": "Package deployment is error.",
         "defaults": {
           "dark": "charts.red",
           "light": "charts.red"
@@ -43,6 +59,10 @@
         {
           "id": "packagesExplorer",
           "name": "Packages Explorer"
+        },
+        {
+          "id": "packageDeploymentManagement",
+          "name": "Package Deployment Management"
         }
       ]
     },
@@ -73,9 +93,9 @@
         "bpmtoolkit.general.outputPath": {
           "order": 2,
           "type": "string",
-          "default": "C:\\",
+          "default": "",
           "scope": "application",
-          "description": "Specify output full path for .gz file."
+          "description": "Specify output full path for .gz file. If empty, the extension folder is used."
         }
       }
     },
@@ -89,16 +109,12 @@
         "title": "Refresh"
       },
       {
+        "command": "packageDeploymentManagement.refreshEntry",
+        "title": "Refresh"
+      },
+      {
         "command": "explorer.folder.addPackage",
         "title": "Add Folder To Packages Explorer"
-      },
-      {
-        "command": "explorer.folder.createPackage",
-        "title": "Create Package"
-      },
-      {
-        "command": "explorer.folder.createAndSendPackage",
-        "title": "Create Package And Send"
       },
       {
         "command": "bpmEnvironments.openSettings",
@@ -106,9 +122,9 @@
         "icon": "$(settings-gear)"
       },
       {
-        "command": "bpmEnvironments.openLastLog",
+        "command": "packagesExplorer.openLastLog",
         "title": "Open last log",
-        "icon": "$(file-binary)"
+        "icon": "$(output)"
       },
       {
         "command": "bpmEnvironments.server.restart",
@@ -133,33 +149,38 @@
         "icon": "$(debug-disconnect)"
       },
       {
-        "command": "packagesExplorer.package.create",
+        "command": "packagesExplorer.createPackageWithProgress",
         "title": "Create Package",
         "icon": "$(repo-pull)"
       },
       {
-        "command": "packagesExplorer.package.createAndSend",
+        "command": "packagesExplorer.deployPackageToSelectedServer",
         "title": "Create Package And Send",
         "icon": "$(repo-force-push)"
+      },
+      {
+        "command": "packagesExplorer.package.addDeployment",
+        "title": "Add package to deployment",
+        "icon": "$(add)"
       },
       {
         "command": "packagesExplorer.package.remove",
         "title": "Remove from Packages Explorer",
         "icon": "$(x)"
+      },
+      {
+        "command": "packageDeploymentManagement.startDeployment",
+        "title": "Start deployment",
+        "icon": "$(play)"
+      },
+      {
+        "command": "packageDeploymentManagement.clear",
+        "title": "Clear",
+        "icon": "$(x)"
       }
     ],
     "menus": {
       "explorer/context": [
-        {
-          "command": "explorer.folder.createPackage",
-          "when": "explorerResourceIsFolder && isShowContextMenu",
-          "group": "z_cliowrapper@1"
-        },
-        {
-          "command": "explorer.folder.createAndSendPackage",
-          "when": "explorerResourceIsFolder && isShowContextMenu",
-          "group": "z_cliowrapper@2"
-        },
         {
           "command": "explorer.folder.addPackage",
           "when": "explorerResourceIsFolder && isShowContextMenu",
@@ -168,56 +189,71 @@
       ],
       "view/title": [
         {
-          "command": "bpmEnvironments.openLastLog",
+          "command": "bpmEnvironments.openSettings",
           "when": "view == bpmEnvironments",
           "group": "navigation@1"
         },
         {
-          "command": "bpmEnvironments.openSettings",
-          "when": "view == bpmEnvironments",
+          "command": "packagesExplorer.openLastLog",
+          "when": "view == packagesExplorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "packageDeploymentManagement.startDeployment",
+          "when": "view == packageDeploymentManagement && isShowStartDeploymentCommand",
+          "group": "navigation@1"
+        },
+        {
+          "command": "packageDeploymentManagement.clear",
+          "when": "view == packageDeploymentManagement && isShowClearDeploymentCommand",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
           "command": "bpmEnvironments.server.restart",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "navigation@1"
         },
         {
           "command": "bpmEnvironments.server.compileConfiguration",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "navigation@2"
         },
         {
           "command": "bpmEnvironments.server.redisClear",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "cw_other@2"
         },
         {
           "command": "bpmEnvironments.server.register",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemRegister && isShowContextMenu",
           "group": "inline@1"
         },
         {
           "command": "bpmEnvironments.server.unregister",
-          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister",
+          "when": "view == bpmEnvironments && viewItem == serverTreeItemUnregister && isShowContextMenu",
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.package.create",
+          "command": "packagesExplorer.createPackageWithProgress",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@1"
         },
         {
-          "command": "packagesExplorer.package.createAndSend",
+          "command": "packagesExplorer.deployPackageToSelectedServer",
           "when": "view == packagesExplorer && viewItem == packageTreeItemEnable && isShowContextMenu",
           "group": "inline@2"
         },
         {
-          "command": "packagesExplorer.package.remove",
-          "when": "view == packagesExplorer",
+          "command": "packagesExplorer.package.addDeployment",
+          "when": "view == packagesExplorer && isShowContextMenu",
           "group": "pe_other@1"
+        },
+        {
+          "command": "packagesExplorer.package.remove",
+          "when": "view == packagesExplorer && isShowContextMenu",
+          "group": "pe_other@2"
         }
       ]
     }

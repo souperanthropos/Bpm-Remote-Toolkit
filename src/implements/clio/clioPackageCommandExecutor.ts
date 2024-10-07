@@ -1,31 +1,33 @@
-import * as vscode from 'vscode';
+import path from 'path';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IPackageCommandExecutor } from '../../interfaces';
-import { ExtensionSettings } from '../../constants';
+import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
+import { getDirectoryName, FolderType } from '../../constants';
+import { ExtensionSettings } from '../../common/extensionSettings';
 
 export class ClioPackageCommandExecutor implements IPackageCommandExecutor {
-    private terminal: TerminalWrapper;
+    
+    constructor(private terminal: TerminalWrapper) {}
 
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
-
-    public async createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean> {
-        const result = await this.terminal.executeCommand('del ' + fullPathFile, true);
+    public async createPackage(pkg: packageSettings): Promise<boolean> {
+        const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
+        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
+        await this.terminal.addTextToLogFile(`[${pkg.targetEnviroment?.id}] - Start package creating ${packageFileName}.`);
+        await this.terminal.executeCommand('del ' + outPathPackageFile);
         return await this.terminal.executeCommand(
             "clio generate-pkg-zip "
-            + targetFolderPath + " -d "
-            + fullPathFile,
-            result
+            + pkg.targetFolderPath + " -d "
+            + outPathPackageFile
         );
     }
 
-    public async pushPackage(packageFilePath: string, targetEnviroment: string): Promise<boolean> {
+    public async pushPackage(pkg: packageSettings): Promise<boolean> {
+        const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
+        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
+        await this.terminal.addTextToLogFile(`[${pkg.targetEnviroment?.id}] - Start package uploading ${packageFileName}.`);
         return await this.terminal.executeCommand(
             'clio push-pkg '
-            + packageFilePath
-            + ' -e ' + targetEnviroment,
-            false
+            + outPathPackageFile
+            + ' -e ' + pkg.targetEnviroment?.id
         );
     }
 }

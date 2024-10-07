@@ -1,54 +1,47 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IWrapperCommandExecutor, serverSettings } from '../../interfaces';
-import { ExtensionSettings, isNullOrWhitespace } from '../../constants';
+import { ICommandExecutor, enviromentSettings } from '../../interfaces';
 
-export class UbsCommandExecutor implements IWrapperCommandExecutor {
-    private terminal: TerminalWrapper;
-
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
+export class UbsCommandExecutor implements ICommandExecutor {
+    
+    constructor(private terminal: TerminalWrapper) {}
 
     public openSettings() {
-        this.terminal.executeCommand('ubs settings', true);
+        this.terminal.executeCommand('ubs settings');
     }
 
-    public getLastExecuteLogPath(): string {
-        return this.terminal.executeLogFilePath;
-    }
-
-    public async webAppRegister(server: serverSettings): Promise<boolean> {
+    public async webAppRegister(server: enviromentSettings): Promise<boolean> {
+        let yesPressed = false;
         await vscode.window
             .showInformationMessage('This command is not supported in the current version of the utility. You will need to manually add the server.', "Yes", "No")
             .then(answer => {
                 if (answer === "Yes") {
-                    this.terminal.executeCommand('ubs settings', true);
-                    return true;
+                    this.terminal.executeCommand('ubs settings');
+                    yesPressed = true;
                 }
             });
-        return false;
+        return yesPressed;
     }
 
-    public async webAppUnregister(server: serverSettings): Promise<boolean> {
-        //return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, true);
+    public async webAppUnregister(server: enviromentSettings): Promise<boolean> {
+        //return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`);
         return true;
     }
 
-    public async webAppPing(server: serverSettings): Promise<boolean> {
-        //return await this.terminal.executeCommand(`clio ping -e ${server.id}`, true);
+    public async webAppPing(server: enviromentSettings): Promise<boolean> {
+        //return await this.terminal.executeCommand(`clio ping -e ${server.id}`);
         return true;
     }
 
-    public async webAppRestart(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`ubs restart -e ${server.id}`, true);
+    public async webAppRestart(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`ubs restart -e ${server.id}`);
     }
 
-    public async clearRedisDb(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`ubs clear-redis -e ${server.id}`, true);
+    public async clearRedisDb(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`ubs clear-redis -e ${server.id}`);
     }
 
-    public async compileConfiguration(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`ubs compile -e ${server.id}`, true);
+    public async compileConfiguration(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`ubs compile -e ${server.id}`);
     }
 }

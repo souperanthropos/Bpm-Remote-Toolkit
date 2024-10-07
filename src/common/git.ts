@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Logger } from './constants';
+import { Logger } from './logger';
 
 export class GitHelper {
     
