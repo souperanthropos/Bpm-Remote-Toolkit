@@ -107,8 +107,8 @@ export class PackageDeploymentManager {
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
                 result = await this._packageManager.pushPackage(element.package);
+                element.isRunning = false;
                 if (!result) {
-                    element.isRunning = false;
                     element.Completed = { isSuccess: false };
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                     if (!ignorePushError) {
