@@ -1,9 +1,16 @@
 import * as vscode from 'vscode';
+import path from 'path';
 
 export class FileManager {
 
+    public async DeleteFile(filePath: string) {
+        try{
+            await vscode.workspace.fs.delete(vscode.Uri.file(filePath));
+        }
+        catch{}
+    }
+
     public async UpdateTimeInDescriptor(document: vscode.TextDocument) {
-        const path = require("path");
         const fileStruct = path.parse(document.uri.fsPath);
         if(fileStruct.ext === '.cs' || fileStruct.ext === '.js'){
             const directory = fileStruct.dir;

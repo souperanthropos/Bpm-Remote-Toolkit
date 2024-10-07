@@ -1,53 +1,77 @@
 import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
-import { TerminalWrapper } from '../terminal/terminalwrapper';
 import { IPackageCommandExecutor } from '../interfaces';
-import { ExtensionSettings, getDirectoryName, Logger } from '../constants';
+import { FolderType } from '../constants';
+import { GitHelper } from '../common/git';
+import { ExtensionSettings } from '../common/extensionSettings';
+import { Logger } from '../common/logger';
 
 export class PackageManager {
-    private terminal: TerminalWrapper;
+    private readonly _gitHelper: GitHelper;
 
-    public onCommandExecuteError?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
-    public onCommandExecuteComplete?: (message: string, showbutton: boolean, outputPathLog: string | undefined) => void;
+    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private wrapper: IPackageCommandExecutor) {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
+    constructor(private commandExecutor: IPackageCommandExecutor) {
+        this._gitHelper = new GitHelper();
     }
 
-    public async createPackage(targetFolderPath: string): Promise<boolean> {
-        const path = require("path");
-        const fullPathFile = path.join(ExtensionSettings.outputPath, getDirectoryName(targetFolderPath) + '.gz');
+    public createPackageWithProgress(pkg: packageSettings) {
+		if (ExtensionSettings.environments) {
+			const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
+			vscode.window.withProgress(
+				{
+					location: vscode.ProgressLocation.Notification,
+					title: `Creating package: ${pkg.folderName}.gz`
+				},
+				async () => {
+					vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
+					if (await this._gitHelper.isPermittedBranch(branches)) {
+						if (await this.createPackage(pkg)) {
+							if (ExtensionSettings.outputPath(FolderType.package)) {
+								vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath(FolderType.package)));
+							}
+						}
+					}
+					vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
+				}
+			);
+		} else {
+			vscode.window.showInformationMessage(
+				"Command execute failed: check you .code-workspace file."
+			);
+		}
+	}
 
-        const result = await this.wrapper.createPackage(targetFolderPath, fullPathFile);
+    public async createPackage(settings: packageSettings): Promise<boolean> {
+        const result = await this.commandExecutor.createPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Create package failed.', true, this.terminal.executeLogFilePath);
+            this.onCommandExecuteError('Create package failed.', true);
         }
 
         return result;
     }
 
-    public async pushPackage(settings: packageSettings) {
-        const path = require("path");
-
-        if (settings.targetEnviroment === undefined || settings.targetEnviroment === '') {
+    public async pushPackage(settings: packageSettings): Promise<boolean>  {
+        if (settings.targetEnviroment === null) {
             Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
-                this.onCommandExecuteError('Error: target enviroment not found.', false, undefined);
+                this.onCommandExecuteError('Error: target enviroment not found.', false);
             }
-            return;
+            return false;
         }
 
-        const packageFilePath = path.join(ExtensionSettings.outputPath, getDirectoryName(settings.targetFolderPath) + ".gz");
-
-        const result = await this.wrapper.pushPackage(packageFilePath, settings.targetEnviroment);
+        const result = await this.commandExecutor.pushPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
-            this.onCommandExecuteError('Send package failed.', true, this.terminal.executeLogFilePath);
+            this.onCommandExecuteError('Send package failed.', true);
         }
 
         if (result && this.onCommandExecuteComplete) {
-            this.onCommandExecuteComplete('Send package completed.', true, this.terminal.executeLogFilePath);
+            this.onCommandExecuteComplete('Send package completed.', true);
         }
+
+        return result;
     }
 }
