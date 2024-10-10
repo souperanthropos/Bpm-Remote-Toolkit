@@ -33,6 +33,42 @@ export class PackageDeploymentManager {
         return this._queueItems;
     }
 
+    public addQueueItems(pkgs: packageSettings[]) {
+        const currentBranch = this._gitHelper.getCurrentBranch();
+        if (ExtensionSettings.environments && currentBranch !== '') {
+            if (!this.selectedServer) {
+                const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
+                const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
+                const qp = vscode.window.createQuickPick();
+                qp.canSelectMany = false;
+                qp.items = quickPickItems;
+                qp.onDidChangeSelection(async selection => {
+                    const serverId = selection[0].label;
+                    const server = ExtensionSettings.environments!.find(e => e.id === serverId);
+                    if (server) {
+                        this.selectedServer = server;
+                        pkgs.forEach(pkg=>{
+                            pkg.targetEnviroment = server;
+                            this.addItem(pkg);
+                        });
+                        vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', true);
+                        vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', true);
+                    }
+                    qp.hide();
+                });
+                qp.onDidHide(() => qp.dispose());
+                qp.show();
+            } else {
+                pkgs.forEach(pkg=>{
+                    if (!this._queueItems.find(p => p.package === pkg)) {
+                        pkg.targetEnviroment = this.selectedServer!;
+                        this.addItem(pkg);
+                    }
+                });
+            }
+        }
+    }
+
     public addQueueItem(pkg: packageSettings, forceStartDeployment: boolean) {
         const currentBranch = this._gitHelper.getCurrentBranch();
         if (ExtensionSettings.environments && currentBranch !== '') {
@@ -107,8 +143,8 @@ export class PackageDeploymentManager {
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
                 result = await this._packageManager.pushPackage(element.package);
-                element.isRunning = false;
                 if (!result) {
+                    element.isRunning = false;
                     element.Completed = { isSuccess: false };
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                     if (!ignorePushError) {

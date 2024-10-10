@@ -181,7 +181,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
-		bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
+		if(allSelections !== undefined){
+			bpmToolkit.packageDeploymentManager.addQueueItems(allSelections);
+		}else{
+			bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(

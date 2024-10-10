@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { queueItem, packageSettings } from '../interfaces';
 
 export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueItem>{
-
+	
     private _onDidChangeTreeData: vscode.EventEmitter<queueItem | undefined | void> = new vscode.EventEmitter<queueItem | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<queueItem | undefined | void> = this._onDidChangeTreeData.event;
 
@@ -19,7 +19,6 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
             element.package,
 			element.isRunning,
 			vscode.TreeItemCollapsibleState.None
-			
 		);
 		treeItem.tooltip = element.package.targetFolderPath;
 		if(element.isRunning){
