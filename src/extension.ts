@@ -32,6 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.createTreeView('packageDeploymentManagement', {
 		treeDataProvider: packageDeploymentProvider,
+		dragAndDropController: packageDeploymentProvider,
 		canSelectMany: true
 	});
 
