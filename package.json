@@ -16,6 +16,20 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsWelcome": [
+      {
+        "view": "bpmEnvironments",
+        "contents": "Add environments to you .code-workspace file."
+      },
+      {
+        "view": "packagesExplorer",
+        "contents": "Add folders from File Explorer."
+      },
+      {
+        "view": "packageDeploymentManagement",
+        "contents": "No packages for deployment.\nAdd packages from Packages Explorer."
+      }
+    ],
     "colors": [
       {
         "id": "bpmEnvironment.enable",

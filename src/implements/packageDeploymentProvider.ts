@@ -2,9 +2,8 @@ import * as vscode from 'vscode';
 import { queueItem, packageSettings } from '../interfaces';
 
 export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueItem>, vscode.TreeDragAndDropController<queueItem> {
-
-	dropMimeTypes = ['application/vnd.code.tree.packageDeploymentManagement'];
-	dragMimeTypes = ['application/vnd.code.tree.packageDeploymentManagement'];
+	dropMimeTypes = ['application/vnd.code.tree.packageDeploymentManagement', 'application/vnd.code.tree.packagesExplorer'];
+	dragMimeTypes = ['application/vnd.code.tree.packageDeploymentManagement', 'application/vnd.code.tree.packagesExplorer'];
 
     private _onDidChangeTreeData: vscode.EventEmitter<queueItem | undefined | void> = new vscode.EventEmitter<queueItem | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<queueItem | undefined | void> = this._onDidChangeTreeData.event;
@@ -20,6 +19,9 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 			return;
 		}
 		const treeItems: queueItem[] = transferItem.value;
+		if (treeItems.length === 0) {
+			return;
+		}
 		let targetIndex = 0;
 		if(target !== undefined){
 			targetIndex = this._queueItems.findIndex(q=>q === target);
