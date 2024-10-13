@@ -29,12 +29,19 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
     }
 
+    private clearIfDeployed() {
+        if(this._queueItems.filter(q=>q.Completed !== null).length > 0){
+            this.clear();
+        }
+    }
+
     public getItems(): ReadonlyArray<queueItem> {
         return this._queueItems;
     }
 
     public addQueueItems(pkgs: packageSettings[]) {
         const currentBranch = this._gitHelper.getCurrentBranch();
+        this.clearIfDeployed();
         if (ExtensionSettings.environments && currentBranch !== '') {
             if (!this.selectedServer) {
                 const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
@@ -71,6 +78,7 @@ export class PackageDeploymentManager {
 
     public addQueueItem(pkg: packageSettings, forceStartDeployment: boolean) {
         const currentBranch = this._gitHelper.getCurrentBranch();
+        this.clearIfDeployed();
         if (ExtensionSettings.environments && currentBranch !== '') {
             if (!this.selectedServer) {
                 const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
