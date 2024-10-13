@@ -11,7 +11,6 @@ export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
     public async createPackage(pkg: packageSettings): Promise<boolean> {
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        await this.terminal.addTextToLogFile(`[${pkg.targetEnviroment?.id}] - Start package creating ${packageFileName}.`);
         await this.terminal.executeCommand('del ' + outPathPackageFile);
         return await this.terminal.executeCommand(
             "ubs zip "
@@ -23,7 +22,6 @@ export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
     public async pushPackage(pkg: packageSettings): Promise<boolean> {
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        await this.terminal.addTextToLogFile(`[${pkg.targetEnviroment?.id}] - Start package uploading ${packageFileName}.`);
         return await this.terminal.executeCommand(
             'ubs push '
             + outPathPackageFile

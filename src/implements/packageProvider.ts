@@ -2,11 +2,18 @@ import * as vscode from 'vscode';
 import { packageSettings } from '../interfaces';
 import { isMatchingWorkspace } from '../constants';
 
-export class PackageProvider implements vscode.TreeDataProvider<packageSettings> {
+export class PackageProvider implements vscode.TreeDataProvider<packageSettings>, vscode.TreeDragAndDropController<packageSettings> {
+	dropMimeTypes = ['application/vnd.code.tree.packagesExplorer', 'application/vnd.code.tree.packageDeploymentManagement'];
+	dragMimeTypes = ['application/vnd.code.tree.packagesExplorer', 'application/vnd.code.tree.packageDeploymentManagement'];
+
 	private _onDidChangeTreeData: vscode.EventEmitter<packageSettings | undefined | void> = new vscode.EventEmitter<packageSettings | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<packageSettings | undefined | void> = this._onDidChangeTreeData.event;
 
 	private _packages: packageSettings[] | undefined;
+
+	handleDrag?(source: readonly packageSettings[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Thenable<void> | void {
+		dataTransfer.set('application/vnd.code.tree.packagesExplorer', new vscode.DataTransferItem(source));
+	}
 
 	refresh(env: packageSettings[]): void {
 		this._packages = env;

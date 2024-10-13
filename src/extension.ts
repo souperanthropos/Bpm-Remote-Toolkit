@@ -27,11 +27,13 @@ export function activate(context: vscode.ExtensionContext) {
 
 	vscode.window.createTreeView('packagesExplorer', {
 		treeDataProvider: packageProvider,
+		dragAndDropController: packageProvider,
 		canSelectMany: true
 	});
 
 	vscode.window.createTreeView('packageDeploymentManagement', {
 		treeDataProvider: packageDeploymentProvider,
+		dragAndDropController: packageDeploymentProvider,
 		canSelectMany: true
 	});
 
@@ -181,7 +183,11 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
-		bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
+		if(allSelections !== undefined){
+			bpmToolkit.packageDeploymentManager.addQueueItems(allSelections);
+		}else{
+			bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
+		}
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand(

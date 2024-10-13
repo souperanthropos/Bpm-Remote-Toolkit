@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import { ExtensionSettings } from './extensionSettings';
 import { FolderType } from '../constants';
+import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
 
 export class Logger {
 	private static terminalLog: vscode.OutputChannel;
+	private static terminal: TerminalWrapper;
 	private static outputPathLog = '';
 	private static readonly executeResultFileName = 'commandExecuteResult.log';
 	private static executeLogFileName = 'commandExecute.log';
@@ -30,5 +32,12 @@ export class Logger {
 		}
 		this.terminalLog.show(true);
 		this.terminalLog.appendLine(message);
+	}
+
+	public static async writeToExecuteLogFile(message: string, writeTimestamp: boolean) {
+		if (this.terminal === undefined) {
+			this.terminal = new PowerShellWrapper(false);
+		}
+		await this.terminal.addTextToLogFile(message, writeTimestamp);
 	}
 }
