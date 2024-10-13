@@ -135,6 +135,7 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
+        await Logger.writeToExecuteLogFile('START DEPLOYMENT', true);
         for await (const element of this._queueItems) {
             if (!await this._gitHelper.checkBranch(element.package.targetEnviroment!.gitBranchName!)){
                 break;
@@ -142,6 +143,7 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
+            await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`, true);
             var result = await this._packageManager.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
@@ -150,6 +152,7 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
+                await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`, true);
                 result = await this._packageManager.pushPackage(element.package);
                 if (!result) {
                     element.isRunning = false;
@@ -164,6 +167,7 @@ export class PackageDeploymentManager {
                 }
             }
         }
+        await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT', true);
         const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
         if(deployErrorCount > 0){
             showErrorMessage('Package deployment failed with an error.', true, Logger.getExecuteLogFilePath());
