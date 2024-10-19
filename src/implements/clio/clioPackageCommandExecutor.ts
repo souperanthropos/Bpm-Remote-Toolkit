@@ -22,7 +22,6 @@ export class ClioPackageCommandExecutor implements IPackageCommandExecutor {
     public async pushPackage(pkg: packageSettings): Promise<boolean> {
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        await this.terminal.addTextToLogFile(`[${pkg.targetEnviroment?.id}] - Start package uploading ${packageFileName}.`, true);
         return await this.terminal.executeCommand(
             'clio push-pkg '
             + outPathPackageFile
