@@ -154,8 +154,8 @@ export class PackageDeploymentManager {
                 statusBarItem.text = '$(loading~spin) Sending package...';
                 await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`, true);
                 result = await this._packageManager.pushPackage(element.package);
+                element.isRunning = false;
                 if (!result) {
-                    element.isRunning = false;
                     element.Completed = { isSuccess: false };
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                     if (!ignorePushError) {
