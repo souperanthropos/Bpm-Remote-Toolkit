@@ -1,31 +1,31 @@
-import * as vscode from 'vscode';
+import path from 'path';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IPackageCommandExecutor } from '../../interfaces';
-import { ExtensionSettings } from '../../constants';
+import { IPackageCommandExecutor, packageSettings } from '../../interfaces';
+import { FolderType, getDirectoryName } from '../../constants';
+import { ExtensionSettings } from '../../common/extensionSettings';
 
 export class UbsPackageCommandExecutor implements IPackageCommandExecutor {
-    private terminal: TerminalWrapper;
+    
+    constructor(private terminal: TerminalWrapper) {}
 
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
-
-    public async createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean> {
-        const result = await this.terminal.executeCommand('del ' + fullPathFile, true);
+    public async createPackage(pkg: packageSettings): Promise<boolean> {
+        const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
+        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
+        await this.terminal.executeCommand('del ' + outPathPackageFile);
         return await this.terminal.executeCommand(
             "ubs zip "
-            + targetFolderPath + " -d "
-            + fullPathFile,
-            result
+            + pkg.targetFolderPath + " -d "
+            + outPathPackageFile
         );
     }
 
-    public async pushPackage(packageFilePath: string, targetEnviroment: string): Promise<boolean> {
+    public async pushPackage(pkg: packageSettings): Promise<boolean> {
+        const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
+        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
         return await this.terminal.executeCommand(
             'ubs push '
-            + packageFilePath
-            + ' -e ' + targetEnviroment,
-            false
+            + outPathPackageFile
+            + ' -e ' + pkg.targetEnviroment?.id
         );
     }
 }

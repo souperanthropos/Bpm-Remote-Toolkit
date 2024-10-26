@@ -2,6 +2,5 @@ out
 dist
 node_modules
 .vscode-test/
+temp/
 *.vsix
-commandExecuteResult.log
-commandExecute.log
