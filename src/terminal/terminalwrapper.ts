@@ -1,19 +1,33 @@
 import * as vscode from 'vscode';
+import { Logger } from '../common/logger';
 
-export class TerminalWrapper {
-	private readonly executeResultFileName = 'commandExecuteResult.log';
-	private readonly executeLogFileName = 'commandExecute.log';
+export abstract class TerminalWrapper {
+	abstract addTextToLogFile(message: string, writeTimestamp: boolean): Promise<boolean>;
+	abstract executeCommand(command: string): Promise<boolean>;
+}
+
+export class PowerShellWrapper extends TerminalWrapper {
 	private readonly setEncodingUtf8 = '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding;';
+	private readonly executeResultFilePath: string;
+	private readonly executeLogFilePath: string;
+	private readonly terminalName: string;
 
-	public readonly executeLogFilePath: string;
-	public readonly executeResultFilePath: string;
-
-	constructor(private outputPathLog: string, private terminalName: string) {
-		this.executeLogFilePath = `${this.outputPathLog}\\${this.executeLogFileName}`;
-		this.executeResultFilePath = `${this.outputPathLog}\\${this.executeResultFileName}`;
+	constructor(private rewriteLogFile: boolean = true) {
+		super();
+		this.executeLogFilePath = Logger.getExecuteLogFilePath();
+		this.executeResultFilePath = Logger.getExecuteResultFileName();
+		this.terminalName = Logger.terminalName;
 	}
 
-	public async executeCommand(command: string, rewriteLogFile: boolean): Promise<boolean> {
+	public async addTextToLogFile(message: string, writeTimestamp: boolean): Promise<boolean> {
+		if(writeTimestamp){
+			return await this.executeCommand(`$content =  (Get-Date -Format "dd/MM/yyyy HH:mm:ss.fff").ToString() + ' - ${message}'; $content >> ${this.executeLogFilePath}`);
+		}else{
+			return await this.executeCommand(`$content = ${message}'; $content >> ${this.executeLogFilePath}`);
+		}
+	}
+
+	public async executeCommand(command: string): Promise<boolean> {
 		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
 		if (!terminal) {
 			terminal = vscode.window.createTerminal({
@@ -23,7 +37,7 @@ export class TerminalWrapper {
 		}
 		
 		terminal.show(true);
-		if(rewriteLogFile){
+		if(this.rewriteLogFile){
 			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath};`, false);
 		}else{
 			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);

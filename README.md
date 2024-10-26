@@ -4,15 +4,18 @@ The extension creates packages with the extension **.gz** and installs them in t
 
 Support Creatio and BPMSoft.
 
-## Features
+## How it works
 
-#### Create Package:
-
-In the **Workspace** area of Visual Studio Code, right-click on the folder and select **Create Package**
-
-#### Create And Send Package:
-
-In the **Workspace** area of Visual Studio Code, right-click on the folder and select **Create Package And Send**
+1. Setup you .code-workspace file:
+	- set property `path`: set the path to custom packages, example `..\Terrasoft.WebApp\Terrasoft.Configuration\Pkg`
+	- add enviroments
+2. Log in to each environment in the Bpm Environments view.
+3. Open you .code-workspace file by Visual Studio Code and add folders from File Explorer in Packages Explorer by right-click on the folder and select **Add Folder To Packages Explorer**.
+4. In Package Explorer, you can:
+	- create selected package
+	- create and upload selected package
+	- add package to deploy (supported multiselect)
+5. Package deployment management is for the sequential deployment of multiple packages.
 
 ## Requirements
 
@@ -37,7 +40,7 @@ This extension contributes the following settings:
 
 * `bpmtoolkit.general.utility`: Select utility: **clio** or **ubs**
 * `bpmtoolkit.general.autoUpdateTime`: When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file.
-* `bpmtoolkit.general.outputPath`: Specify output full path for .gz file.
+* `bpmtoolkit.general.outputPath`: Specify output full path for .gz file. If empty, the extension folder is used.
 
 ## Settings For .code-workspace file
 
@@ -53,7 +56,7 @@ This extension contributes the following settings:
 {
 	"folders": [
 		{
-			"path": "Dev-Folder"
+			"path": "..\\Terrasoft.WebApp\\Terrasoft.Configuration\\Pkg"
 		}
 	],
 	"settings": {
@@ -90,14 +93,12 @@ This extension contributes the following settings:
 
 ## Known Issues
 
-NONE
+- If the Package Deployment Management view is empty, drag and drop from Package Explorer to Package Deployment Management does not work.
 
 ## Release Notes
 
-## 1.7.x
+## 1.8.x
 
 - Update README
-- Added support Utilities Of BPMSoft (UBS)
-- Updated extension display name and icon
-- Updated .code-workspace file structure
+- Added view **Package Deployment Management** in **Source Control**
 - Minor corrections and improvements

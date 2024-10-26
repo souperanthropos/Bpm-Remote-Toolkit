@@ -1,24 +1,17 @@
 import * as vscode from 'vscode';
 import { TerminalWrapper } from '../../terminal/terminalwrapper';
-import { IWrapperCommandExecutor, serverSettings } from '../../interfaces';
-import { ExtensionSettings, isNullOrWhitespace } from '../../constants';
+import { ICommandExecutor, enviromentSettings } from '../../interfaces';
+import { isNullOrWhitespace } from '../../constants';
 
-export class ClioCommandExecutor implements IWrapperCommandExecutor {
-    private terminal: TerminalWrapper;
+export class ClioCommandExecutor implements ICommandExecutor {
 
-    constructor() {
-        this.terminal = new TerminalWrapper(ExtensionSettings.extensionPath, ExtensionSettings.terminalName);
-    }
+    constructor(private terminal: TerminalWrapper) {}
 
     public openSettings() {
-        this.terminal.executeCommand('clio open-settings', true);
+        this.terminal.executeCommand('clio open-settings');
     }
 
-    public getLastExecuteLogPath(): string {
-        return this.terminal.executeLogFilePath;
-    }
-
-    public async webAppRegister(server: serverSettings): Promise<boolean> {
+    public async webAppRegister(server: enviromentSettings): Promise<boolean> {
         const loginQuery = await vscode.window.showInputBox({
             placeHolder: "Login",
             prompt: "Enter login for connecting to Bpmsoft"
@@ -31,31 +24,30 @@ export class ClioCommandExecutor implements IWrapperCommandExecutor {
             });
             if (!isNullOrWhitespace(passwordQuery)) {
                 return await this.terminal.executeCommand(
-                    `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery} -i ${server.isNetCore}`,
-                    true
+                    `clio reg-web-app ${server.id} -u ${server.url} -l ${loginQuery} -p ${passwordQuery} -i ${server.isNetCore}`
                 );
             }
         }
         return false;
     }
 
-    public async webAppUnregister(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`, true);
+    public async webAppUnregister(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio unreg-web-app ${server.id}`);
     }
 
-    public async webAppPing(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio ping -e ${server.id}`, true);
+    public async webAppPing(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio ping -e ${server.id}`);
     }
 
-    public async webAppRestart(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio restart-web-app -e ${server.id}`, true);
+    public async webAppRestart(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio restart-web-app -e ${server.id}`);
     }
 
-    public async clearRedisDb(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio clear-redis-db -e ${server.id}`, true);
+    public async clearRedisDb(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio clear-redis-db -e ${server.id}`);
     }
 
-    public async compileConfiguration(server: serverSettings): Promise<boolean> {
-        return await this.terminal.executeCommand(`clio compile-configuration -e ${server.id}`, true);
+    public async compileConfiguration(server: enviromentSettings): Promise<boolean> {
+        return await this.terminal.executeCommand(`clio compile-configuration -e ${server.id}`);
     }
 }

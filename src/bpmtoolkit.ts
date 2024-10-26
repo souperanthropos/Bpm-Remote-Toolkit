@@ -1,36 +1,64 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { FileManager } from './managers/filemanager';
-import { PackageExplorer } from './packageExplorer';
 import { ClioCommandExecutor } from './implements/clio/clioCommandExecutor';
 import { ClioPackageCommandExecutor } from './implements/clio/clioPackageCommandExecutor';
 import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
-import { ExtensionSettings, showErrorMessage } from './constants';
-import { serverSettings } from './interfaces';
+import { FolderType, showErrorMessage } from './constants';
+import { enviromentSettings } from './interfaces';
+import { PackageDeploymentManager } from './managers/packageDeploymentManager';
+import { PackageManager } from './managers/packagemanager';
+import { PowerShellWrapper, TerminalWrapper } from './terminal/terminalwrapper';
+import { ExtensionSettings } from './common/extensionSettings';
+import { Logger } from './common/logger';
 
 export class BpmToolkit {
     private _fileManager: FileManager;
-    private _packageExplorer!: PackageExplorer;
+    private _packageDeploymentManager!: PackageDeploymentManager;
     private _webAppManager!: WebAppManager;
+    private _packageManager!: PackageManager;
+
     private _selectedUtility: string;
 
     public get fileManager(): FileManager{
         return this._fileManager;
     }
 
-    public get packageExplorer(): PackageExplorer{
-        return this._packageExplorer;
+    public get packageDeploymentManager(): PackageDeploymentManager{
+        return this._packageDeploymentManager;
+    }
+
+    public get packageManager(): PackageManager{
+        return this._packageManager;
     }
 
     public get webAppManager(): WebAppManager{
         return this._webAppManager;
     }
 
-    constructor() {
+    constructor(extensionPath: string) {
+        ExtensionSettings.extensionPath = extensionPath;
         this._selectedUtility = '';
         this._fileManager = new FileManager();
+        this.createTempDir();
         this.checkWorkspaceSettings();
+    }
+
+    private createTempDir() {
+        let dir = ExtensionSettings.outputPath(FolderType.default);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        dir = ExtensionSettings.outputPath(FolderType.package);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        dir = ExtensionSettings.outputPath(FolderType.terminal);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
     }
 
     public checkWorkspaceSettings() {
@@ -40,24 +68,24 @@ export class BpmToolkit {
         if(this._selectedUtility !== utilityName){
             switch(utilityName){
                 case `clio`:
-                    this._packageExplorer = new PackageExplorer(new ClioPackageCommandExecutor());
-                    this._webAppManager = new WebAppManager(new ClioCommandExecutor());
+                    this._packageManager = new PackageManager(new ClioPackageCommandExecutor(new PowerShellWrapper(false)));
+                    this._webAppManager = new WebAppManager(new ClioCommandExecutor(new PowerShellWrapper(true)));
                     break;
                 case `ubs`:
                 default:
-                    this._packageExplorer = new PackageExplorer(new UbsPackageCommandExecutor());
-                    this._webAppManager = new WebAppManager(new UbsCommandExecutor());
+                    this._packageManager = new PackageManager(new UbsPackageCommandExecutor(new PowerShellWrapper(false)));
+                    this._webAppManager = new WebAppManager(new UbsCommandExecutor(new PowerShellWrapper(true)));
             }
-            this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) =>
-                showErrorMessage(message, showbutton, executeLogFilePath);
+            this._packageDeploymentManager = new PackageDeploymentManager(this._packageManager);
+            this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
+                showErrorMessage(message, showbutton, Logger.getExecuteLogFilePath());
             this._selectedUtility = utilityName;
         }
     
         ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-        ExtensionSettings.outputPath = generalConfig.get<string>('outputPath')!;
     
         const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
-        ExtensionSettings.environments = serverConfig.get<serverSettings[]>('environments');
+        ExtensionSettings.environments = serverConfig.get<enviromentSettings[]>('environments');
     
         if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
             vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);

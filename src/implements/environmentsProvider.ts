@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
-import { serverSettings } from '../interfaces';
+import { enviromentSettings } from '../interfaces';
 
-export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSettings> {
+export class EnvironmentsProvider implements vscode.TreeDataProvider<enviromentSettings> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<serverSettings | undefined | void> = new vscode.EventEmitter<serverSettings | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<serverSettings | undefined | void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<enviromentSettings | undefined | void> = new vscode.EventEmitter<enviromentSettings | undefined | void>();
+	readonly onDidChangeTreeData: vscode.Event<enviromentSettings | undefined | void> = this._onDidChangeTreeData.event;
 
-	private _servers: serverSettings[] | undefined;
+	private _servers: enviromentSettings[] | undefined;
 
-	refresh(env: serverSettings[]): void {
+	refresh(env: enviromentSettings[]): void {
 		this._servers = env;
 		this._onDidChangeTreeData.fire();
 	}
 
-	getTreeItem(element: serverSettings): vscode.TreeItem {
+	getTreeItem(element: enviromentSettings): vscode.TreeItem {
 		var treeItem = new serverTreeItem(
 			`${element.id} - ${element.url}`,
 			element.id,
@@ -31,7 +31,7 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<serverSetti
 		return treeItem;
 	}
 
-	getChildren(): Thenable<serverSettings[]> {
+	getChildren(): Thenable<enviromentSettings[]> {
 		if (!this._servers) {
 			return Promise.resolve([]);
 		}

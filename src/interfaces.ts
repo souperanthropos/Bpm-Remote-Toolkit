@@ -1,10 +1,10 @@
 export interface packageSettings {
 	folderName: string;
 	targetFolderPath: string;
-	targetEnviroment: string | undefined;
+	targetEnviroment: enviromentSettings | null;
 }
 
-export interface serverSettings {
+export interface enviromentSettings {
 	id: string;
     url: string | undefined;
 	isNetCore: boolean;
@@ -13,21 +13,28 @@ export interface serverSettings {
 	isRegister: boolean;
 }
 
-export interface IWebAppCommandExecutor {
-	webAppRegister(server: serverSettings): Promise<boolean>,
-	webAppUnregister(server: serverSettings): Promise<boolean>,
-	webAppPing(server: serverSettings): Promise<boolean>,
-	webAppRestart(server: serverSettings): Promise<boolean>,
-	clearRedisDb(server: serverSettings): Promise<boolean>,
-	compileConfiguration(server: serverSettings): Promise<boolean>
+export interface queueItem {
+	package: packageSettings;
+	isRunning: boolean;
+	Completed: { isSuccess: boolean } | null
 }
 
-export interface IWrapperCommandExecutor extends IWebAppCommandExecutor {
-	openSettings(): void,
-	getLastExecuteLogPath(): string
+export interface IWebAppCommandExecutor {
+	webAppRegister(server: enviromentSettings): Promise<boolean>,
+	webAppUnregister(server: enviromentSettings): Promise<boolean>,
+	webAppPing(server: enviromentSettings): Promise<boolean>,
+	webAppRestart(server: enviromentSettings): Promise<boolean>,
+	clearRedisDb(server: enviromentSettings): Promise<boolean>,
+	compileConfiguration(server: enviromentSettings): Promise<boolean>
 }
+
+export interface IAppCommandExecutor {
+	openSettings(): void
+}
+
+export interface ICommandExecutor extends IAppCommandExecutor, IWebAppCommandExecutor {}
 
 export interface IPackageCommandExecutor {
-	createPackage(targetFolderPath: string, fullPathFile: string): Promise<boolean>,
-	pushPackage(packageFilePath: string, targetEnviroment: string): Promise<boolean>
+	createPackage(pkg: packageSettings): Promise<boolean>,
+	pushPackage(pkg: packageSettings): Promise<boolean>
 }

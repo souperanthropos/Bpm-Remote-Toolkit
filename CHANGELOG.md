@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.7.x
+
+- Update README
+- Added support Utilities Of BPMSoft (UBS)
+- Updated extension display name and icon
+- Updated .code-workspace file structure
+- Minor corrections and improvements
+
 ## 1.6.x
 
 - Update README
