@@ -7,43 +7,30 @@ import { UbsCommandExecutor } from './implements/ubs/ubsCommandExecutor';
 import { UbsPackageCommandExecutor } from './implements/ubs/ubsPackageCommandExecutor';
 import { WebAppManager } from './managers/webappmanager';
 import { FolderType, showErrorMessage } from './constants';
-import { enviromentSettings } from './interfaces';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { PackageManager } from './managers/packagemanager';
-import { PowerShellWrapper, TerminalWrapper } from './terminal/terminalwrapper';
+import { PowerShellWrapper } from './terminal/terminalwrapper';
 import { ExtensionSettings } from './common/extensionSettings';
 import { Logger } from './common/logger';
 
 export class BpmToolkit {
+    private static instance: BpmToolkit;
+
     private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
     private _webAppManager!: WebAppManager;
     private _packageManager!: PackageManager;
 
     private _selectedUtility: string;
-
-    public get fileManager(): FileManager{
-        return this._fileManager;
-    }
-
-    public get packageDeploymentManager(): PackageDeploymentManager{
-        return this._packageDeploymentManager;
-    }
-
-    public get packageManager(): PackageManager{
-        return this._packageManager;
-    }
-
-    public get webAppManager(): WebAppManager{
-        return this._webAppManager;
-    }
-
-    constructor(extensionPath: string) {
-        ExtensionSettings.extensionPath = extensionPath;
+  
+    private constructor() {
         this._selectedUtility = '';
         this._fileManager = new FileManager();
         this.createTempDir();
         this.checkWorkspaceSettings();
+        vscode.workspace.onDidChangeConfiguration(event => {
+            this.checkWorkspaceSettings();
+        });
     }
 
     private createTempDir() {
@@ -59,6 +46,30 @@ export class BpmToolkit {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir);
         }
+    }
+
+    public static get Instance(): BpmToolkit {
+        if (!BpmToolkit.instance) {
+          BpmToolkit.instance = new BpmToolkit();
+        }
+    
+        return BpmToolkit.instance;
+    }
+
+    public get fileManager(): FileManager{
+        return this._fileManager;
+    }
+
+    public get packageDeploymentManager(): PackageDeploymentManager{
+        return this._packageDeploymentManager;
+    }
+
+    public get packageManager(): PackageManager{
+        return this._packageManager;
+    }
+
+    public get webAppManager(): WebAppManager{
+        return this._webAppManager;
     }
 
     public checkWorkspaceSettings() {
@@ -81,19 +92,5 @@ export class BpmToolkit {
                 showErrorMessage(message, showbutton, Logger.getExecuteLogFilePath());
             this._selectedUtility = utilityName;
         }
-    
-        ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-    
-        const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
-        ExtensionSettings.environments = serverConfig.get<enviromentSettings[]>('environments');
-    
-        if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
-            vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-        } else {
-            vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
-        }
-    
-        vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
-        vscode.commands.executeCommand('packagesExplorer.refreshEntry');
     }
-}
+  }
