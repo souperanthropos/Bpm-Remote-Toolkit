@@ -38,3 +38,9 @@ export interface IPackageCommandExecutor {
 	createPackage(pkg: packageSettings): Promise<boolean>,
 	pushPackage(pkg: packageSettings): Promise<boolean>
 }
+
+export interface IPackageActions {
+	createPackage(pkg: packageSettings): Promise<boolean>,
+	createPackageWithProgress(pkg: packageSettings): void,
+	pushPackage(pkg: packageSettings): Promise<boolean>
+}
