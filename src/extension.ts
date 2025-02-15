@@ -37,7 +37,7 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	// #region buttons for Package Explorer
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createPackageWithProgress', (pkg: packageSettings) => {
-		BpmToolkit.Instance.packageManager.createPackageWithProgress(pkg);
+		BpmToolkit.Instance.packageDeploymentManager.createPackageWithProgress(pkg);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: packageSettings) => {
