@@ -2,10 +2,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { FileManager } from './managers/filemanager';
 import { WebAppManager } from './managers/webappmanager';
-import { FolderType, showErrorMessage } from './constants';
+import { FolderType } from './constants';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { ExtensionSettings } from './common/extensionSettings';
-import { Logger } from './common/logger';
 import { UtilityManagersFactory } from './abstract-factory/utilityManagersFactory';
 
 export class BpmToolkit {
@@ -68,9 +67,7 @@ export class BpmToolkit {
         
         if(this._selectedUtility !== utilityName){
             this._webAppManager = UtilityManagersFactory.createWebAppManager(utilityName);
-            this._packageDeploymentManager = UtilityManagersFactory.createPackageDeploymentManager(utilityName);;
-            this._webAppManager.onCommandExecuteError = (message: string, showbutton: boolean) =>
-                showErrorMessage(message, showbutton, Logger.getExecuteLogFilePath());
+            this._packageDeploymentManager = UtilityManagersFactory.createPackageDeploymentManager(utilityName);
             this._selectedUtility = utilityName;
         }
     }
