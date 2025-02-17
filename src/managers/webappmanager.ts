@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { ICommandExecutor, enviromentSettings } from '../interfaces';
+import { Logger } from '../common/logger';
+import { showErrorMessage } from '../constants';
 
 export class WebAppManager {
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
@@ -18,6 +20,7 @@ export class WebAppManager {
     public async webAppUnregister(server: enviromentSettings, isLogEnabled: boolean) {
         const result = await this.commandExecutor.webAppUnregister(server);
         if (isLogEnabled) {
+            showErrorMessage('Unregister web app failed.', true, Logger.getExecuteLogFilePath());
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Unregister web app failed.', true);
             }
@@ -26,6 +29,7 @@ export class WebAppManager {
 
     public async webAppPing(server: enviromentSettings): Promise<boolean> {
         const result = await this.commandExecutor.webAppPing(server);
+        showErrorMessage('Ping web app failed.', true, Logger.getExecuteLogFilePath());
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Ping web app failed.', true);
         }
@@ -39,6 +43,7 @@ export class WebAppManager {
             );
         } else {
             const result = await this.commandExecutor.webAppRestart(server);
+            showErrorMessage('Restart web app failed.', true, Logger.getExecuteLogFilePath());
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Restart web app failed.', true);
             }
@@ -52,6 +57,7 @@ export class WebAppManager {
             );
         } else {
             const result = await this.commandExecutor.clearRedisDb(server);
+            showErrorMessage('Clear redis db failed.', true, Logger.getExecuteLogFilePath());
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Clear redis db failed.', true);
             }
@@ -65,6 +71,7 @@ export class WebAppManager {
             );
         } else {
             const result = await this.commandExecutor.compileConfiguration(server);
+            showErrorMessage('Compile configuration failed.', true, Logger.getExecuteLogFilePath());
             if (!result && this.onCommandExecuteError) {
                 this.onCommandExecuteError('Compile configuration failed.', true);
             }
