@@ -1,21 +1,20 @@
 import * as vscode from 'vscode';
-import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
-import { PackageManager } from './packagemanager';
+import { packageSettings, queueItem, enviromentSettings, IPackageCommandExecutor, IPackageActions } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
-import { showErrorMessage } from '../constants';
+import { FolderType, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
 
-export class PackageDeploymentManager {
+export class PackageDeploymentManager implements IPackageActions {
     private readonly _gitHelper: GitHelper;
-    private readonly _packageManager: PackageManager;
     private readonly _queueItems: queueItem[];
-
     private selectedServer?: enviromentSettings;
 
-    constructor(packageManager: PackageManager) {
+    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
+
+    constructor(private commandExecutor: IPackageCommandExecutor) {
         this._gitHelper = new GitHelper();
-        this._packageManager = packageManager;
         this._queueItems = new Array();
     }
 
@@ -34,6 +33,69 @@ export class PackageDeploymentManager {
             this.clear();
         }
     }
+
+    // #region IPackageActions implementation
+
+    public async createPackage(settings: packageSettings): Promise<boolean> {
+        const result = await this.commandExecutor.createPackage(settings);
+
+        if (!result && this.onCommandExecuteError) {
+            this.onCommandExecuteError('Create package failed.', true);
+        }
+
+        return result;
+    }
+
+    public createPackageWithProgress(pkg: packageSettings) {
+        if (ExtensionSettings.environments) {
+            const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Creating package: ${pkg.folderName}.gz`
+                },
+                async () => {
+                    vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
+                    if (await this._gitHelper.isPermittedBranch(branches)) {
+                        if (await this.createPackage(pkg)) {
+                            if (ExtensionSettings.outputPath(FolderType.package)) {
+                                vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath(FolderType.package)));
+                            }
+                        }
+                    }
+                    vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
+                }
+            );
+        } else {
+            vscode.window.showInformationMessage(
+                "Command execute failed: check you .code-workspace file."
+            );
+        }
+    }
+
+    public async pushPackage(settings: packageSettings): Promise<boolean>  {
+        if (settings.targetEnviroment === null) {
+            Logger.writeToChannel('Error: target enviroment not found');
+            if (this.onCommandExecuteError) {
+                this.onCommandExecuteError('Error: target enviroment not found.', false);
+            }
+            return false;
+        }
+
+        const result = await this.commandExecutor.pushPackage(settings);
+
+        if (!result && this.onCommandExecuteError) {
+            this.onCommandExecuteError('Send package failed.', true);
+        }
+
+        if (result && this.onCommandExecuteComplete) {
+            this.onCommandExecuteComplete('Send package completed.', true);
+        }
+
+        return result;
+    }
+
+    // #endregion
 
     public getItems(): ReadonlyArray<queueItem> {
         return this._queueItems;
@@ -144,7 +206,7 @@ export class PackageDeploymentManager {
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
             await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`, true);
-            var result = await this._packageManager.createPackage(element.package);
+            var result = await this.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
                 element.Completed = { isSuccess: false };
@@ -153,7 +215,7 @@ export class PackageDeploymentManager {
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
                 await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`, true);
-                result = await this._packageManager.pushPackage(element.package);
+                result = await this.pushPackage(element.package);
                 element.isRunning = false;
                 if (!result) {
                     element.Completed = { isSuccess: false };
