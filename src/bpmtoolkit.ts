@@ -5,7 +5,7 @@ import { WebAppManager } from './managers/webappmanager';
 import { FolderType } from './constants';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { ExtensionSettings } from './common/extensionSettings';
-import { UtilityManagersFactory } from './abstract-factory/utilityManagersFactory';
+import { UtilityManagersFactory } from './factory/utilityManagersFactory';
 
 export class BpmToolkit {
     private static instance: BpmToolkit;
