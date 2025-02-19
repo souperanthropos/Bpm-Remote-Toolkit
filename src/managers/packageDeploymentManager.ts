@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
-import { packageSettings, queueItem, enviromentSettings, IPackageCommandExecutor, IPackageActions } from '../interfaces';
+import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
 import { FolderType, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
+import { BasePackageActions } from '../abstractions/basePackageActions';
 
-export class PackageDeploymentManager implements IPackageActions {
+export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
     private readonly _queueItems: queueItem[];
     private selectedServer?: enviromentSettings;
@@ -13,7 +14,7 @@ export class PackageDeploymentManager implements IPackageActions {
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(private commandExecutor: IPackageCommandExecutor) {
+    constructor(private packageActions: BasePackageActions) {
         this._gitHelper = new GitHelper();
         this._queueItems = new Array();
     }
@@ -37,7 +38,7 @@ export class PackageDeploymentManager implements IPackageActions {
     // #region IPackageActions implementation
 
     public async createPackage(settings: packageSettings): Promise<boolean> {
-        const result = await this.commandExecutor.createPackage(settings);
+        const result = await this.packageActions.createPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true);
@@ -82,7 +83,7 @@ export class PackageDeploymentManager implements IPackageActions {
             return false;
         }
 
-        const result = await this.commandExecutor.pushPackage(settings);
+        const result = await this.packageActions.pushPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Send package failed.', true);
