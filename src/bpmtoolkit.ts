@@ -1,18 +1,18 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { FileManager } from './managers/filemanager';
-import { WebAppManager } from './managers/webappmanager';
 import { FolderType } from './constants';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { ExtensionSettings } from './common/extensionSettings';
 import { UtilityManagersFactory } from './factory/utilityManagersFactory';
+import { BaseWebAppManager } from './abstractions/baseWebAppManager';
 
 export class BpmToolkit {
     private static instance: BpmToolkit;
 
     private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
-    private _webAppManager!: WebAppManager;
+    private _webAppManager!: BaseWebAppManager;
 
     private _selectedUtility: string;
   
@@ -57,7 +57,7 @@ export class BpmToolkit {
         return this._packageDeploymentManager;
     }
 
-    public get webAppManager(): WebAppManager{
+    public get webAppManager(): BaseWebAppManager{
         return this._webAppManager;
     }
 
