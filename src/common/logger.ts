@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { ExtensionSettings } from './extensionSettings';
 import { FolderType } from '../constants';
 import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
+import { Command } from '../command/iCommand';
+import { AddToLogCommand, AddToLogWithTimestampCommand } from '../command/winCommands';
 
 export class Logger {
 	private static terminalLog: vscode.OutputChannel;
@@ -12,14 +14,14 @@ export class Logger {
 
 	public static readonly terminalName = ExtensionSettings.terminalName;
 
-	public static getExecuteLogFilePath() : string {
+	public static getExecuteLogFilePath(): string {
 		if(Logger.outputPathLog === ''){
 			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
 		}
 		return `${Logger.outputPathLog}\\${Logger.executeLogFileName}`;
 	}
 
-	public static getExecuteResultFileName() : string {
+	public static getExecuteResultFileName(): string {
 		if(Logger.outputPathLog === ''){
 			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
 		}
@@ -38,6 +40,12 @@ export class Logger {
 		if (this.terminal === undefined) {
 			this.terminal = new PowerShellWrapper(false);
 		}
-		await this.terminal.addTextToLogFile(message, writeTimestamp);
+		let command: Command;
+		if(writeTimestamp){
+			command = new AddToLogWithTimestampCommand(this.terminal, message, this.getExecuteLogFilePath());
+		}else{
+			command = new AddToLogCommand(this.terminal, message, this.getExecuteLogFilePath());
+		}
+		await command.execute();
 	}
 }
