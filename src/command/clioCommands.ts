@@ -3,7 +3,7 @@ import path from 'path';
 import { Command } from "./iCommand";
 import { enviromentSettings, packageSettings } from "../interfaces";
 import { TerminalWrapper } from "../terminal/terminalwrapper";
-import { FolderType, getDirectoryName, isNullOrWhitespace } from '../constants';
+import { FolderType, getDirectoryName, isNullOrWhitespace, stringFormat } from '../constants';
 import { ExtensionSettings } from '../common/extensionSettings';
 
 
@@ -29,7 +29,7 @@ export class ClioWebAppRegisterCommand implements Command {
 
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
         this.terminal = terminal;
-        this.command = `clio reg-web-app ${server.id} -u ${server.url} -l ${this.loginQuery} -p ${this.passwordQuery} -i ${server.isNetCore}`;
+        this.command = `clio reg-web-app ${server.id} -u ${server.url} -l {0} -p {1} -i ${server.isNetCore}`;
     }
 
     public async execute(): Promise<boolean> {
@@ -44,7 +44,8 @@ export class ClioWebAppRegisterCommand implements Command {
                 password: true
             });
             if (!isNullOrWhitespace(this.passwordQuery)) {
-                return await this.terminal.executeCommand(this.command);
+                var outputComman = stringFormat(this.command, this.loginQuery!, this.passwordQuery!);
+                return await this.terminal.executeCommand(outputComman);
             }
         }
         return false;
