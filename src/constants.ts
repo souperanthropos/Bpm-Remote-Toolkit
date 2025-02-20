@@ -17,6 +17,9 @@ export function isNullOrWhitespace(input: string | undefined) {
 	return !input || !input.trim();
 }
 
+export const stringFormat = (str: string, ...args: string[]) =>
+	str.replace(/{(\d+)}/g, (match, index) => args[index] || '');
+
 export const hash = function () {
 	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 		const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
