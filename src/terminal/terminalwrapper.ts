@@ -11,7 +11,7 @@ export class PowerShellWrapper extends TerminalWrapper {
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
 
-	constructor(private rewriteLogFile: boolean = true) {
+	constructor() {
 		super();
 		this.executeLogFilePath = Logger.getExecuteLogFilePath();
 		this.executeResultFilePath = Logger.getExecuteResultFileName();
@@ -28,11 +28,7 @@ export class PowerShellWrapper extends TerminalWrapper {
 		}
 		
 		terminal.show(true);
-		if(this.rewriteLogFile){
-			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath};`, false);
-		}else{
-			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
-		}
+		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
 		terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		terminal.sendText(";exit");
 		return new Promise((resolve, reject) => {

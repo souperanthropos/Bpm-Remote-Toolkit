@@ -9,8 +9,9 @@ import { PowerShellWrapper } from "../terminal/terminalwrapper";
 
 
 export class UtilityManagersFactory {
+    
     static createPackageDeploymentManager(utilityName: string): PackageDeploymentManager {
-        const shellWrapper = new PowerShellWrapper(false);
+        const shellWrapper = new PowerShellWrapper();
         let packageActions: BasePackageActions;
         switch(utilityName){
             case `clio`:
@@ -25,7 +26,7 @@ export class UtilityManagersFactory {
     }
 
     static createWebAppManager(utilityName: string): BaseWebAppManager {
-        const shellWrapper = new PowerShellWrapper(true);
+        const shellWrapper = new PowerShellWrapper();
         switch(utilityName){
             case `clio`:
                 return new ClioWebAppManager(shellWrapper);
