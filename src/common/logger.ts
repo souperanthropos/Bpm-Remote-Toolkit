@@ -38,7 +38,7 @@ export class Logger {
 
 	public static async writeToExecuteLogFile(message: string, writeTimestamp: boolean) {
 		if (this.terminal === undefined) {
-			this.terminal = new PowerShellWrapper(false);
+			this.terminal = new PowerShellWrapper();
 		}
 		let command: Command;
 		if(writeTimestamp){
