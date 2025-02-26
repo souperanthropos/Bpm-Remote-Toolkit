@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import { Logger } from '../common/logger';
 
+export type ExecuteOptions = { 
+	useErrorOutputToSuccessOutput: boolean
+};
+
 export abstract class TerminalWrapper {
-	abstract executeCommand(command: string): Promise<boolean>;
+	abstract executeCommand(command: string, options: ExecuteOptions): Promise<boolean>;
 }
 
 export class PowerShellWrapper extends TerminalWrapper {
@@ -11,6 +15,8 @@ export class PowerShellWrapper extends TerminalWrapper {
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
 
+	private outputErrorToOutputSuccessCommand: string = '';
+
 	constructor() {
 		super();
 		this.executeLogFilePath = Logger.getExecuteLogFilePath();
@@ -18,7 +24,7 @@ export class PowerShellWrapper extends TerminalWrapper {
 		this.terminalName = Logger.terminalName;
 	}
 
-	public async executeCommand(command: string): Promise<boolean> {
+	public async executeCommand(command: string, options: ExecuteOptions): Promise<boolean> {
 		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
 		if (!terminal) {
 			terminal = vscode.window.createTerminal({
@@ -26,9 +32,15 @@ export class PowerShellWrapper extends TerminalWrapper {
 				location: vscode.TerminalLocation.Panel,
 			});
 		}
+
+		if(!options.useErrorOutputToSuccessOutput){
+			this.outputErrorToOutputSuccessCommand = '';
+		}else{
+			this.outputErrorToOutputSuccessCommand = '2>&1 ';
+		}
 		
 		terminal.show(true);
-		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
+		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} ${this.outputErrorToOutputSuccessCommand} | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
 		terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		terminal.sendText(";exit");
 		return new Promise((resolve, reject) => {
