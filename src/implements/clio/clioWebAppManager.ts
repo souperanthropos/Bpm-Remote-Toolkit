@@ -10,6 +10,7 @@ import {
     ClioWebAppUnRegisterCommand 
 } from "../../command/clioCommands";
 import { enviromentSettings } from "../../interfaces";
+import { Logger } from '../../common/logger';
 
 export class ClioWebAppManager extends BaseWebAppManager{
 
@@ -19,14 +20,15 @@ export class ClioWebAppManager extends BaseWebAppManager{
     }
 
     public override async webAppRegister(server: enviromentSettings): Promise<boolean> {
+        await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
         const command = new ClioWebAppRegisterCommand(this.terminal, server);
         return await command.execute();
     }
 
-    public override async webAppUnregister(server: enviromentSettings, isLogEnabled: boolean) {
+    public override async webAppUnregister(server: enviromentSettings) {
         const command = new ClioWebAppUnRegisterCommand(this.terminal, server);
         const result = await command.execute();
-        if (isLogEnabled && !result) {
+        if (!result) {
             this.commandExecuteError('Unregister web app failed.');
         }
     }
@@ -46,6 +48,7 @@ export class ClioWebAppManager extends BaseWebAppManager{
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
+            await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
             const command = new ClioWebAppRestartCommand(this.terminal, server);
             const result = await command.execute();
             if(!result){
@@ -60,6 +63,7 @@ export class ClioWebAppManager extends BaseWebAppManager{
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
+            await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
             const command = new ClioClearRedisDbCommand(this.terminal, server);
             const result = await command.execute();
             if(!result){
@@ -74,6 +78,7 @@ export class ClioWebAppManager extends BaseWebAppManager{
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
+            await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
             const command = new ClioCompileConfigurationCommand(this.terminal, server);
             const result = await command.execute();
             if(!result){
