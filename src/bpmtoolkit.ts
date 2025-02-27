@@ -22,7 +22,9 @@ export class BpmToolkit {
         this.createTempDir();
         this.initializeUtilityManagers();
         vscode.workspace.onDidChangeConfiguration(async event => {
-            await this.initializeUtilityManagers();
+            if(event.affectsConfiguration('bpmtoolkit.general.utility')){
+                await this.initializeUtilityManagers();
+            }
         });
     }
 

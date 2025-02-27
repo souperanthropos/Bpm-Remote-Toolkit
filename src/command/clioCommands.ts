@@ -1,37 +1,27 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import { Command } from "./iCommand";
 import { enviromentSettings, packageSettings } from "../interfaces";
-import { ExecuteOptions, TerminalWrapper } from "../terminal/terminalwrapper";
+import { TerminalWrapper } from "../terminal/terminalwrapper";
 import { FolderType, getDirectoryName, isNullOrWhitespace, stringFormat } from '../constants';
 import { ExtensionSettings } from '../common/extensionSettings';
+import { BaseCommand } from '../abstractions/baseCommand';
 
 
-export class ClioOpenSettingsCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
-  
+export class ClioOpenSettingsCommand extends BaseCommand {
+
     constructor(terminal: TerminalWrapper) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = 'clio open-settings';
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioWebAppRegisterCommand implements Command {
-    private command: string;
+export class ClioWebAppRegisterCommand extends BaseCommand {
     private loginQuery?: string;
     private passwordQuery?: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
 
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio reg-web-app ${server.id} -u ${server.url} -l {0} -p {1} -i ${server.isNetCore}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
@@ -48,142 +38,86 @@ export class ClioWebAppRegisterCommand implements Command {
                 password: true
             });
             if (!isNullOrWhitespace(this.passwordQuery)) {
-                var outputComman = stringFormat(this.command, this.loginQuery!, this.passwordQuery!);
-                return await this.terminal.executeCommand(outputComman, this.options);
+                this.command = stringFormat(this.command, this.loginQuery!, this.passwordQuery!);
+                return await super.execute();
             }
         }
         return false;
     }
 }
 
-export class ClioWebAppUnRegisterCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioWebAppUnRegisterCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio unreg-web-app ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioWebAppPingCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioWebAppPingCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio ping -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioWebAppRestartCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioWebAppRestartCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio restart-web-app -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioClearRedisDbCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioClearRedisDbCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio clear-redis-db -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioCompileConfigurationCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioCompileConfigurationCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio compile-configuration -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioCreatePackageCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioCreatePackageCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, pkg: packageSettings) {
-        this.terminal = terminal;
+        super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
         this.command = `clio generate-pkg-zip ${pkg.targetFolderPath} -d ${outPathPackageFile}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioPushPackageCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioPushPackageCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, pkg: packageSettings) {
-        this.terminal = terminal;
+        super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
         this.command = `clio push-pkg ${outPathPackageFile} -e ${pkg.targetEnviroment?.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class ClioCheckInstalledCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class ClioCheckInstalledCommand extends BaseCommand {
 
     constructor(terminal: TerminalWrapper){
-        this.terminal = terminal;
+        super(terminal);
         this.command = `clio version`;
         this.options = { useErrorOutputToSuccessOutput: false };
-    }
-
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
     }
 }

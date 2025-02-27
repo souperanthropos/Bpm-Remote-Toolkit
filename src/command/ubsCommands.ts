@@ -1,175 +1,122 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import { ExecuteOptions, TerminalWrapper } from "../terminal/terminalwrapper";
-import { Command } from "./iCommand";
+import { TerminalWrapper } from "../terminal/terminalwrapper";
 import { enviromentSettings, packageSettings } from '../interfaces';
-import { FolderType, getDirectoryName } from '../constants';
+import { FolderType, getDirectoryName, isNullOrWhitespace, stringFormat } from '../constants';
 import { ExtensionSettings } from '../common/extensionSettings';
+import { BaseCommand } from '../abstractions/baseCommand';
 
-export class UbsOpenSettingsCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsOpenSettingsCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = 'ubs settings';
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class UbsWebAppRegisterCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-  
-    constructor(terminal: TerminalWrapper) {
-        this.terminal = terminal;
-        this.command = '';
+export class UbsWebAppRegisterCommand extends BaseCommand {
+    private loginQuery?: string;
+    private passwordQuery?: string;
+
+    constructor(terminal: TerminalWrapper, server: enviromentSettings) {
+        super(terminal);
+        this.command = `ubs env-set ${server.id} -u ${server.url} -l {0} -p {1} -i ${server.isNetCore}`;
+        this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
+
     public async execute(): Promise<boolean> {
-        let yesPressed = false;
-        await vscode.window
-            .showInformationMessage('This command is not supported in the current version of the utility. You will need to manually add the server.', "Yes", "No")
-            .then(async answer => {
-                if (answer === "Yes") {
-                    var settingsCommand = new UbsOpenSettingsCommand(this.terminal);
-                    await settingsCommand.execute();
-                    yesPressed = true;
-                }
+        this.loginQuery = await vscode.window.showInputBox({
+            placeHolder: "Login",
+            prompt: "Enter login for connecting to Bpmsoft"
+        });
+        if (!isNullOrWhitespace(this.loginQuery)) {
+            this.passwordQuery = await vscode.window.showInputBox({
+                placeHolder: "Password",
+                prompt: "Enter password for connecting to Bpmsoft",
+                password: true
             });
-        return yesPressed;
+            if (!isNullOrWhitespace(this.passwordQuery)) {
+                this.command = stringFormat(this.command, this.loginQuery!, this.passwordQuery!);
+                return await super.execute();
+            }
+        }
+        return false;
     }
 }
 
-export class UbsWebAppUnRegisterCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-  
-    constructor(terminal: TerminalWrapper) {
-        this.terminal = terminal;
-        this.command = ``;
-    }
-  
-    public async execute(): Promise<boolean> {
-        return true;
+export class UbsWebAppUnRegisterCommand extends BaseCommand {
+
+    constructor(terminal: TerminalWrapper, server: enviromentSettings) {
+        super(terminal);
+        this.command = `ubs env-remove ${server.id}`;
+        this.options = { useErrorOutputToSuccessOutput: true };
     }
 }
 
-export class UbsWebAppPingCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-  
-    constructor(terminal: TerminalWrapper) {
-        this.terminal = terminal;
-        this.command = ``;
-    }
-  
-    public async execute(): Promise<boolean> {
-        return true;
+export class UbsWebAppPingCommand extends BaseCommand {
+
+    constructor(terminal: TerminalWrapper, server: enviromentSettings) {
+        super(terminal);
+        this.command = `ubs ping -e ${server.id}`;
+        this.options = { useErrorOutputToSuccessOutput: true };
     }
 }
 
-export class UbsWebAppRestartCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsWebAppRestartCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `ubs restart -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class UbsClearRedisDbCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsClearRedisDbCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `ubs clear-redis -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class UbsCompileConfigurationCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsCompileConfigurationCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
-        this.terminal = terminal;
+        super(terminal);
         this.command = `ubs compile -e ${server.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class UbsCreatePackageCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsCreatePackageCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, pkg: packageSettings) {
-        this.terminal = terminal;
+        super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
         this.command = `ubs zip ${pkg.targetFolderPath} -d ${outPathPackageFile}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class UbsPushPackageCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsPushPackageCommand extends BaseCommand {
   
     constructor(terminal: TerminalWrapper, pkg: packageSettings) {
-        this.terminal = terminal;
+        super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
         this.command = `ubs push ${outPathPackageFile} -e ${pkg.targetEnviroment?.id}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
-  
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
-    }
 }
 
-export class UbsCheckInstalledCommand implements Command {
-    private command: string;
-    private terminal: TerminalWrapper;
-    private options: ExecuteOptions;
+export class UbsCheckInstalledCommand extends BaseCommand {
 
     constructor(terminal: TerminalWrapper){
-        this.terminal = terminal;
+        super(terminal);
         this.command = `ubs version`;
         this.options = { useErrorOutputToSuccessOutput: false };
-    }
-
-    public async execute(): Promise<boolean> {
-        return await this.terminal.executeCommand(this.command, this.options);
     }
 }

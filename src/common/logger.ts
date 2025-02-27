@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import { ExtensionSettings } from './extensionSettings';
 import { FolderType } from '../constants';
 import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
-import { Command } from '../command/iCommand';
 import { AddToLogCommand, AddToLogWithTimestampCommand } from '../command/winCommands';
+import { BaseCommand } from '../abstractions/baseCommand';
 
 export class Logger {
 	private static terminalLog: vscode.OutputChannel;
@@ -40,7 +40,7 @@ export class Logger {
 		if (this.terminal === undefined) {
 			this.terminal = new PowerShellWrapper();
 		}
-		let command: Command;
+		let command: BaseCommand;
 		if(writeTimestamp){
 			command = new AddToLogWithTimestampCommand(this.terminal, message, this.getExecuteLogFilePath());
 		}else{
