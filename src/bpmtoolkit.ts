@@ -21,8 +21,10 @@ export class BpmToolkit {
         this._fileManager = new FileManager();
         this.createTempDir();
         this.initializeUtilityManagers();
-        vscode.workspace.onDidChangeConfiguration(event => {
-            this.initializeUtilityManagers();
+        vscode.workspace.onDidChangeConfiguration(async event => {
+            if(event.affectsConfiguration('bpmtoolkit.general.utility')){
+                await this.initializeUtilityManagers();
+            }
         });
     }
 
@@ -61,12 +63,12 @@ export class BpmToolkit {
         return this._webAppManager;
     }
 
-    public initializeUtilityManagers() {
+    public async initializeUtilityManagers() {
         const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
         const utilityName = generalConfig.get<string>('utility')!;
         
         if(this._selectedUtility !== utilityName){
-            this._webAppManager = UtilityManagersFactory.createWebAppManager(utilityName);
+            this._webAppManager = await UtilityManagersFactory.createWebAppManager(utilityName);
             this._packageDeploymentManager = UtilityManagersFactory.createPackageDeploymentManager(utilityName);
             this._selectedUtility = utilityName;
         }
