@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as cp from "child_process";
 import { Logger } from '../common/logger';
 
 export type ExecuteOptions = { 
@@ -6,6 +7,7 @@ export type ExecuteOptions = {
 };
 
 export abstract class TerminalWrapper {
+	abstract executeSilent(command: string): Promise<string>;
 	abstract executeCommand(command: string, options: ExecuteOptions): Promise<boolean>;
 }
 
@@ -15,7 +17,7 @@ export class PowerShellWrapper extends TerminalWrapper {
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
 
-	private outputErrorToOutputSuccessCommand: string = '';
+	private errorOutputToSuccessOutputCommand: string = '';
 
 	constructor() {
 		super();
@@ -23,6 +25,17 @@ export class PowerShellWrapper extends TerminalWrapper {
 		this.executeResultFilePath = Logger.getExecuteResultFileName();
 		this.terminalName = Logger.terminalName;
 	}
+
+	public async executeSilent(command: string): Promise<string>{
+		return new Promise<string>((resolve, reject) => {
+			cp.exec(command, (err, out) => {
+				if (err) {
+					return reject(err);
+				}
+				return resolve(out);
+			});
+		});
+	} 
 
 	public async executeCommand(command: string, options: ExecuteOptions): Promise<boolean> {
 		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
@@ -34,13 +47,13 @@ export class PowerShellWrapper extends TerminalWrapper {
 		}
 
 		if(!options.useErrorOutputToSuccessOutput){
-			this.outputErrorToOutputSuccessCommand = '';
+			this.errorOutputToSuccessOutputCommand = '';
 		}else{
-			this.outputErrorToOutputSuccessCommand = '2>&1 ';
+			this.errorOutputToSuccessOutputCommand = '2>&1 ';
 		}
 		
 		terminal.show(true);
-		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} ${this.outputErrorToOutputSuccessCommand} | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
+		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} ${this.errorOutputToSuccessOutputCommand} | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
 		terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		terminal.sendText(";exit");
 		return new Promise((resolve, reject) => {
