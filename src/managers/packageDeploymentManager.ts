@@ -2,13 +2,16 @@ import * as vscode from 'vscode';
 import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
-import { FolderType, showErrorMessage } from '../constants';
+import { FolderType, getDirectoryName, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
 import { BasePackageActions } from '../abstractions/basePackageActions';
+import path from 'path';
+import { FileManager } from './filemanager';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
     private readonly _queueItems: queueItem[];
+    private readonly _fileManager: FileManager;
     private selectedServer?: enviromentSettings;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
@@ -17,6 +20,7 @@ export class PackageDeploymentManager {
     constructor(private packageActions: BasePackageActions) {
         this._gitHelper = new GitHelper();
         this._queueItems = new Array();
+        this._fileManager = new FileManager();
     }
 
     private addItem(pkg: packageSettings) {
@@ -38,6 +42,9 @@ export class PackageDeploymentManager {
     // #region IPackageActions implementation
 
     public async createPackage(settings: packageSettings): Promise<boolean> {
+        const packageFileName = `${getDirectoryName(settings.targetFolderPath)}.gz`;
+        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
+        await this._fileManager.DeleteFile(outPathPackageFile);
         const result = await this.packageActions.createPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
@@ -58,6 +65,7 @@ export class PackageDeploymentManager {
                 async () => {
                     vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
                     if (await this._gitHelper.isPermittedBranch(branches)) {
+                        await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
                         if (await this.createPackage(pkg)) {
                             if (ExtensionSettings.outputPath(FolderType.package)) {
                                 vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath(FolderType.package)));

@@ -1,8 +1,14 @@
 import * as vscode from 'vscode';
+import * as cp from "child_process";
 import { Logger } from '../common/logger';
 
+export type ExecuteOptions = { 
+	useErrorOutputToSuccessOutput: boolean
+};
+
 export abstract class TerminalWrapper {
-	abstract executeCommand(command: string): Promise<boolean>;
+	abstract executeSilent(command: string): Promise<string>;
+	abstract executeCommand(command: string, options: ExecuteOptions): Promise<boolean>;
 }
 
 export class PowerShellWrapper extends TerminalWrapper {
@@ -11,14 +17,27 @@ export class PowerShellWrapper extends TerminalWrapper {
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
 
-	constructor(private rewriteLogFile: boolean = true) {
+	private errorOutputToSuccessOutputCommand: string = '';
+
+	constructor() {
 		super();
 		this.executeLogFilePath = Logger.getExecuteLogFilePath();
 		this.executeResultFilePath = Logger.getExecuteResultFileName();
 		this.terminalName = Logger.terminalName;
 	}
 
-	public async executeCommand(command: string): Promise<boolean> {
+	public async executeSilent(command: string): Promise<string>{
+		return new Promise<string>((resolve, reject) => {
+			cp.exec(command, (err, out) => {
+				if (err) {
+					return reject(err);
+				}
+				return resolve(out);
+			});
+		});
+	} 
+
+	public async executeCommand(command: string, options: ExecuteOptions): Promise<boolean> {
 		let terminal = vscode.window.terminals.find(i => i.name === this.terminalName);
 		if (!terminal) {
 			terminal = vscode.window.createTerminal({
@@ -26,13 +45,15 @@ export class PowerShellWrapper extends TerminalWrapper {
 				location: vscode.TerminalLocation.Panel,
 			});
 		}
+
+		if(!options.useErrorOutputToSuccessOutput){
+			this.errorOutputToSuccessOutputCommand = '';
+		}else{
+			this.errorOutputToSuccessOutputCommand = '2>&1 ';
+		}
 		
 		terminal.show(true);
-		if(this.rewriteLogFile){
-			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath};`, false);
-		}else{
-			terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} 2>&1 | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
-		}
+		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} ${this.errorOutputToSuccessOutputCommand} | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
 		terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		terminal.sendText(";exit");
 		return new Promise((resolve, reject) => {

@@ -81,7 +81,7 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 							message: 'check credential failed',
 							increment: 50
 						});
-						await BpmToolkit.Instance.webAppManager.webAppUnregister(server, false);
+						await BpmToolkit.Instance.webAppManager.webAppUnregister(server);
 						context.globalState.update(server.id, false);
 					}
 					vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
@@ -91,7 +91,8 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: enviromentSettings) => {
-		await BpmToolkit.Instance.webAppManager.webAppUnregister(server, true);
+		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
+		await BpmToolkit.Instance.webAppManager.webAppUnregister(server);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 	}));
@@ -198,6 +199,8 @@ function registerEvents(context: vscode.ExtensionContext){
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
+	BpmToolkit.Instance;
+	
 	initializeExtensionSettings(context);
 	registerButtonCommands(context);
 	registerContextMenus(context);
