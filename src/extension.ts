@@ -199,12 +199,12 @@ function registerEvents(context: vscode.ExtensionContext){
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	BpmToolkit.Instance;
-	
 	initializeExtensionSettings(context);
 	registerButtonCommands(context);
 	registerContextMenus(context);
 	registerEvents(context);
+
+	BpmToolkit.Instance;
 
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
