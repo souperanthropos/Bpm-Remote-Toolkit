@@ -1,16 +1,15 @@
 import * as vscode from 'vscode';
 import { ExtensionSettings } from './extensionSettings';
 import { FolderType } from '../constants';
-import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
-import { AddToLogCommand, AddToLogWithTimestampCommand } from '../command/winCommands';
-import { BaseCommand } from '../abstractions/baseCommand';
+import { FileManager } from '../managers/filemanager';
 
 export class Logger {
 	private static terminalLog: vscode.OutputChannel;
-	private static terminal: TerminalWrapper;
 	private static outputPathLog = '';
 	private static readonly executeResultFileName = 'commandExecuteResult.log';
 	private static executeLogFileName = 'commandExecute.log';
+
+	private static readonly fileManager = new FileManager();
 
 	public static readonly terminalName = ExtensionSettings.terminalName;
 
@@ -36,16 +35,7 @@ export class Logger {
 		this.terminalLog.appendLine(message);
 	}
 
-	public static async writeToExecuteLogFile(message: string, writeTimestamp: boolean) {
-		if (this.terminal === undefined) {
-			this.terminal = new PowerShellWrapper();
-		}
-		let command: BaseCommand;
-		if(writeTimestamp){
-			command = new AddToLogWithTimestampCommand(this.terminal, message, this.getExecuteLogFilePath());
-		}else{
-			command = new AddToLogCommand(this.terminal, message, this.getExecuteLogFilePath());
-		}
-		await command.execute();
+	public static async writeToExecuteLogFile(message: string) {
+		await this.fileManager.appendToFile(this.getExecuteLogFilePath(), message);
 	}
 }

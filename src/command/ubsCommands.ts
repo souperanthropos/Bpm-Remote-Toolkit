@@ -116,6 +116,7 @@ export class UbsCheckInstalledCommand extends BaseCommand {
 
     constructor(terminal: TerminalWrapper){
         super(terminal);
+        this.isSilentExecution = true;
         this.command = `ubs version`;
         this.options = { useErrorOutputToSuccessOutput: false };
     }
