@@ -13,6 +13,7 @@ export abstract class TerminalWrapper {
 
 export class PowerShellWrapper extends TerminalWrapper {
 	private readonly setEncodingUtf8 = '$OutputEncoding = [Console]::InputEncoding = [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding;';
+	private readonly tempFilePath = '$tempPath = [System.IO.Path]::GetTempPath();$outputFile = Join-Path -Path $tempPath -ChildPath "outputCommandResult.txt";';
 	private readonly executeResultFilePath: string;
 	private readonly executeLogFilePath: string;
 	private readonly terminalName: string;
@@ -53,7 +54,11 @@ export class PowerShellWrapper extends TerminalWrapper {
 		}
 		
 		terminal.show(true);
-		terminal.sendText(`$share = ${this.setEncodingUtf8} ${command} ${this.errorOutputToSuccessOutputCommand} | Tee-Object -file ${this.executeLogFilePath} -Append;`, false);
+		terminal.sendText(`${this.tempFilePath}`, false);
+		terminal.sendText(`$share = ${this.setEncodingUtf8}`, false);
+		terminal.sendText(`${command} ${this.errorOutputToSuccessOutputCommand} | `, false);
+		terminal.sendText(`ForEach-Object { Write-Output $_; $_ | Tee-Object -file $outputFile | `, false);
+		terminal.sendText(`Out-File -FilePath ${this.executeLogFilePath} -Append -Encoding UTF8 };`, false);
 		terminal.sendText(`if($?){'1' > ${this.executeResultFilePath}}else{'0' > ${this.executeResultFilePath}}`, false);
 		terminal.sendText(";exit");
 		return new Promise((resolve, reject) => {
