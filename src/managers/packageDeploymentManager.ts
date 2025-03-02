@@ -206,7 +206,7 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
-        await Logger.writeToExecuteLogFile('START DEPLOYMENT', true);
+        await Logger.writeToExecuteLogFile('START DEPLOYMENT');
         for await (const element of this._queueItems) {
             if (!await this._gitHelper.checkBranch(element.package.targetEnviroment!.gitBranchName!)){
                 break;
@@ -214,7 +214,7 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`, true);
+            await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`);
             var result = await this.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
@@ -223,7 +223,7 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
-                await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`, true);
+                await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`);
                 result = await this.pushPackage(element.package);
                 element.isRunning = false;
                 if (!result) {
@@ -238,7 +238,7 @@ export class PackageDeploymentManager {
                 }
             }
         }
-        await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT', true);
+        await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT');
         const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
         if(deployErrorCount > 0){
             showErrorMessage('Package deployment failed with an error.', true, Logger.getExecuteLogFilePath());

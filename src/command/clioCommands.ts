@@ -117,6 +117,7 @@ export class ClioCheckInstalledCommand extends BaseCommand {
 
     constructor(terminal: TerminalWrapper){
         super(terminal);
+        this.isSilentExecution = true;
         this.command = `clio version`;
         this.options = { useErrorOutputToSuccessOutput: false };
     }

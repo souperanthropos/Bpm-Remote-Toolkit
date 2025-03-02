@@ -10,6 +10,20 @@ export class FileManager {
         catch{}
     }
 
+    public async appendToFile(filePath: string, content: string) {
+        let readStr = '';
+        try{
+            const readData = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
+            readStr = new TextDecoder('utf-8').decode(readData);
+        }
+        catch{}
+        if(readStr === ''){
+            readStr += '\n';
+        }
+        readStr += new Date().toISOString() + ' - ' + content + '\n';
+        await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), new TextEncoder().encode(readStr));
+    }
+
     public async UpdateTimeInDescriptor(document: vscode.TextDocument) {
         const fileStruct = path.parse(document.uri.fsPath);
         if(fileStruct.ext === '.cs' || fileStruct.ext === '.js'){
