@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import path from 'path';
+import { DataTimeUtility } from '../common/utilities/dataTimeUtility';
 
 export class FileManager {
 
@@ -20,7 +21,7 @@ export class FileManager {
         if(readStr === ''){
             readStr += '\n';
         }
-        readStr += new Date().toISOString() + ' - ' + content + '\n';
+        readStr += DataTimeUtility.formatDate(new Date()) + ' - ' + content + '\n';
         await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), new TextEncoder().encode(readStr));
     }
 
@@ -34,13 +35,8 @@ export class FileManager {
             let readStr = new TextDecoder('utf-8').decode(readData);
 
             const pattern = /("ModifiedOnUtc": "\\\/Date\()([0-9]+)(\)\\\/")/;
-            var updateStr = readStr.replace(pattern, `$1${this.getUnixTimeWithoutMilliseconds()}$3`);
+            var updateStr = readStr.replace(pattern, `$1${DataTimeUtility.getUnixTimeWithoutMilliseconds(Date.now())}$3`);
             await vscode.workspace.fs.writeFile(vscode.Uri.file(descriptorFile), new TextEncoder().encode(updateStr));
         }
-    }
-
-    getUnixTimeWithoutMilliseconds(): string {
-        const time = Math.floor(Date.now() / 1000) * 1000;
-        return time.toString();
     }
 }
