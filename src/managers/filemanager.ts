@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import path from 'path';
 import { DataTimeUtility } from '../common/utilities/dataTimeUtility';
+import { ExtensionSettings } from '../common/extensionSettings';
+import { FolderType } from '../constants';
 
 export class FileManager {
 
@@ -9,6 +12,21 @@ export class FileManager {
             await vscode.workspace.fs.delete(vscode.Uri.file(filePath));
         }
         catch{}
+    }
+
+    public createTempDir() {
+        let dir = ExtensionSettings.outputPath(FolderType.default);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        dir = ExtensionSettings.outputPath(FolderType.package);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
+        dir = ExtensionSettings.outputPath(FolderType.terminal);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir);
+        }
     }
 
     public async appendToFile(filePath: string, content: string) {

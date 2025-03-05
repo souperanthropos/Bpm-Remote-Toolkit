@@ -1,11 +1,9 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import { FileManager } from './managers/filemanager';
-import { FolderType } from './constants';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
-import { ExtensionSettings } from './common/extensionSettings';
 import { UtilityManagersFactory } from './factory/utilityManagersFactory';
 import { BaseWebAppManager } from './abstractions/baseWebAppManager';
+import { EmptyWebAppManager } from './implements/emptyWebAppManager';
 
 export class BpmToolkit {
     private static instance: BpmToolkit;
@@ -14,33 +12,21 @@ export class BpmToolkit {
     private _packageDeploymentManager!: PackageDeploymentManager;
     private _webAppManager!: BaseWebAppManager;
 
+    private _selectedUtilityStatus: vscode.StatusBarItem;
     private _selectedUtility: string;
   
     private constructor() {
         this._selectedUtility = '';
+        this._selectedUtilityStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        this._selectedUtilityStatus.show();
         this._fileManager = new FileManager();
-        this.createTempDir();
+        this._fileManager.createTempDir();
         this.initializeUtilityManagers();
         vscode.workspace.onDidChangeConfiguration(async event => {
             if(event.affectsConfiguration('bpmtoolkit.general.utility')){
                 await this.initializeUtilityManagers();
             }
         });
-    }
-
-    private createTempDir() {
-        let dir = ExtensionSettings.outputPath(FolderType.default);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
-        dir = ExtensionSettings.outputPath(FolderType.package);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
-        dir = ExtensionSettings.outputPath(FolderType.terminal);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir);
-        }
     }
 
     public static get Instance(): BpmToolkit {
@@ -68,9 +54,14 @@ export class BpmToolkit {
         const utilityName = generalConfig.get<string>('utility')!;
         
         if(this._selectedUtility !== utilityName){
+            this._selectedUtilityStatus.text = `Selected utility: ${utilityName}`;
             this._webAppManager = await UtilityManagersFactory.createWebAppManager(utilityName);
             this._packageDeploymentManager = UtilityManagersFactory.createPackageDeploymentManager(utilityName);
             this._selectedUtility = utilityName;
+
+            if(this._webAppManager instanceof EmptyWebAppManager){
+                this._selectedUtilityStatus.text += ' (not installed)';
+            }
         }
     }
   }
