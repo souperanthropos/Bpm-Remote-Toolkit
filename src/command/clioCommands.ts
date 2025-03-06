@@ -22,7 +22,7 @@ export class ClioWebAppRegisterCommand extends BaseCommand {
 
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
         super(terminal);
-        this.command = `clio reg-web-app ${server.id} -u ${server.url} -l {0} -p {1} -i ${server.isNetCore}`;
+        this.command = `$username = "{0}";$password = "{1}";clio reg-web-app ${server.id} -u ${server.url} -l $username -p $password -i ${server.isNetCore}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 
