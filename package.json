@@ -86,12 +86,14 @@
         "bpmtoolkit.general.utility": {
           "order": 0,
           "type": "string",
-          "default": "clio",
+          "default": "auto",
           "enum": [
+            "auto",
             "clio",
             "ubs"
           ],
           "enumDescriptions": [
+            "Automatic utility detection.",
             "Service program for remote work with Creatio.",
             "Service program for remote work with BPMSoft."
           ],
