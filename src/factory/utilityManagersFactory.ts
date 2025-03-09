@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { BasePackageActions } from "../abstractions/basePackageActions";
 import { BaseWebAppManager } from "../abstractions/baseWebAppManager";
 import { ClioCheckInstalledCommand } from "../command/clioCommands";
@@ -13,39 +14,83 @@ import { PowerShellWrapper } from "../terminal/terminalwrapper";
 
 
 export class UtilityManagersFactory {
-    private static checkInstalledSuccess: boolean = true;
+    private _checkInstalledSuccess: boolean = true;
+    private _selectedUtility: string = 'auto-detection failed';
+    private _autoDetectSuccess: boolean = true;
+    private _shellWrapper = new PowerShellWrapper();
 
-    static createPackageDeploymentManager(utilityName: string): PackageDeploymentManager {
-        const shellWrapper = new PowerShellWrapper();
-        let packageActions: BasePackageActions;
-        if(!this.checkInstalledSuccess){
-            packageActions = new EmptyPackageActions(shellWrapper);
+    public get selectedUtility(): string{
+        return this._selectedUtility;
+    }
+
+    constructor(utilityName: string){
+        if(utilityName === 'auto'){
+            if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0){
+                const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
+                if(folder.includes('Terrasoft')){
+                    this._selectedUtility = 'clio';
+                }else if(folder.includes('BPMSoft')){
+                    this._selectedUtility = 'ubs';   
+                }else{
+                    this._autoDetectSuccess = false;
+                }
+            }
         }else{
-            switch(utilityName){
+            this._selectedUtility = utilityName;
+        }
+    }
+
+    private async isToolInstalled(): Promise<boolean> {
+        if(this._autoDetectSuccess){
+            if(this._checkInstalledSuccess){
+                return true;
+            }
+            switch(this._selectedUtility){
                 case `clio`:
-                    packageActions = new ClioPackageActions(shellWrapper);
-                    break;
+                    const checkClioCommand = new ClioCheckInstalledCommand(this._shellWrapper);
+                    this._checkInstalledSuccess = await checkClioCommand.execute();
+                    return this._checkInstalledSuccess;
                 case `ubs`:
                 default:
-                    packageActions = new UbsPackageActions(shellWrapper);
+                    const checkUbsCommand = new UbsCheckInstalledCommand(this._shellWrapper);
+                    this._checkInstalledSuccess = await checkUbsCommand.execute();
+                    return this._checkInstalledSuccess;
+            }
+        }
+        return false;
+    }
+
+    public async createPackageDeploymentManager(): Promise<PackageDeploymentManager> {
+        let packageActions: BasePackageActions;
+        if(await this.isToolInstalled()){
+            switch(this._selectedUtility){
+                case `clio`:
+                    packageActions = new ClioPackageActions(this._shellWrapper);
+                    break;
+                case `ubs`:
+                    packageActions = new UbsPackageActions(this._shellWrapper);
+                    break;
+                default:
+                    packageActions = new EmptyPackageActions(this._shellWrapper);
                     break;
             }
+        }else{
+            packageActions = new EmptyPackageActions(this._shellWrapper);
         }
         return new PackageDeploymentManager(packageActions);
     }
 
-    static async createWebAppManager(utilityName: string): Promise<BaseWebAppManager> {
-        const shellWrapper = new PowerShellWrapper();
-        switch(utilityName){
-            case `clio`:
-                const checkClioCommand = new ClioCheckInstalledCommand(shellWrapper);
-                this.checkInstalledSuccess = await checkClioCommand.execute();
-                return this.checkInstalledSuccess ? new ClioWebAppManager(shellWrapper) : new EmptyWebAppManager(shellWrapper);
-            case `ubs`:
-            default:
-                const checkUbsCommand = new UbsCheckInstalledCommand(shellWrapper);
-                this.checkInstalledSuccess = await checkUbsCommand.execute();
-                return this.checkInstalledSuccess ? new UbsWebAppManager(shellWrapper) : new EmptyWebAppManager(shellWrapper);
+    public async createWebAppManager(): Promise<BaseWebAppManager> {
+        if(await this.isToolInstalled()){
+            switch(this._selectedUtility){
+                case `clio`:
+                    return new ClioWebAppManager(this._shellWrapper);
+                case `ubs`:
+                    return new UbsWebAppManager(this._shellWrapper);
+                default:
+                    return new EmptyWebAppManager(this._shellWrapper);
+            }
         }
+        return new EmptyWebAppManager(this._shellWrapper);
     }
 }
