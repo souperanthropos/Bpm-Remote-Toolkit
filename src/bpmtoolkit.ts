@@ -54,13 +54,19 @@ export class BpmToolkit {
         const utilityName = generalConfig.get<string>('utility')!;
         
         if(this._selectedUtility !== utilityName){
-            this._selectedUtilityStatus.text = `Selected utility: ${utilityName}`;
-            this._webAppManager = await UtilityManagersFactory.createWebAppManager(utilityName);
-            this._packageDeploymentManager = UtilityManagersFactory.createPackageDeploymentManager(utilityName);
+            var factory = new UtilityManagersFactory(utilityName);
+            this._selectedUtilityStatus.text = `Selected utility: ${factory.selectedUtility}`;
+            this._webAppManager = await factory.createWebAppManager();
+            this._packageDeploymentManager = await factory.createPackageDeploymentManager();
             this._selectedUtility = utilityName;
 
             if(this._webAppManager instanceof EmptyWebAppManager){
-                this._selectedUtilityStatus.text += ' (not installed)';
+                if(factory.selectedUtility !== 'auto-detection failed'){
+                    this._selectedUtilityStatus.text += ' (not installed)';
+                }else{
+                    const options: vscode.MessageOptions = { modal: true };
+                    await vscode.window.showInformationMessage('Utility auto-detection failed.\n Go to extension setting "BPM Remote Toolkit" and select utility manually.', options);
+                }
             }
         }
     }
