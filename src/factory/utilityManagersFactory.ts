@@ -14,7 +14,7 @@ import { PowerShellWrapper } from "../terminal/terminalwrapper";
 
 
 export class UtilityManagersFactory {
-    private _checkInstalledSuccess: boolean = true;
+    private _checkInstalledSuccess: boolean = false;
     private _selectedUtility: string = 'auto-detection failed';
     private _autoDetectSuccess: boolean = true;
     private _shellWrapper = new PowerShellWrapper();
