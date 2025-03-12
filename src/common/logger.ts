@@ -1,25 +1,26 @@
 import * as vscode from 'vscode';
 import { ExtensionSettings } from './extensionSettings';
 import { FolderType } from '../constants';
-import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
+import { FileManager } from '../managers/filemanager';
 
 export class Logger {
 	private static terminalLog: vscode.OutputChannel;
-	private static terminal: TerminalWrapper;
 	private static outputPathLog = '';
 	private static readonly executeResultFileName = 'commandExecuteResult.log';
 	private static executeLogFileName = 'commandExecute.log';
 
+	private static readonly fileManager = new FileManager();
+
 	public static readonly terminalName = ExtensionSettings.terminalName;
 
-	public static getExecuteLogFilePath() : string {
+	public static getExecuteLogFilePath(): string {
 		if(Logger.outputPathLog === ''){
 			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
 		}
 		return `${Logger.outputPathLog}\\${Logger.executeLogFileName}`;
 	}
 
-	public static getExecuteResultFileName() : string {
+	public static getExecuteResultFileName(): string {
 		if(Logger.outputPathLog === ''){
 			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
 		}
@@ -34,10 +35,7 @@ export class Logger {
 		this.terminalLog.appendLine(message);
 	}
 
-	public static async writeToExecuteLogFile(message: string, writeTimestamp: boolean) {
-		if (this.terminal === undefined) {
-			this.terminal = new PowerShellWrapper(false);
-		}
-		await this.terminal.addTextToLogFile(message, writeTimestamp);
+	public static async writeToExecuteLogFile(message: string) {
+		await this.fileManager.appendToFile(this.getExecuteLogFilePath(), message);
 	}
 }
