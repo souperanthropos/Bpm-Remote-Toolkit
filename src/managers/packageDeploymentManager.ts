@@ -1,22 +1,26 @@
 import * as vscode from 'vscode';
 import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
-import { PackageManager } from './packagemanager';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
-import { showErrorMessage } from '../constants';
+import { FolderType, getDirectoryName, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
+import { BasePackageActions } from '../abstractions/basePackageActions';
+import path from 'path';
+import { FileManager } from './filemanager';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
-    private readonly _packageManager: PackageManager;
     private readonly _queueItems: queueItem[];
-
+    private readonly _fileManager: FileManager;
     private selectedServer?: enviromentSettings;
 
-    constructor(packageManager: PackageManager) {
+    public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
+    public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
+
+    constructor(private packageActions: BasePackageActions) {
         this._gitHelper = new GitHelper();
-        this._packageManager = packageManager;
         this._queueItems = new Array();
+        this._fileManager = new FileManager();
     }
 
     private addItem(pkg: packageSettings) {
@@ -34,6 +38,73 @@ export class PackageDeploymentManager {
             this.clear();
         }
     }
+
+    // #region IPackageActions implementation
+
+    public async createPackage(settings: packageSettings): Promise<boolean> {
+        const packageFileName = `${getDirectoryName(settings.targetFolderPath)}.gz`;
+        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
+        await this._fileManager.DeleteFile(outPathPackageFile);
+        const result = await this.packageActions.createPackage(settings);
+
+        if (!result && this.onCommandExecuteError) {
+            this.onCommandExecuteError('Create package failed.', true);
+        }
+
+        return result;
+    }
+
+    public createPackageWithProgress(pkg: packageSettings) {
+        if (ExtensionSettings.environments) {
+            const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
+            vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: `Creating package: ${pkg.folderName}.gz`
+                },
+                async () => {
+                    vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
+                    if (await this._gitHelper.isPermittedBranch(branches)) {
+                        await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
+                        if (await this.createPackage(pkg)) {
+                            if (ExtensionSettings.outputPath(FolderType.package)) {
+                                vscode.env.openExternal(vscode.Uri.file(ExtensionSettings.outputPath(FolderType.package)));
+                            }
+                        }
+                    }
+                    vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
+                }
+            );
+        } else {
+            vscode.window.showInformationMessage(
+                "Command execute failed: check you .code-workspace file."
+            );
+        }
+    }
+
+    public async pushPackage(settings: packageSettings): Promise<boolean>  {
+        if (settings.targetEnviroment === null) {
+            Logger.writeToChannel('Error: target enviroment not found');
+            if (this.onCommandExecuteError) {
+                this.onCommandExecuteError('Error: target enviroment not found.', false);
+            }
+            return false;
+        }
+
+        const result = await this.packageActions.pushPackage(settings);
+
+        if (!result && this.onCommandExecuteError) {
+            this.onCommandExecuteError('Send package failed.', true);
+        }
+
+        if (result && this.onCommandExecuteComplete) {
+            this.onCommandExecuteComplete('Send package completed.', true);
+        }
+
+        return result;
+    }
+
+    // #endregion
 
     public getItems(): ReadonlyArray<queueItem> {
         return this._queueItems;
@@ -135,7 +206,7 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
-        await Logger.writeToExecuteLogFile('START DEPLOYMENT', true);
+        await Logger.writeToExecuteLogFile('START DEPLOYMENT');
         for await (const element of this._queueItems) {
             if (!await this._gitHelper.checkBranch(element.package.targetEnviroment!.gitBranchName!)){
                 break;
@@ -143,8 +214,8 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`, true);
-            var result = await this._packageManager.createPackage(element.package);
+            await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`);
+            var result = await this.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
                 element.Completed = { isSuccess: false };
@@ -152,8 +223,8 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
-                await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`, true);
-                result = await this._packageManager.pushPackage(element.package);
+                await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`);
+                result = await this.pushPackage(element.package);
                 element.isRunning = false;
                 if (!result) {
                     element.Completed = { isSuccess: false };
@@ -167,7 +238,7 @@ export class PackageDeploymentManager {
                 }
             }
         }
-        await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT', true);
+        await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT');
         const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
         if(deployErrorCount > 0){
             showErrorMessage('Package deployment failed with an error.', true, Logger.getExecuteLogFilePath());
