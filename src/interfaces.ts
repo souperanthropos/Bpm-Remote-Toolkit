@@ -11,6 +11,7 @@ export interface enviromentSettings {
     gitBranchName: string | undefined;
     isEnable: boolean;
 	isRegister: boolean;
+	postRunCommand: string | undefined
 }
 
 export interface queueItem {
