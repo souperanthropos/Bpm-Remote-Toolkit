@@ -6,6 +6,6 @@ export class PowerShellRunCommand extends BaseCommand {
     constructor(command: string) {
         super(new PowerShellWrapper());
         this.command = command;
-        this.options = { useErrorOutputToSuccessOutput: true };
+        this.options = { useErrorOutputToSuccessOutput: false };
     }
 }
