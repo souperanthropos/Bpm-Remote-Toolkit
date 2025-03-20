@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { queueItem, packageSettings } from '../interfaces';
+import { queueItem } from '../interfaces';
+import { PackageSettings } from '../common/packageSettings';
 
 export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueItem>, vscode.TreeDragAndDropController<queueItem> {
 	dropMimeTypes = ['application/vnd.code.tree.packageDeploymentManagement', 'application/vnd.code.tree.packagesExplorer'];
@@ -81,7 +82,7 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 export class queueTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string,
-        public readonly pkg: packageSettings,
+        public readonly pkg: PackageSettings,
 		public readonly isRunning: boolean,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
 		public contextValue: string = 'queueTreeItem'

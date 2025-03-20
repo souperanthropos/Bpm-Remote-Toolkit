@@ -1,26 +1,42 @@
 import * as vscode from 'vscode';
-import { packageSettings } from '../interfaces';
-import { isMatchingWorkspace } from '../constants';
+import { isMatchingWorkspace, isNullOrWhitespace } from '../constants';
+import { PackageSettings } from '../common/packageSettings';
 
-export class PackageProvider implements vscode.TreeDataProvider<packageSettings>, vscode.TreeDragAndDropController<packageSettings> {
+export class PackageProvider implements vscode.TreeDataProvider<PackageSettings>, vscode.TreeDragAndDropController<PackageSettings> {
 	dropMimeTypes = ['application/vnd.code.tree.packagesExplorer', 'application/vnd.code.tree.packageDeploymentManagement'];
 	dragMimeTypes = ['application/vnd.code.tree.packagesExplorer', 'application/vnd.code.tree.packageDeploymentManagement'];
 
-	private _onDidChangeTreeData: vscode.EventEmitter<packageSettings | undefined | void> = new vscode.EventEmitter<packageSettings | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<packageSettings | undefined | void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<PackageSettings | undefined | void> = new vscode.EventEmitter<PackageSettings | undefined | void>();
+	readonly onDidChangeTreeData: vscode.Event<PackageSettings | undefined | void> = this._onDidChangeTreeData.event;
 
-	private _packages: packageSettings[] | undefined;
+	private readonly _packages: PackageSettings[];
 
-	handleDrag?(source: readonly packageSettings[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Thenable<void> | void {
+	constructor(){
+		this._packages = new Array<PackageSettings>();
+	}
+
+	private clear() {
+		while (this._packages.length > 0) {
+			this._packages.pop();
+		}
+	}
+
+	handleDrag?(source: readonly PackageSettings[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Thenable<void> | void {
 		dataTransfer.set('application/vnd.code.tree.packagesExplorer', new vscode.DataTransferItem(source));
 	}
 
-	refresh(env: packageSettings[]): void {
-		this._packages = env;
+	refresh(folderPaths: string[]): void {
+		this.clear();
+		folderPaths.forEach(folderPath => {
+			if(!isNullOrWhitespace(folderPath)){
+				const pkg = new PackageSettings(folderPath);
+				this._packages.push(pkg);
+			}
+		});
 		this._onDidChangeTreeData.fire();
 	}
 
-	getTreeItem(element: packageSettings): vscode.TreeItem {
+	getTreeItem(element: PackageSettings): vscode.TreeItem {
 		var treeItem = new packageTreeItem(
 			element.folderName,
 			element.targetFolderPath,
@@ -38,11 +54,7 @@ export class PackageProvider implements vscode.TreeDataProvider<packageSettings>
 		return treeItem;
 	}
 
-	getChildren(): Thenable<packageSettings[]> {
-		if (!this._packages) {
-			return Promise.resolve([]);
-		}
-
+	getChildren(): Thenable<PackageSettings[]> {
 		return Promise.resolve(this._packages.sort((p1, p2) => {
 			if (p1.folderName > p2.folderName) {
 				return 1;

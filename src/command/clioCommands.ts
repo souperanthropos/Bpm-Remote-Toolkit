@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import { enviromentSettings, packageSettings } from "../interfaces";
+import { enviromentSettings } from "../interfaces";
 import { TerminalWrapper } from "../terminal/terminalwrapper";
 import { FolderType, getDirectoryName, isNullOrWhitespace, stringFormat } from '../constants';
 import { ExtensionSettings } from '../common/extensionSettings';
 import { BaseCommand } from '../abstractions/baseCommand';
+import { PackageSettings } from '../common/packageSettings';
 
 
 export class ClioOpenSettingsCommand extends BaseCommand {
@@ -93,7 +94,7 @@ export class ClioCompileConfigurationCommand extends BaseCommand {
 
 export class ClioCreatePackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: packageSettings) {
+    constructor(terminal: TerminalWrapper, pkg: PackageSettings) {
         super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
@@ -104,11 +105,11 @@ export class ClioCreatePackageCommand extends BaseCommand {
 
 export class ClioPushPackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: packageSettings) {
+    constructor(terminal: TerminalWrapper, pkg: PackageSettings, enviromentId: string) {
         super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        this.command = `clio push-pkg ${outPathPackageFile} -e ${pkg.targetEnviroment?.id}`;
+        this.command = `clio push-pkg ${outPathPackageFile} -e ${enviromentId}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }

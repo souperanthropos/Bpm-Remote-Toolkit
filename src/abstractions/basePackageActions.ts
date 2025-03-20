@@ -1,6 +1,6 @@
 import { Logger } from "../common/logger";
+import { PackageSettings } from "../common/packageSettings";
 import { showErrorMessage } from "../constants";
-import { packageSettings } from "../interfaces";
 import { TerminalWrapper } from "../terminal/terminalwrapper";
 
 export abstract class BasePackageActions {
@@ -11,6 +11,6 @@ export abstract class BasePackageActions {
         showErrorMessage(message, true, Logger.getExecuteLogFilePath());
     }
 
-    public abstract createPackage(pkg: packageSettings): Promise<boolean>;
-	public abstract pushPackage(pkg: packageSettings): Promise<boolean>;
+    public abstract createPackage(pkg: PackageSettings): Promise<boolean>;
+	public abstract pushPackage(pkg: PackageSettings, enviromentId: string): Promise<boolean>;
 }
