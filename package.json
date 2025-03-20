@@ -4,7 +4,7 @@
   "description": "Development and remote toolkit for BPMSoft and Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.8.15",
+  "version": "1.8.16",
   "engines": {
     "vscode": "^1.85.0"
   },
