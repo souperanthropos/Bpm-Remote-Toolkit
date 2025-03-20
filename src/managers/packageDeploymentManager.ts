@@ -1,18 +1,20 @@
 import * as vscode from 'vscode';
-import { packageSettings, queueItem, enviromentSettings } from '../interfaces';
+import path from 'path';
+import { queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
 import { FolderType, getDirectoryName, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
 import { BasePackageActions } from '../abstractions/basePackageActions';
-import path from 'path';
 import { FileManager } from './filemanager';
+import { PowerShellRunCommand } from '../command/winCommand';
+import { PackageSettings } from '../common/packageSettings';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
     private readonly _queueItems: queueItem[];
     private readonly _fileManager: FileManager;
-    private selectedServer?: enviromentSettings;
+    private _selectedServer?: enviromentSettings;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
@@ -23,7 +25,7 @@ export class PackageDeploymentManager {
         this._fileManager = new FileManager();
     }
 
-    private addItem(pkg: packageSettings) {
+    private addItem(pkg: PackageSettings) {
         const newItem: queueItem = {
             package: pkg,
             isRunning: false,
@@ -41,7 +43,7 @@ export class PackageDeploymentManager {
 
     // #region IPackageActions implementation
 
-    public async createPackage(settings: packageSettings): Promise<boolean> {
+    public async createPackage(settings: PackageSettings): Promise<boolean> {
         const packageFileName = `${getDirectoryName(settings.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
         await this._fileManager.DeleteFile(outPathPackageFile);
@@ -51,10 +53,14 @@ export class PackageDeploymentManager {
             this.onCommandExecuteError('Create package failed.', true);
         }
 
+        if(result && ExtensionSettings.packToZip){
+
+        }
+
         return result;
     }
 
-    public createPackageWithProgress(pkg: packageSettings) {
+    public createPackageWithProgress(pkg: PackageSettings) {
         if (ExtensionSettings.environments) {
             const branches = ExtensionSettings.environments.map(({ gitBranchName }) => gitBranchName ?? '');
             vscode.window.withProgress(
@@ -82,8 +88,8 @@ export class PackageDeploymentManager {
         }
     }
 
-    public async pushPackage(settings: packageSettings): Promise<boolean>  {
-        if (settings.targetEnviroment === null) {
+    public async pushPackage(settings: PackageSettings): Promise<boolean>  {
+        if (this._selectedServer === null) {
             Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
                 this.onCommandExecuteError('Error: target enviroment not found.', false);
@@ -91,7 +97,7 @@ export class PackageDeploymentManager {
             return false;
         }
 
-        const result = await this.packageActions.pushPackage(settings);
+        const result = await this.packageActions.pushPackage(settings, this._selectedServer!.id);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Send package failed.', true);
@@ -110,11 +116,11 @@ export class PackageDeploymentManager {
         return this._queueItems;
     }
 
-    public addQueueItems(pkgs: packageSettings[]) {
+    public addQueueItems(pkgs: PackageSettings[]) {
         const currentBranch = this._gitHelper.getCurrentBranch();
         this.clearIfDeployed();
         if (ExtensionSettings.environments && currentBranch !== '') {
-            if (!this.selectedServer) {
+            if (!this._selectedServer) {
                 const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
                 const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
                 const qp = vscode.window.createQuickPick();
@@ -124,9 +130,8 @@ export class PackageDeploymentManager {
                     const serverId = selection[0].label;
                     const server = ExtensionSettings.environments!.find(e => e.id === serverId);
                     if (server) {
-                        this.selectedServer = server;
+                        this._selectedServer = server;
                         pkgs.forEach(pkg=>{
-                            pkg.targetEnviroment = server;
                             this.addItem(pkg);
                         });
                         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', true);
@@ -139,7 +144,6 @@ export class PackageDeploymentManager {
             } else {
                 pkgs.forEach(pkg=>{
                     if (!this._queueItems.find(p => p.package === pkg)) {
-                        pkg.targetEnviroment = this.selectedServer!;
                         this.addItem(pkg);
                     }
                 });
@@ -147,11 +151,11 @@ export class PackageDeploymentManager {
         }
     }
 
-    public addQueueItem(pkg: packageSettings, forceStartDeployment: boolean) {
+    public addQueueItem(pkg: PackageSettings, forceStartDeployment: boolean) {
         const currentBranch = this._gitHelper.getCurrentBranch();
         this.clearIfDeployed();
         if (ExtensionSettings.environments && currentBranch !== '') {
-            if (!this.selectedServer) {
+            if (!this._selectedServer) {
                 const arr = ExtensionSettings.environments.filter(e => e.gitBranchName === currentBranch && e.isEnable && e.isRegister)?.map(({ id }) => id);
                 const quickPickItems = arr.map(item => ({ label: item, iconPath: new vscode.ThemeIcon('device-desktop') }));
                 const qp = vscode.window.createQuickPick();
@@ -161,8 +165,7 @@ export class PackageDeploymentManager {
                     const serverId = selection[0].label;
                     const server = ExtensionSettings.environments!.find(e => e.id === serverId);
                     if (server) {
-                        this.selectedServer = server;
-                        pkg.targetEnviroment = server;
+                        this._selectedServer = server;
                         this.addItem(pkg);
                         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', true);
                         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', true);
@@ -176,7 +179,6 @@ export class PackageDeploymentManager {
                 qp.show();
             } else {
                 if (!this._queueItems.find(p => p.package === pkg)) {
-                    pkg.targetEnviroment = this.selectedServer;
                     this.addItem(pkg);
                 }
             }
@@ -208,13 +210,13 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
         await Logger.writeToExecuteLogFile('START DEPLOYMENT');
         for await (const element of this._queueItems) {
-            if (!await this._gitHelper.checkBranch(element.package.targetEnviroment!.gitBranchName!)){
+            if (!await this._gitHelper.checkBranch(this._selectedServer!.gitBranchName!)){
                 break;
             }
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package creating ${element.package.folderName}.gz.`);
+            await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.folderName}.gz.`);
             var result = await this.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
@@ -223,7 +225,7 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
-                await Logger.writeToExecuteLogFile(`[${element.package.targetEnviroment?.id}] - Start package uploading ${element.package.folderName}.gz.`);
+                await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.folderName}.gz.`);
                 result = await this.pushPackage(element.package);
                 element.isRunning = false;
                 if (!result) {
@@ -252,7 +254,7 @@ export class PackageDeploymentManager {
         while (this._queueItems.length > 0) {
             this._queueItems.pop();
         }
-        this.selectedServer = undefined;
+        this._selectedServer = undefined;
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');

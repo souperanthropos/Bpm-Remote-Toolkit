@@ -7,6 +7,7 @@ export class ExtensionSettings {
 	private static readonly logDir = 'logs';
 
 	static autoUpdateTime = false;
+	static packToZip = false;
 	static terminalName = 'bpmtoolkit';
 	static extensionPath = '';
 	static environments: enviromentSettings[] | undefined;

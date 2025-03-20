@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import path from 'path';
 import { TerminalWrapper } from "../terminal/terminalwrapper";
-import { enviromentSettings, packageSettings } from '../interfaces';
+import { enviromentSettings } from '../interfaces';
 import { FolderType, getDirectoryName, isNullOrWhitespace, stringFormat } from '../constants';
 import { ExtensionSettings } from '../common/extensionSettings';
 import { BaseCommand } from '../abstractions/baseCommand';
+import { PackageSettings } from '../common/packageSettings';
 
 export class UbsOpenSettingsCommand extends BaseCommand {
   
@@ -92,7 +93,7 @@ export class UbsCompileConfigurationCommand extends BaseCommand {
 
 export class UbsCreatePackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: packageSettings) {
+    constructor(terminal: TerminalWrapper, pkg: PackageSettings) {
         super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
@@ -103,11 +104,11 @@ export class UbsCreatePackageCommand extends BaseCommand {
 
 export class UbsPushPackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: packageSettings) {
+    constructor(terminal: TerminalWrapper, pkg: PackageSettings, enviromentId: string) {
         super(terminal);
         const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
         const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        this.command = `ubs push ${outPathPackageFile} -e ${pkg.targetEnviroment?.id}`;
+        this.command = `ubs push ${outPathPackageFile} -e ${enviromentId}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }
