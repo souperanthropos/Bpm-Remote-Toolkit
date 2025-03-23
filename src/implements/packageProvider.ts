@@ -38,7 +38,7 @@ export class PackageProvider implements vscode.TreeDataProvider<PackageSettings>
 
 	getTreeItem(element: PackageSettings): vscode.TreeItem {
 		var treeItem = new packageTreeItem(
-			element.folderName,
+			element.packageFileName,
 			element.targetFolderPath,
 			vscode.TreeItemCollapsibleState.None
 		);
@@ -56,11 +56,11 @@ export class PackageProvider implements vscode.TreeDataProvider<PackageSettings>
 
 	getChildren(): Thenable<PackageSettings[]> {
 		return Promise.resolve(this._packages.sort((p1, p2) => {
-			if (p1.folderName > p2.folderName) {
+			if (p1.packageFileName > p2.packageFileName) {
 				return 1;
 			}
 
-			if (p1.folderName < p2.folderName) {
+			if (p1.packageFileName < p2.packageFileName) {
 				return -1;
 			}
 

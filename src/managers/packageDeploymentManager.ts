@@ -1,13 +1,11 @@
 import * as vscode from 'vscode';
-import path from 'path';
 import { queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionSettings } from '../common/extensionSettings';
-import { FolderType, getDirectoryName, showErrorMessage } from '../constants';
+import { FolderType, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
 import { BasePackageActions } from '../abstractions/basePackageActions';
 import { FileManager } from './filemanager';
-import { PowerShellRunCommand } from '../command/winCommand';
 import { PackageSettings } from '../common/packageSettings';
 
 export class PackageDeploymentManager {
@@ -44,17 +42,11 @@ export class PackageDeploymentManager {
     // #region IPackageActions implementation
 
     public async createPackage(settings: PackageSettings): Promise<boolean> {
-        const packageFileName = `${getDirectoryName(settings.targetFolderPath)}.gz`;
-        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        await this._fileManager.DeleteFile(outPathPackageFile);
+        await this._fileManager.DeleteFile(settings.outputPathPackageFile);
         const result = await this.packageActions.createPackage(settings);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true);
-        }
-
-        if(result && ExtensionSettings.packToZip){
-
         }
 
         return result;
@@ -66,7 +58,7 @@ export class PackageDeploymentManager {
             vscode.window.withProgress(
                 {
                     location: vscode.ProgressLocation.Notification,
-                    title: `Creating package: ${pkg.folderName}.gz`
+                    title: `Creating package: ${pkg.packageFileName}.gz`
                 },
                 async () => {
                     vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
@@ -97,7 +89,7 @@ export class PackageDeploymentManager {
             return false;
         }
 
-        const result = await this.packageActions.pushPackage(settings, this._selectedServer!.id);
+        const result = await this.packageActions.pushPackage(this._selectedServer!.id);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Send package failed.', true);
@@ -216,7 +208,7 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.folderName}.gz.`);
+            await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.packageFileName}.`);
             var result = await this.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
@@ -225,7 +217,7 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
-                await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.folderName}.gz.`);
+                await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.packageFileName}.`);
                 result = await this.pushPackage(element.package);
                 element.isRunning = false;
                 if (!result) {

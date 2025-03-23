@@ -1,19 +1,29 @@
-import { getDirectoryName } from "../constants";
+import * as path from "path";
+import { FolderType, getDirectoryName } from "../constants";
+import { ExtensionSettings } from "./extensionSettings";
 
 export class PackageSettings {
     private readonly _targetFolderPath: string;
-    private _folderName: string;
+    private _packageFileName: string;
 
     public get targetFolderPath(): string {
         return this._targetFolderPath;
     }
 
-    public get folderName(): string {
-        return this._folderName;
+    public get packageFileName(): string {
+        return this._packageFileName;
+    }
+
+    public get outputPath(): string {
+        return ExtensionSettings.outputPath(FolderType.package);
+    }
+
+    public get outputPathPackageFile(): string {
+        return path.join(ExtensionSettings.outputPath(FolderType.package), this._packageFileName + '.gz');
     }
 
     constructor(folderPath: string){
         this._targetFolderPath = folderPath;
-        this._folderName = getDirectoryName(folderPath);
+        this._packageFileName = getDirectoryName(folderPath);
     }
 }

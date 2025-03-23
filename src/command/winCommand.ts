@@ -15,5 +15,6 @@ export class PowerShellZipCommand extends BaseCommand {
     constructor(targetPath: string, destinationPath: string){
         super(new PowerShellWrapper());
         this.command = `Compress-Archive -Path ${targetPath} -DestinationPath ${destinationPath}`;
+        this.options = { useErrorOutputToSuccessOutput: true };
     }
 }

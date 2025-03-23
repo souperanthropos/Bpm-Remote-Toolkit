@@ -42,7 +42,7 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 
     getTreeItem(element: queueItem): vscode.TreeItem {
 		var treeItem = new queueTreeItem(
-			element.package.folderName,
+			element.package.packageFileName,
             element.package,
 			element.isRunning,
 			vscode.TreeItemCollapsibleState.None
