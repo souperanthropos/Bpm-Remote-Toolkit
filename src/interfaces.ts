@@ -14,9 +14,3 @@ export interface queueItem {
 	isRunning: boolean;
 	Completed: { isSuccess: boolean } | null
 }
-
-export interface packageSettings {
-	folderName: string;
-	targetFolderPath: string;
-	targetEnviroment: enviromentSettings | null;
-}
