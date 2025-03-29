@@ -1,5 +1,4 @@
 import path from "path";
-import { ExtensionSettings } from "../managers/extensionManager";
 import { Logger } from "../common/logger";
 import { PackageSettings } from "../common/packageSettings";
 import { showErrorMessage } from "../constants";

@@ -1,43 +1,27 @@
 import * as vscode from 'vscode';
-import { FileManager } from './managers/filemanager';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { UtilityManagersFactory } from './factory/utilityManagersFactory';
 import { BaseWebAppManager } from './abstractions/baseWebAppManager';
 import { EmptyWebAppManager } from './implements/emptyWebAppManager';
+import { ExtensionManager } from './managers/extensionManager';
 
 export class BpmToolkit {
-    private static instance: BpmToolkit;
-
-    private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
     private _webAppManager!: BaseWebAppManager;
 
     private _selectedUtilityStatus: vscode.StatusBarItem;
     private _selectedUtility: string;
   
-    private constructor() {
+    constructor(public readonly extensionManager: ExtensionManager) {
         this._selectedUtility = '';
         this._selectedUtilityStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         this._selectedUtilityStatus.show();
-        this._fileManager = new FileManager();
         this.initializeUtilityManagers();
         vscode.workspace.onDidChangeConfiguration(async event => {
             if(event.affectsConfiguration('bpmtoolkit.general.utility')){
                 await this.initializeUtilityManagers();
             }
         });
-    }
-
-    public static get Instance(): BpmToolkit {
-        if (!BpmToolkit.instance) {
-          BpmToolkit.instance = new BpmToolkit();
-        }
-    
-        return BpmToolkit.instance;
-    }
-
-    public get fileManager(): FileManager{
-        return this._fileManager;
     }
 
     public get packageDeploymentManager(): PackageDeploymentManager{

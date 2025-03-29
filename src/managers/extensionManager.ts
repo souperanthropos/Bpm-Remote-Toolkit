@@ -1,23 +1,15 @@
 import * as vscode from 'vscode';
 import path from 'path';
-import * as os from 'os';
 import { enviromentSettings } from '../interfaces';
 import { DataTimeUtility } from '../common/utilities/dataTimeUtility';
+import { FileManager } from './filemanager';
 
 export class ExtensionManager {
-	private static readonly workDirName = 'bpmtoolkit';
-	private static readonly pkgDirName = 'packages';
-	private static readonly terminalDirName = 'terminal';
-	private static readonly executeResultFileName = 'commandExecuteResult.log';
-	private static readonly executeLogFileName = 'commandExecute.log';
-
-	private readonly _workingDirPath: string;
-	private readonly _pkgDirPath: string;
-	private readonly _terminalDirPath: string;
-
 	private _environments: enviromentSettings[] = [];
 	private _autoUpdateTime = false;
 	private _packToZip = false;
+
+	public readonly fileManager: FileManager = new FileManager();
 
 	public get environments(): ReadonlyArray<enviromentSettings> {
 		return this._environments;
@@ -29,28 +21,8 @@ export class ExtensionManager {
 		return this._packToZip;
 	}
 
-	public get executeLogFilePath(): string {
-		return path.join(this._terminalDirPath, ExtensionManager.executeLogFileName);
-	}
-
 	constructor() {
-		this._workingDirPath = path.join(os.tmpdir(), ExtensionManager.workDirName);
-		this._pkgDirPath = path.join(this._workingDirPath, ExtensionManager.pkgDirName);
-		this._terminalDirPath = path.join(this._workingDirPath, ExtensionManager.terminalDirName);
-		this.initializeDirectories();
 		this.registerEvents();
-	}
-
-	private initializeDirectories() {
-        try {
-            vscode.workspace.fs.createDirectory(vscode.Uri.file(this._workingDirPath));
-        } catch {}
-        try {
-            vscode.workspace.fs.createDirectory(vscode.Uri.file(this._pkgDirPath));
-        } catch {}
-		try {
-            vscode.workspace.fs.createDirectory(vscode.Uri.file(this._terminalDirPath));
-        } catch {}
 	}
 
 	private registerEvents(){
@@ -106,7 +78,7 @@ export class ExtensionManager {
     }
 
 	public async clearLogs() {
-		const uri = vscode.Uri.file(path.join(this._terminalDirPath, ExtensionManager.executeLogFileName));
+		const uri = vscode.Uri.file(this.fileManager.executeLogFilePath);
         const options = { recursive: false, useTrash: false };
         try {
             await vscode.workspace.fs.delete(uri, options);
