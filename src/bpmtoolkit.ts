@@ -20,7 +20,6 @@ export class BpmToolkit {
         this._selectedUtilityStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
         this._selectedUtilityStatus.show();
         this._fileManager = new FileManager();
-        this._fileManager.createTempDir();
         this.initializeUtilityManagers();
         vscode.workspace.onDidChangeConfiguration(async event => {
             if(event.affectsConfiguration('bpmtoolkit.general.utility')){

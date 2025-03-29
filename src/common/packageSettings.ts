@@ -1,6 +1,6 @@
 import * as path from "path";
 import { FolderType, getDirectoryName } from "../constants";
-import { ExtensionSettings } from "./extensionSettings";
+import { ExtensionSettings } from "../managers/extensionManager";
 
 export class PackageSettings {
     private readonly _targetFolderPath: string;

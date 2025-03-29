@@ -9,32 +9,12 @@ import { PackageDeploymentProvider } from './implements/packageDeploymentProvide
 import { enviromentSettings } from './interfaces';
 import { hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
-import { ExtensionSettings } from './common/extensionSettings';
-import { Logger } from './common/logger';
+import { ExtensionManager } from './managers/extensionManager';
 import { PackageSettings } from './common/packageSettings';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
-function initializeExtensionSettings(context: vscode.ExtensionContext){
-
-	const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
-	ExtensionSettings.extensionPath = context.extensionPath;
-	ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-	ExtensionSettings.packToZip = generalConfig.get<boolean>('packToZip')!;
-	const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
-	ExtensionSettings.environments = serverConfig.get<enviromentSettings[]>('environments');
-
-	if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
-		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-	} else {
-		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
-	}
-
-	vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
-	vscode.commands.executeCommand('packagesExplorer.refreshEntry');
-}
-
-function registerButtonCommands(context: vscode.ExtensionContext){
+function registerButtonCommands(context: vscode.ExtensionContext, extensionManager: ExtensionManager) {
 
 	// #region buttons for Package Explorer
 
@@ -43,13 +23,13 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: PackageSettings) => {
-		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
+		await extensionManager.clearLogs();
 		BpmToolkit.Instance.packageDeploymentManager.clear();
 		BpmToolkit.Instance.packageDeploymentManager.addQueueItem(pkg, true);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.openLastLog', () => {
-		const folderUri = vscode.Uri.file(Logger.getExecuteLogFilePath());
+		const folderUri = vscode.Uri.file(extensionManager.executeLogFilePath);
 		vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 	}));
 
@@ -93,7 +73,7 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: enviromentSettings) => {
-		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
+		await extensionManager.clearLogs();
 		await BpmToolkit.Instance.webAppManager.webAppUnregister(server);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
@@ -104,7 +84,7 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	// #region buttons for Package Deployment Management
 
 	context.subscriptions.push(vscode.commands.registerCommand('packageDeploymentManagement.startDeployment', async () => {
-		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
+		await extensionManager.clearLogs();
 		BpmToolkit.Instance.packageDeploymentManager.startDeployment();
 	}));
 
@@ -179,27 +159,14 @@ function registerContextMenus(context: vscode.ExtensionContext){
 	// #endregion
 }
 
-function registerEvents(context: vscode.ExtensionContext){
-
-	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-		if (ExtensionSettings.autoUpdateTime) {
-			await BpmToolkit.Instance.fileManager.UpdateTimeInDescriptor(document);
-		}
-	});
-
-	vscode.workspace.onDidChangeConfiguration(configChange => {
-		initializeExtensionSettings(context);
-	});
-}
-
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	initializeExtensionSettings(context);
-	registerButtonCommands(context);
+	const extensionManager = new ExtensionManager();
+
+	registerButtonCommands(context, extensionManager);
 	registerContextMenus(context);
-	registerEvents(context);
 
 	BpmToolkit.Instance;
 
@@ -222,19 +189,15 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('bpmEnvironments.refreshEntry', () => {
-		if (ExtensionSettings.environments) {
-			ExtensionSettings.environments?.forEach(env => {
-				var isReg = context.globalState.get(env.id);
-				if (isReg) {
-					env.isRegister = true;
-				} else {
-					env.isRegister = false;
-				}
-			});
-			environmentsProvider.refresh(ExtensionSettings.environments);
-		} else {
-			environmentsProvider.refresh([]);
-		}
+		extensionManager.environments?.forEach(env => {
+			var isReg = context.globalState.get(env.id);
+			if (isReg) {
+				env.isRegister = true;
+			} else {
+				env.isRegister = false;
+			}
+		});
+		environmentsProvider.refresh(extensionManager.environments);
 	});
 
 	vscode.commands.registerCommand('packagesExplorer.refreshEntry', () => {
@@ -248,11 +211,7 @@ export function activate(context: vscode.ExtensionContext) {
 			context.globalState.update(bpmPackagesPattern, packages);
 		}
 
-		if (packages) {
-			packageProvider.refresh(packages);
-		} else {
-			packageProvider.refresh([]);
-		}
+		packageProvider.refresh(packages);
 	});
 
 	vscode.commands.registerCommand('packageDeploymentManagement.refreshEntry', () => {
