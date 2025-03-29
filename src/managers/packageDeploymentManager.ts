@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
-import { ExtensionSettings } from '../common/extensionSettings';
+import { ExtensionSettings } from './extensionManager';
 import { FolderType, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
 import { BasePackageActions } from '../abstractions/basePackageActions';
