@@ -1,8 +1,41 @@
 import * as vscode from 'vscode';
 import path from 'path';
+import * as os from 'os';
 import { DataTimeUtility } from '../common/utilities/dataTimeUtility';
 
 export class FileManager {
+	private static readonly workDirName = 'bpmtoolkit';
+	private static readonly pkgDirName = 'packages';
+	private static readonly terminalDirName = 'terminal';
+	private static readonly executeResultFileName = 'commandExecuteResult.log';
+	private static readonly executeLogFileName = 'commandExecute.log';
+
+    private readonly _workingDirPath: string;
+    private readonly _pkgDirPath: string;
+    private readonly _terminalDirPath: string;
+
+    public get executeLogFilePath(): string {
+		return path.join(this._terminalDirPath, FileManager.executeLogFileName);
+	}
+
+    constructor() {
+        this._workingDirPath = path.join(os.tmpdir(), FileManager.workDirName);
+        this._pkgDirPath = path.join(this._workingDirPath, FileManager.pkgDirName);
+        this._terminalDirPath = path.join(this._workingDirPath, FileManager.terminalDirName);
+        this.initializeDirectories();
+    }
+
+    private initializeDirectories() {
+        try {
+            vscode.workspace.fs.createDirectory(vscode.Uri.file(this._workingDirPath));
+        } catch {}
+        try {
+            vscode.workspace.fs.createDirectory(vscode.Uri.file(this._pkgDirPath));
+        } catch {}
+        try {
+            vscode.workspace.fs.createDirectory(vscode.Uri.file(this._terminalDirPath));
+        } catch {}
+    }
 
     public async DeleteFile(filePath: string) {
         try{
