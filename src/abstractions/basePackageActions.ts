@@ -1,16 +1,14 @@
 import path from "path";
-import { Logger } from "../common/logger";
 import { PackageSettings } from "../common/packageSettings";
-import { showErrorMessage } from "../constants";
-import { TerminalWrapper } from "../terminal/terminalwrapper";
 import { DataTimeUtility } from "../common/utilities/dataTimeUtility";
 import { PowerShellZipCommand } from "../command/winCommand";
+import { ExtensionManager } from "../managers/extensionManager";
 
 export abstract class BasePackageActions {
     protected packageSettings?: PackageSettings;
     protected destinationFilePath?: string;
 
-    constructor(protected terminal: TerminalWrapper) {}
+    constructor(protected extensionManager: ExtensionManager) {}
 
     private async createZipFile(): Promise<boolean> {
         const pkg = this.packageSettings!;
@@ -26,7 +24,7 @@ export abstract class BasePackageActions {
     }
 
     protected commandExecuteError(message: string): void {
-        showErrorMessage(message, true, Logger.getExecuteLogFilePath());
+        this.extensionManager.showErrorMessage(message, true);
     }
 
     protected abstract createGZFile(): Promise<boolean>;
@@ -37,7 +35,7 @@ export abstract class BasePackageActions {
         this.destinationFilePath = pkg.outputPathPackageFile;
 
         let result = await this.createGZFile();
-        if(result && ExtensionSettings.packToZip){
+        if(result && this.extensionManager.packToZip){
             result = await this.createZipFile();
         }
         if(!result){

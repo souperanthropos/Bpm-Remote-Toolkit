@@ -23,8 +23,6 @@ function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: Bp
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: PackageSettings) => {
-		await bpmToolkit.extensionManager.clearExecuteLogs();
-		bpmToolkit.packageDeploymentManager.clear();
 		bpmToolkit.packageDeploymentManager.addQueueItem(pkg, true);
 	}));
 
@@ -83,7 +81,6 @@ function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: Bp
 	// #region buttons for Package Deployment Management
 
 	context.subscriptions.push(vscode.commands.registerCommand('packageDeploymentManagement.startDeployment', async () => {
-		await bpmToolkit.extensionManager.clearExecuteLogs();
 		bpmToolkit.packageDeploymentManager.startDeployment();
 	}));
 
