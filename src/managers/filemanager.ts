@@ -48,10 +48,11 @@ export class FileManager {
         catch{}
     }
 
-    public async appendToFile(filePath: string, content: string) {
+    public async appendToExecuteLogFile(content: string) {
         let readStr = '';
+        const uri = vscode.Uri.file(this.executeLogFilePath);
         try{
-            const readData = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath));
+            const readData = await vscode.workspace.fs.readFile(uri);
             readStr = new TextDecoder('utf-8').decode(readData);
         }
         catch{}
@@ -59,6 +60,6 @@ export class FileManager {
             readStr += '\n';
         }
         readStr += DataTimeUtility.formatDate(new Date()) + ' - ' + content + '\n';
-        await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), new TextEncoder().encode(readStr));
+        await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(readStr));
     }
 }

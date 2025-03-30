@@ -6,13 +6,14 @@ import { FileManager } from './filemanager';
 import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
 
 export class ExtensionManager {
+	private readonly fileManager: FileManager = new FileManager();
+	
 	private _environments: enviromentSettings[] = [];
 	private _selectedUtility: string = 'auto';
 	private _autoUpdateTime = false;
 	private _packToZip = false;
 
 	public readonly terminalWrapper: TerminalWrapper = new PowerShellWrapper();
-	public readonly fileManager: FileManager = new FileManager();
 
 	public get environments(): ReadonlyArray<enviromentSettings> {
 		return this._environments;
@@ -94,6 +95,10 @@ export class ExtensionManager {
             await vscode.workspace.fs.writeFile(vscode.Uri.file(descriptorFile), new TextEncoder().encode(updateStr));
         }
     }
+
+	public async writeToExecuteLogFile(message: string) {
+		await this.fileManager.appendToExecuteLogFile(message);
+	}
 
 	public showErrorMessage(message: string, showbutton: boolean) {
 		const buttonShowLog = showbutton ? "Show log file" : '';
