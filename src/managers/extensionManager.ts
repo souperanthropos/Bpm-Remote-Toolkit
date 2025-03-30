@@ -95,7 +95,26 @@ export class ExtensionManager {
         }
     }
 
-	public async clearLogs() {
+	public openPackageFolder() {
+		vscode.env.openExternal(vscode.Uri.file(this.fileManager.packageDirPath));
+	}
+
+	public openExecuteLog() {
+        const folderUri = vscode.Uri.file(this.fileManager.executeLogFilePath);
+		vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+    }
+
+	public async clearPackageFolder() {
+		const uri = vscode.Uri.file(this.fileManager.packageDirPath);
+        try {
+			for (const [name, type] of await vscode.workspace.fs.readDirectory(uri)) {
+                const filePath = path.join(this.fileManager.packageDirPath, name);
+				await this.fileManager.DeleteFile(filePath);
+			}
+        } catch {}
+	}
+
+	public async clearExecuteLogs() {
 		const uri = vscode.Uri.file(this.fileManager.executeLogFilePath);
         const options = { recursive: false, useTrash: false };
         try {

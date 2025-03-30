@@ -14,6 +14,10 @@ export class FileManager {
     private readonly _pkgDirPath: string;
     private readonly _terminalDirPath: string;
 
+    public get packageDirPath(): string {
+        return this._pkgDirPath;
+    }
+
     public get executeLogFilePath(): string {
 		return path.join(this._terminalDirPath, FileManager.executeLogFileName);
 	}

@@ -18,16 +18,8 @@ export class BpmToolkit {
         extensionManager.onSelectedUtilityChanged = this.initializeUtilityManagers;
     }
 
-    public get packageDeploymentManager(): PackageDeploymentManager{
-        return this._packageDeploymentManager;
-    }
-
-    public get webAppManager(): BaseWebAppManager{
-        return this._webAppManager;
-    }
-
-    public async initializeUtilityManagers() {
-        var factory = new UtilityManagersFactory(this.extensionManager.selectedUtility);
+    private async initializeUtilityManagers() {
+        var factory = new UtilityManagersFactory(this.extensionManager);
         this._selectedUtilityStatus.text = `Selected utility: ${factory.selectedUtility}`;
         this._webAppManager = await factory.createWebAppManager();
         this._packageDeploymentManager = await factory.createPackageDeploymentManager();
@@ -40,5 +32,13 @@ export class BpmToolkit {
                 await vscode.window.showInformationMessage('Utility auto-detection failed.\nGo to extension setting "BPM Remote Toolkit" and select utility manually.', options);
             }
         }
+    }
+
+    public get packageDeploymentManager(): PackageDeploymentManager{
+        return this._packageDeploymentManager;
+    }
+
+    public get webAppManager(): BaseWebAppManager{
+        return this._webAppManager;
     }
   }
