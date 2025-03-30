@@ -24,7 +24,7 @@ export class UtilityManagersFactory {
         return this._selectedUtility;
     }
 
-    constructor(extensionManager: ExtensionManager){
+    constructor(private extensionManager: ExtensionManager){
         this._shellWrapper = extensionManager.terminalWrapper;
         this._selectedUtility = extensionManager.selectedUtility;
         if(this._selectedUtility === 'auto'){
@@ -78,7 +78,7 @@ export class UtilityManagersFactory {
         }else{
             packageActions = new EmptyPackageActions(this._shellWrapper);
         }
-        return new PackageDeploymentManager(packageActions);
+        return new PackageDeploymentManager(this.extensionManager, packageActions);
     }
 
     public async createWebAppManager(): Promise<BaseWebAppManager> {

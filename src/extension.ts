@@ -23,14 +23,13 @@ function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: Bp
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: PackageSettings) => {
-		await bpmToolkit.extensionManager.clearLogs();
+		await bpmToolkit.extensionManager.clearExecuteLogs();
 		bpmToolkit.packageDeploymentManager.clear();
 		bpmToolkit.packageDeploymentManager.addQueueItem(pkg, true);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.openLastLog', () => {
-		const folderUri = vscode.Uri.file(bpmToolkit.extensionManager.fileManager.executeLogFilePath);
-		vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+		bpmToolkit.extensionManager.openExecuteLog();
 	}));
 
 	// #endregion
@@ -73,7 +72,7 @@ function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: Bp
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: enviromentSettings) => {
-		await bpmToolkit.extensionManager.clearLogs();
+		await bpmToolkit.extensionManager.clearExecuteLogs();
 		await bpmToolkit.webAppManager.webAppUnregister(server);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
@@ -84,7 +83,7 @@ function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: Bp
 	// #region buttons for Package Deployment Management
 
 	context.subscriptions.push(vscode.commands.registerCommand('packageDeploymentManagement.startDeployment', async () => {
-		await bpmToolkit.extensionManager.clearLogs();
+		await bpmToolkit.extensionManager.clearExecuteLogs();
 		bpmToolkit.packageDeploymentManager.startDeployment();
 	}));
 
