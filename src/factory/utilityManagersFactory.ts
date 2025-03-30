@@ -10,21 +10,24 @@ import { EmptyWebAppManager } from "../implements/emptyWebAppManager";
 import { UbsPackageActions } from "../implements/ubs/ubsPackageActions";
 import { UbsWebAppManager } from "../implements/ubs/ubsWebAppManager";
 import { PackageDeploymentManager } from "../managers/packageDeploymentManager";
-import { PowerShellWrapper } from "../terminal/terminalwrapper";
+import { TerminalWrapper } from "../terminal/terminalwrapper";
+import { ExtensionManager } from '../managers/extensionManager';
 
 
 export class UtilityManagersFactory {
     private _checkInstalledSuccess: boolean = false;
     private _selectedUtility: string = 'auto-detection failed';
     private _autoDetectSuccess: boolean = true;
-    private _shellWrapper = new PowerShellWrapper();
+    private _shellWrapper: TerminalWrapper;
 
     public get selectedUtility(): string{
         return this._selectedUtility;
     }
 
-    constructor(utilityName: string){
-        if(utilityName === 'auto'){
+    constructor(extensionManager: ExtensionManager){
+        this._shellWrapper = extensionManager.terminalWrapper;
+        this._selectedUtility = extensionManager.selectedUtility;
+        if(this._selectedUtility === 'auto'){
             if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0){
                 const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
                 if(folder.includes('Terrasoft')){
@@ -35,8 +38,6 @@ export class UtilityManagersFactory {
                     this._autoDetectSuccess = false;
                 }
             }
-        }else{
-            this._selectedUtility = utilityName;
         }
     }
 

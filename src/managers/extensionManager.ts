@@ -3,6 +3,7 @@ import path from 'path';
 import { enviromentSettings } from '../interfaces';
 import { DataTimeUtility } from '../common/utilities/dataTimeUtility';
 import { FileManager } from './filemanager';
+import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
 
 export class ExtensionManager {
 	private _environments: enviromentSettings[] = [];
@@ -10,6 +11,7 @@ export class ExtensionManager {
 	private _autoUpdateTime = false;
 	private _packToZip = false;
 
+	public readonly terminalWrapper: TerminalWrapper = new PowerShellWrapper();
 	public readonly fileManager: FileManager = new FileManager();
 
 	public get environments(): ReadonlyArray<enviromentSettings> {
