@@ -66,17 +66,17 @@ export class UtilityManagersFactory {
         if(await this.isToolInstalled()){
             switch(this._selectedUtility){
                 case `clio`:
-                    packageActions = new ClioPackageActions(this._shellWrapper);
+                    packageActions = new ClioPackageActions(this.extensionManager);
                     break;
                 case `ubs`:
-                    packageActions = new UbsPackageActions(this._shellWrapper);
+                    packageActions = new UbsPackageActions(this.extensionManager);
                     break;
                 default:
-                    packageActions = new EmptyPackageActions(this._shellWrapper);
+                    packageActions = new EmptyPackageActions(this.extensionManager);
                     break;
             }
         }else{
-            packageActions = new EmptyPackageActions(this._shellWrapper);
+            packageActions = new EmptyPackageActions(this.extensionManager);
         }
         return new PackageDeploymentManager(this.extensionManager, packageActions);
     }
@@ -85,13 +85,13 @@ export class UtilityManagersFactory {
         if(await this.isToolInstalled()){
             switch(this._selectedUtility){
                 case `clio`:
-                    return new ClioWebAppManager(this._shellWrapper);
+                    return new ClioWebAppManager(this.extensionManager);
                 case `ubs`:
-                    return new UbsWebAppManager(this._shellWrapper);
+                    return new UbsWebAppManager(this.extensionManager);
                 default:
-                    return new EmptyWebAppManager(this._shellWrapper);
+                    return new EmptyWebAppManager(this.extensionManager);
             }
         }
-        return new EmptyWebAppManager(this._shellWrapper);
+        return new EmptyWebAppManager(this.extensionManager);
     }
 }

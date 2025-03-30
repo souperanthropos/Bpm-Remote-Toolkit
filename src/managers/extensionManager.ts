@@ -95,6 +95,17 @@ export class ExtensionManager {
         }
     }
 
+	public showErrorMessage(message: string, showbutton: boolean) {
+		const buttonShowLog = showbutton ? "Show log file" : '';
+		vscode.window.showErrorMessage(message, buttonShowLog)
+			.then(selection => {
+				if (selection === buttonShowLog) {
+					const folderUri = vscode.Uri.file(this.fileManager.executeLogFilePath);
+					vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+				}
+			});
+	};
+
 	public openPackageFolder() {
 		vscode.env.openExternal(vscode.Uri.file(this.fileManager.packageDirPath));
 	}

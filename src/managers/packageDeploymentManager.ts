@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import { queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionManager } from './extensionManager';
-import { FolderType, showErrorMessage } from '../constants';
 import { Logger } from '../common/logger';
 import { BasePackageActions } from '../abstractions/basePackageActions';
 import { PackageSettings } from '../common/packageSettings';
@@ -173,18 +172,20 @@ export class PackageDeploymentManager {
         if(this._queueItems.length > 1){
             const options: vscode.MessageOptions = { modal: true };
             await vscode.window
-            .showInformationMessage('Ignore package installation errors?', options, "Yes", "No")
-            .then(answer => {
-                if (answer === "Yes") {
-                    ignorePushError = true;
-                }else if (answer === undefined){
-                    abortDeployment = true;
-                }
-            });
+                .showInformationMessage('Ignore package installation errors?', options, "Yes", "No")
+                .then(answer => {
+                    if (answer === "Yes") {
+                        ignorePushError = true;
+                    }else if (answer === undefined){
+                        abortDeployment = true;
+                    }
+                });
         }
         if(abortDeployment){
             return;
         }
+        await this.extensionManager.clearPackageFolder();
+        await this.extensionManager.clearExecuteLogs();
         const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
 		statusBarItem.show();
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
@@ -225,7 +226,7 @@ export class PackageDeploymentManager {
         await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT');
         const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
         if(deployErrorCount > 0){
-            showErrorMessage('Package deployment failed with an error.', true, Logger.getExecuteLogFilePath());
+            this.extensionManager.showErrorMessage('Package deployment failed with an error.', true);
         }
         statusBarItem.hide();
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);

@@ -4,12 +4,12 @@ import { ClioCreatePackageCommand, ClioPushPackageCommand } from "../../command/
 export class ClioPackageActions extends BasePackageActions {
 
     protected override async createGZFile(): Promise<boolean> {
-        const command = new ClioCreatePackageCommand(this.terminal, this.packageSettings!);
+        const command = new ClioCreatePackageCommand(this.extensionManager.terminalWrapper, this.packageSettings!);
         return await command.execute();
     }
 
     protected override async internalPushPackage(enviromentId: string) {
-        const command = new ClioPushPackageCommand(this.terminal, this.destinationFilePath!, enviromentId);
+        const command = new ClioPushPackageCommand(this.extensionManager.terminalWrapper, this.destinationFilePath!, enviromentId);
         return await command.execute();
     }
 }
