@@ -191,7 +191,7 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
-        await Logger.writeToExecuteLogFile('START DEPLOYMENT');
+        await this.extensionManager.writeToExecuteLogFile('START DEPLOYMENT');
         for await (const element of this._queueItems) {
             if (!await this._gitHelper.checkBranch(this._selectedServer!.gitBranchName!)){
                 break;
@@ -199,7 +199,7 @@ export class PackageDeploymentManager {
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
-            await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.packageFileName}.`);
+            await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.packageFileName}.`);
             var result = await this.createPackage(element.package);
             if (!result) {
                 element.isRunning = false;
@@ -208,7 +208,7 @@ export class PackageDeploymentManager {
                 break;
             } else {
                 statusBarItem.text = '$(loading~spin) Sending package...';
-                await Logger.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.packageFileName}.`);
+                await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.packageFileName}.`);
                 result = await this.pushPackage(element.package);
                 element.isRunning = false;
                 if (!result) {
@@ -223,7 +223,7 @@ export class PackageDeploymentManager {
                 }
             }
         }
-        await Logger.writeToExecuteLogFile('FINISH DEPLOYMENT');
+        await this.extensionManager.writeToExecuteLogFile('FINISH DEPLOYMENT');
         const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
         if(deployErrorCount > 0){
             this.extensionManager.showErrorMessage('Package deployment failed with an error.', true);
