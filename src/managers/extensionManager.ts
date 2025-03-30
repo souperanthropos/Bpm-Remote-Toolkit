@@ -6,6 +6,7 @@ import { FileManager } from './filemanager';
 
 export class ExtensionManager {
 	private _environments: enviromentSettings[] = [];
+	private _selectedUtility: string = 'auto';
 	private _autoUpdateTime = false;
 	private _packToZip = false;
 
@@ -14,20 +15,28 @@ export class ExtensionManager {
 	public get environments(): ReadonlyArray<enviromentSettings> {
 		return this._environments;
 	}
+
+	public get selectedUtility(): string {
+		return this._selectedUtility;
+	}
+	
 	public get autoUpdateTime(): boolean {
 		return this._autoUpdateTime;
 	}
+
 	public get packToZip(): boolean {
 		return this._packToZip;
 	}
+
+	public onSelectedUtilityChanged?: () => void;
 
 	constructor() {
 		this.registerEvents();
 	}
 
 	private registerEvents(){
-		vscode.workspace.onDidChangeConfiguration(() =>{
-			this.initializeProperties();
+		vscode.workspace.onDidChangeConfiguration((configEvent) =>{
+			this.initializeProperties(configEvent);
 			this.initializeEnvironments();
 			vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
@@ -56,10 +65,17 @@ export class ExtensionManager {
 		}
 	}
 
-	private initializeProperties() {
+	private initializeProperties(configEvent: vscode.ConfigurationChangeEvent) {
 		const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
+		this._selectedUtility = generalConfig.get<string>('utility')!;
 		this._autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
 		this._packToZip = generalConfig.get<boolean>('packToZip')!;
+
+		if(configEvent.affectsConfiguration('bpmtoolkit.general.utility')){
+			if (this.onSelectedUtilityChanged) {
+				this.onSelectedUtilityChanged();
+			}
+		}
 	}
 
     private async UpdateTimeInDescriptor(document: vscode.TextDocument) {
