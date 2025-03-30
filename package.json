@@ -112,13 +112,6 @@
           "default": false,
           "scope": "application",
           "description": "If this option is enabled, the generated package will be packed into a zip file."
-        },
-        "bpmtoolkit.general.outputPath": {
-          "order": 3,
-          "type": "string",
-          "default": "",
-          "scope": "application",
-          "description": "Specify output full path for .gz file. If empty, the extension folder is used."
         }
       }
     },
