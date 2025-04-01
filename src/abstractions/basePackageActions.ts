@@ -12,9 +12,10 @@ export abstract class BasePackageActions {
 
     private async createZipFile(): Promise<boolean> {
         const pkg = this.packageSettings!;
+        const sourceFilePath = path.join(this.extensionManager.packageDirPath, pkg.packageFileName + '.gz');
         const generatedZipFileName = `${pkg.packageFileName}_${DataTimeUtility.formatDate(new Date(), '-_.')}.zip`;
-        this.destinationFilePath = path.join(pkg.outputPath, generatedZipFileName);
-        const command = new PowerShellZipCommand(pkg.outputPathPackageFile, this.destinationFilePath);
+        this.destinationFilePath = path.join(this.extensionManager.packageDirPath, generatedZipFileName);
+        const command = new PowerShellZipCommand(this.extensionManager.terminalWrapper, sourceFilePath, this.destinationFilePath);
         return await command.execute();
     }
 
@@ -32,7 +33,7 @@ export abstract class BasePackageActions {
 
     public async createPackage(pkg: PackageSettings): Promise<boolean> {
         this.packageSettings = pkg;
-        this.destinationFilePath = pkg.outputPathPackageFile;
+        this.destinationFilePath = pkg.packageFileName + '.gz';
 
         let result = await this.createGZFile();
         if(result && this.extensionManager.packToZip){

@@ -7,8 +7,6 @@ export class FileManager {
 	private static readonly workDirName = 'bpmtoolkit';
 	private static readonly pkgDirName = 'packages';
 	private static readonly terminalDirName = 'terminal';
-	private static readonly executeResultFileName = 'commandExecuteResult.log';
-	private static readonly executeLogFileName = 'commandExecute.log';
 
     private readonly _workingDirPath: string;
     private readonly _pkgDirPath: string;
@@ -18,8 +16,8 @@ export class FileManager {
         return this._pkgDirPath;
     }
 
-    public get executeLogFilePath(): string {
-		return path.join(this._terminalDirPath, FileManager.executeLogFileName);
+    public get terminalDirPath(): string {
+		return this._terminalDirPath;
 	}
 
     constructor() {
@@ -48,9 +46,9 @@ export class FileManager {
         catch{}
     }
 
-    public async appendToExecuteLogFile(content: string) {
+    public async appendToFile(filePath: string, content: string) {
         let readStr = '';
-        const uri = vscode.Uri.file(this.executeLogFilePath);
+        const uri = vscode.Uri.file(filePath);
         try{
             const readData = await vscode.workspace.fs.readFile(uri);
             readStr = new TextDecoder('utf-8').decode(readData);

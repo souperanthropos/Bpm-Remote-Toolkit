@@ -4,6 +4,8 @@ import { TerminalWrapper } from "../terminal/terminalwrapper";
 import { isNullOrWhitespace, stringFormat } from '../constants';
 import { BaseCommand } from '../abstractions/baseCommand';
 import { PackageSettings } from '../common/packageSettings';
+import { ExtensionManager } from '../managers/extensionManager';
+import path from 'path';
 
 
 export class ClioOpenSettingsCommand extends BaseCommand {
@@ -92,9 +94,10 @@ export class ClioCompileConfigurationCommand extends BaseCommand {
 
 export class ClioCreatePackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: PackageSettings) {
-        super(terminal);
-        this.command = `clio generate-pkg-zip ${pkg.targetFolderPath} -d ${pkg.outputPathPackageFile}`;
+    constructor(extensionManager: ExtensionManager, pkg: PackageSettings) {
+        super(extensionManager.terminalWrapper);
+        const outputPathPackageFile = path.join(extensionManager.packageDirPath, pkg.packageFileName + '.gz');
+        this.command = `clio generate-pkg-zip ${pkg.targetFolderPath} -d ${outputPathPackageFile}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }

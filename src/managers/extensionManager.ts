@@ -1,19 +1,18 @@
 import * as vscode from 'vscode';
 import path from 'path';
 import { enviromentSettings } from '../interfaces';
-import { DataTimeUtility } from '../common/utilities/dataTimeUtility';
 import { FileManager } from './filemanager';
 import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
 
 export class ExtensionManager {
-	private readonly fileManager: FileManager = new FileManager();
+	private readonly fileManager: FileManager;
 	
 	private _environments: enviromentSettings[] = [];
 	private _selectedUtility: string = 'auto';
 	private _autoUpdateTime = false;
 	private _packToZip = false;
 
-	public readonly terminalWrapper: TerminalWrapper = new PowerShellWrapper();
+	public readonly terminalWrapper: TerminalWrapper;
 
 	public get environments(): ReadonlyArray<enviromentSettings> {
 		return this._environments;
@@ -31,10 +30,16 @@ export class ExtensionManager {
 		return this._packToZip;
 	}
 
+	public get packageDirPath(): string {
+		return this.fileManager.packageDirPath;
+	}
+
 	public onSelectedUtilityChanged?: () => void;
 
 	constructor() {
 		this.registerEvents();
+		this.fileManager = new FileManager();
+		this.terminalWrapper = new PowerShellWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
 	}
 
 	private registerEvents(){
@@ -43,11 +48,6 @@ export class ExtensionManager {
 			this.initializeEnvironments();
 			vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
-		});
-		vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-			if (this._autoUpdateTime) {
-				await this.UpdateTimeInDescriptor(document);
-			}
 		});
 	}
 
@@ -81,23 +81,8 @@ export class ExtensionManager {
 		}
 	}
 
-    private async UpdateTimeInDescriptor(document: vscode.TextDocument) {
-        const fileStruct = path.parse(document.uri.fsPath);
-        if(fileStruct.ext === '.cs' || fileStruct.ext === '.js'){
-            const directory = fileStruct.dir;
-            const descriptorFile = path.join(directory, 'descriptor.json');
-    
-            const readData = await vscode.workspace.fs.readFile(vscode.Uri.file(descriptorFile));
-            let readStr = new TextDecoder('utf-8').decode(readData);
-
-            const pattern = /("ModifiedOnUtc": "\\\/Date\()([0-9]+)(\)\\\/")/;
-            var updateStr = readStr.replace(pattern, `$1${DataTimeUtility.getUnixTimeWithoutMilliseconds(Date.now())}$3`);
-            await vscode.workspace.fs.writeFile(vscode.Uri.file(descriptorFile), new TextEncoder().encode(updateStr));
-        }
-    }
-
 	public async writeToExecuteLogFile(message: string) {
-		await this.fileManager.appendToExecuteLogFile(message);
+		await this.fileManager.appendToFile(this.terminalWrapper.executeLogFilePath, message);
 	}
 
 	public showErrorMessage(message: string, showbutton: boolean) {
@@ -105,7 +90,7 @@ export class ExtensionManager {
 		vscode.window.showErrorMessage(message, buttonShowLog)
 			.then(selection => {
 				if (selection === buttonShowLog) {
-					const folderUri = vscode.Uri.file(this.fileManager.executeLogFilePath);
+					const folderUri = vscode.Uri.file(this.terminalWrapper.executeLogFilePath);
 					vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
 				}
 			});
@@ -116,7 +101,7 @@ export class ExtensionManager {
 	}
 
 	public openExecuteLog() {
-        const folderUri = vscode.Uri.file(this.fileManager.executeLogFilePath);
+        const folderUri = vscode.Uri.file(this.terminalWrapper.executeLogFilePath);
 		vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
     }
 
@@ -131,7 +116,7 @@ export class ExtensionManager {
 	}
 
 	public async clearExecuteLogs() {
-		const uri = vscode.Uri.file(this.fileManager.executeLogFilePath);
+		const uri = vscode.Uri.file(this.terminalWrapper.executeLogFilePath);
         const options = { recursive: false, useTrash: false };
         try {
             await vscode.workspace.fs.delete(uri, options);
