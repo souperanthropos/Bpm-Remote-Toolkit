@@ -4,7 +4,7 @@ import { UbsCreatePackageCommand, UbsPushPackageCommand } from '../../command/ub
 export class UbsPackageActions extends BasePackageActions {
 
     protected override async createGZFile(): Promise<boolean> {
-        const command = new UbsCreatePackageCommand(this.extensionManager.terminalWrapper, this.packageSettings!);
+        const command = new UbsCreatePackageCommand(this.extensionManager, this.packageSettings!);
         return await command.execute();
     }
 

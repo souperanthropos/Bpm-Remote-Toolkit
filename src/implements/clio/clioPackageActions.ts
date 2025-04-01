@@ -4,7 +4,7 @@ import { ClioCreatePackageCommand, ClioPushPackageCommand } from "../../command/
 export class ClioPackageActions extends BasePackageActions {
 
     protected override async createGZFile(): Promise<boolean> {
-        const command = new ClioCreatePackageCommand(this.extensionManager.terminalWrapper, this.packageSettings!);
+        const command = new ClioCreatePackageCommand(this.extensionManager, this.packageSettings!);
         return await command.execute();
     }
 

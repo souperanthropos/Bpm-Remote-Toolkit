@@ -4,6 +4,8 @@ import { enviromentSettings } from '../interfaces';
 import { isNullOrWhitespace, stringFormat } from '../constants';
 import { BaseCommand } from '../abstractions/baseCommand';
 import { PackageSettings } from '../common/packageSettings';
+import { ExtensionManager } from '../managers/extensionManager';
+import path from 'path';
 
 export class UbsOpenSettingsCommand extends BaseCommand {
   
@@ -91,9 +93,10 @@ export class UbsCompileConfigurationCommand extends BaseCommand {
 
 export class UbsCreatePackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: PackageSettings) {
-        super(terminal);
-        this.command = `ubs zip ${pkg.targetFolderPath} -d ${pkg.outputPathPackageFile}`;
+    constructor(extensionManager: ExtensionManager, pkg: PackageSettings) {
+        super(extensionManager.terminalWrapper);
+        const outputPathPackageFile = path.join(extensionManager.packageDirPath, pkg.packageFileName + '.gz');
+        this.command = `ubs zip ${pkg.targetFolderPath} -d ${outputPathPackageFile}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }
