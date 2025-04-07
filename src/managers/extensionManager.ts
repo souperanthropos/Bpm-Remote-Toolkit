@@ -38,6 +38,7 @@ export class ExtensionManager {
 
 	constructor() {
 		this.registerEvents();
+		this.initializeProperties();
 		this.fileManager = new FileManager();
 		this.terminalWrapper = new PowerShellWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
 	}
@@ -68,13 +69,13 @@ export class ExtensionManager {
 		}
 	}
 
-	private initializeProperties(configEvent: vscode.ConfigurationChangeEvent) {
+	private initializeProperties(configEvent?: vscode.ConfigurationChangeEvent) {
 		const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
 		this._selectedUtility = generalConfig.get<string>('utility')!;
 		this._autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
 		this._packToZip = generalConfig.get<boolean>('packToZip')!;
 
-		if(configEvent.affectsConfiguration('bpmtoolkit.general.utility')){
+		if(configEvent && configEvent.affectsConfiguration('bpmtoolkit.general.utility')){
 			if (this.onSelectedUtilityChanged) {
 				this.onSelectedUtilityChanged();
 			}
