@@ -26,8 +26,7 @@ export class UtilityManagersFactory {
 
     constructor(private extensionManager: ExtensionManager){
         this._shellWrapper = extensionManager.terminalWrapper;
-        this._selectedUtility = extensionManager.selectedUtility;
-        if(this._selectedUtility === 'auto'){
+        if(extensionManager.selectedUtility === 'auto'){
             if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0){
                 const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
                 if(folder.includes('Terrasoft')){
@@ -38,6 +37,9 @@ export class UtilityManagersFactory {
                     this._autoDetectSuccess = false;
                 }
             }
+        }
+        else{
+            this._selectedUtility = extensionManager.selectedUtility;
         }
     }
 
