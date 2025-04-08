@@ -1,8 +1,4 @@
-export interface packageSettings {
-	folderName: string;
-	targetFolderPath: string;
-	targetEnviroment: enviromentSettings | null;
-}
+import { PackageSettings } from "./common/packageSettings";
 
 export interface enviromentSettings {
 	id: string;
@@ -15,7 +11,7 @@ export interface enviromentSettings {
 }
 
 export interface queueItem {
-	package: packageSettings;
+	package: PackageSettings;
 	isRunning: boolean;
 	Completed: { isSuccess: boolean } | null
 }

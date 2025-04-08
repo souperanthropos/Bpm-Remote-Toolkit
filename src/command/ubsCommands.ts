@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
-import path from 'path';
 import { TerminalWrapper } from "../terminal/terminalwrapper";
-import { enviromentSettings, packageSettings } from '../interfaces';
-import { FolderType, getDirectoryName, isNullOrWhitespace, stringFormat } from '../constants';
-import { ExtensionSettings } from '../common/extensionSettings';
+import { enviromentSettings } from '../interfaces';
+import { isNullOrWhitespace, stringFormat } from '../constants';
 import { BaseCommand } from '../abstractions/baseCommand';
+import { PackageSettings } from '../common/packageSettings';
+import { ExtensionManager } from '../managers/extensionManager';
+import path from 'path';
 
 export class UbsOpenSettingsCommand extends BaseCommand {
   
@@ -92,22 +93,19 @@ export class UbsCompileConfigurationCommand extends BaseCommand {
 
 export class UbsCreatePackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: packageSettings) {
-        super(terminal);
-        const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
-        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        this.command = `ubs zip ${pkg.targetFolderPath} -d ${outPathPackageFile}`;
+    constructor(extensionManager: ExtensionManager, pkg: PackageSettings) {
+        super(extensionManager.terminalWrapper);
+        const outputPathPackageFile = path.join(extensionManager.packageDirPath, pkg.packageFileName + '.gz');
+        this.command = `ubs zip ${pkg.targetFolderPath} -d ${outputPathPackageFile}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }
 
 export class UbsPushPackageCommand extends BaseCommand {
   
-    constructor(terminal: TerminalWrapper, pkg: packageSettings) {
+    constructor(terminal: TerminalWrapper, targetFilePath: string, enviromentId: string) {
         super(terminal);
-        const packageFileName = `${getDirectoryName(pkg.targetFolderPath)}.gz`;
-        const outPathPackageFile = path.join(ExtensionSettings.outputPath(FolderType.package), packageFileName);
-        this.command = `ubs push ${outPathPackageFile} -e ${pkg.targetEnviroment?.id}`;
+        this.command = `ubs push ${targetFilePath} -e ${enviromentId}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }

@@ -6,10 +6,10 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<enviromentS
 	private _onDidChangeTreeData: vscode.EventEmitter<enviromentSettings | undefined | void> = new vscode.EventEmitter<enviromentSettings | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<enviromentSettings | undefined | void> = this._onDidChangeTreeData.event;
 
-	private _servers: enviromentSettings[] | undefined;
+	private _servers: enviromentSettings[] = [];
 
-	refresh(env: enviromentSettings[]): void {
-		this._servers = env;
+	refresh(env: ReadonlyArray<enviromentSettings>): void {
+		this._servers = Array.from(env);
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -32,10 +32,6 @@ export class EnvironmentsProvider implements vscode.TreeDataProvider<enviromentS
 	}
 
 	getChildren(): Thenable<enviromentSettings[]> {
-		if (!this._servers) {
-			return Promise.resolve([]);
-		}
-
 		return Promise.resolve(this._servers);
 	}
 }
