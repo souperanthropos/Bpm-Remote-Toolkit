@@ -6,49 +6,28 @@ import fs from 'fs';
 import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { PackageDeploymentProvider } from './implements/packageDeploymentProvider';
-import { packageSettings, enviromentSettings } from './interfaces';
-import { getDirectoryName, hash } from './constants';
+import { enviromentSettings } from './interfaces';
+import { hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
-import { ExtensionSettings } from './common/extensionSettings';
-import { Logger } from './common/logger';
+import { ExtensionManager } from './managers/extensionManager';
+import { PackageSettings } from './common/packageSettings';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
-function initializeExtensionSettings(context: vscode.ExtensionContext){
-
-	const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
-	ExtensionSettings.extensionPath = context.extensionPath;
-	ExtensionSettings.autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-	const serverConfig = vscode.workspace.getConfiguration('bpmtoolkit');
-	ExtensionSettings.environments = serverConfig.get<enviromentSettings[]>('environments');
-
-	if (ExtensionSettings.environments && ExtensionSettings.environments.length > 0) {
-		vscode.commands.executeCommand('setContext', 'isShowContextMenu', true);
-	} else {
-		vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
-	}
-
-	vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
-	vscode.commands.executeCommand('packagesExplorer.refreshEntry');
-}
-
-function registerButtonCommands(context: vscode.ExtensionContext){
+function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: BpmToolkit) {
 
 	// #region buttons for Package Explorer
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createPackageWithProgress', (pkg: packageSettings) => {
-		BpmToolkit.Instance.packageDeploymentManager.createPackageWithProgress(pkg);
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.createPackageWithProgress', (pkg: PackageSettings) => {
+		bpmToolkit.packageDeploymentManager.createPackageWithProgress(pkg);
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: packageSettings) => {
-		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-		BpmToolkit.Instance.packageDeploymentManager.clear();
-		BpmToolkit.Instance.packageDeploymentManager.addQueueItem(pkg, true);
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.deployPackageToSelectedServer', async (pkg: PackageSettings) => {
+		bpmToolkit.packageDeploymentManager.addQueueItem(pkg, true);
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.openLastLog', () => {
-		const folderUri = vscode.Uri.file(Logger.getExecuteLogFilePath());
-		vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+		bpmToolkit.extensionManager.openExecuteLog();
 	}));
 
 	// #endregion
@@ -57,7 +36,7 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.openSettings',
-		() => BpmToolkit.Instance.webAppManager.openSettings()));
+		() => bpmToolkit.webAppManager.openSettings()));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.register', async (server: enviromentSettings) => {
 		vscode.window.withProgress(
@@ -69,19 +48,19 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 				progress.report({
 					message: 'server registration'
 				});
-				if (await BpmToolkit.Instance.webAppManager.webAppRegister(server)) {
+				if (await bpmToolkit.webAppManager.webAppRegister(server)) {
 					progress.report({
 						message: 'check credential',
 						increment: 50
 					});
-					if (await BpmToolkit.Instance.webAppManager.webAppPing(server)) {
+					if (await bpmToolkit.webAppManager.webAppPing(server)) {
 						context.globalState.update(server.id, true);
 					} else {
 						progress.report({
 							message: 'check credential failed',
 							increment: 50
 						});
-						await BpmToolkit.Instance.webAppManager.webAppUnregister(server);
+						await bpmToolkit.webAppManager.webAppUnregister(server);
 						context.globalState.update(server.id, false);
 					}
 					vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
@@ -91,8 +70,8 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('bpmEnvironments.server.unregister', async (server: enviromentSettings) => {
-		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-		await BpmToolkit.Instance.webAppManager.webAppUnregister(server);
+		await bpmToolkit.extensionManager.clearExecuteLogs();
+		await bpmToolkit.webAppManager.webAppUnregister(server);
 		context.globalState.update(server.id, false);
 		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
 	}));
@@ -102,41 +81,40 @@ function registerButtonCommands(context: vscode.ExtensionContext){
 	// #region buttons for Package Deployment Management
 
 	context.subscriptions.push(vscode.commands.registerCommand('packageDeploymentManagement.startDeployment', async () => {
-		await BpmToolkit.Instance.fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-		BpmToolkit.Instance.packageDeploymentManager.startDeployment();
+		bpmToolkit.packageDeploymentManager.startDeployment();
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packageDeploymentManagement.clear',
-		() => BpmToolkit.Instance.packageDeploymentManager.clear()
+		() => bpmToolkit.packageDeploymentManager.clear()
 	));
 
 	// #endregion
 }
 
-function registerContextMenus(context: vscode.ExtensionContext){
+function registerContextMenus(context: vscode.ExtensionContext, bpmToolkit: BpmToolkit){
 
 	// #region context menu for Package Explorer
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.remove', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
-		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.remove', (contextSelection: PackageSettings, allSelections: PackageSettings[]) => {
+		let packages = context.globalState.get<Array<string>>(bpmPackagesPattern) ?? new Array();
 		if (packages.length > 0) {
 			if (allSelections) {
 				allSelections.forEach(pkg => {
-					packages = packages.filter(item => { return item.folderName !== pkg.folderName; });
+					packages = packages.filter(item => { return item !== pkg.targetFolderPath; });
 				});
 			} else {
-				packages = packages.filter(item => { return item.folderName !== contextSelection.folderName; });
+				packages = packages.filter(item => { return item !== contextSelection.targetFolderPath; });
 			}
 			context.globalState.update(bpmPackagesPattern, packages);
 			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: packageSettings, allSelections: packageSettings[]) => {
+	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: PackageSettings, allSelections: PackageSettings[]) => {
 		if(allSelections !== undefined){
-			BpmToolkit.Instance.packageDeploymentManager.addQueueItems(allSelections);
+			bpmToolkit.packageDeploymentManager.addQueueItems(allSelections);
 		}else{
-			BpmToolkit.Instance.packageDeploymentManager.addQueueItem(contextSelection, false);
+			bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
 		}
 	}));
 
@@ -146,32 +124,27 @@ function registerContextMenus(context: vscode.ExtensionContext){
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.restart',
-		(server: enviromentSettings) => BpmToolkit.Instance.webAppManager.webAppRestart(server))
+		(server: enviromentSettings) => bpmToolkit.webAppManager.webAppRestart(server))
 	);
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.redisClear',
-		(server: enviromentSettings) => BpmToolkit.Instance.webAppManager.clearRedisDb(server)));
+		(server: enviromentSettings) => bpmToolkit.webAppManager.clearRedisDb(server)));
 
 	context.subscriptions.push(vscode.commands.registerCommand(
 		'bpmEnvironments.server.compileConfiguration',
-		(server: enviromentSettings) => BpmToolkit.Instance.webAppManager.compileConfiguration(server)));
+		(server: enviromentSettings) => bpmToolkit.webAppManager.compileConfiguration(server)));
 
 	// #endregion
 
 	// #region context menu for Explorer
 
 	context.subscriptions.push(vscode.commands.registerCommand('explorer.folder.addPackage', (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
-		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
+		let packages = context.globalState.get<Array<string>>(bpmPackagesPattern) ?? new Array();
 		allSelections.forEach(uri => {
 			if (fs.lstatSync(uri.fsPath).isDirectory()) {
-				const newPackage: packageSettings = {
-					folderName: getDirectoryName(uri.fsPath),
-					targetFolderPath: uri.fsPath,
-					targetEnviroment: null
-				};
-				if (!packages.find(p => p.targetFolderPath === uri.fsPath)) {
-					packages.push(newPackage);
+				if (!packages.find(item => item === uri.fsPath)) {
+					packages.push(uri.fsPath);
 					context.globalState.update(bpmPackagesPattern, packages);
 				}
 			}
@@ -182,29 +155,15 @@ function registerContextMenus(context: vscode.ExtensionContext){
 	// #endregion
 }
 
-function registerEvents(context: vscode.ExtensionContext){
-
-	vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
-		if (ExtensionSettings.autoUpdateTime) {
-			await BpmToolkit.Instance.fileManager.UpdateTimeInDescriptor(document);
-		}
-	});
-
-	vscode.workspace.onDidChangeConfiguration(configChange => {
-		initializeExtensionSettings(context);
-	});
-}
-
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	initializeExtensionSettings(context);
-	registerButtonCommands(context);
-	registerContextMenus(context);
-	registerEvents(context);
+	const extensionManager = new ExtensionManager();
+	const bpmToolkit = new BpmToolkit(extensionManager);
 
-	BpmToolkit.Instance;
+	registerButtonCommands(context, bpmToolkit);
+	registerContextMenus(context, bpmToolkit);
 
 	const environmentsProvider = new EnvironmentsProvider();
 	const packageProvider = new PackageProvider();
@@ -225,32 +184,33 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('bpmEnvironments.refreshEntry', () => {
-		if (ExtensionSettings.environments) {
-			ExtensionSettings.environments?.forEach(env => {
-				var isReg = context.globalState.get(env.id);
-				if (isReg) {
-					env.isRegister = true;
-				} else {
-					env.isRegister = false;
-				}
-			});
-			environmentsProvider.refresh(ExtensionSettings.environments);
-		} else {
-			environmentsProvider.refresh([]);
-		}
+		extensionManager.environments?.forEach(env => {
+			var isReg = context.globalState.get(env.id);
+			if (isReg) {
+				env.isRegister = true;
+			} else {
+				env.isRegister = false;
+			}
+		});
+		environmentsProvider.refresh(extensionManager.environments);
 	});
 
 	vscode.commands.registerCommand('packagesExplorer.refreshEntry', () => {
-		let packages = context.globalState.get<Array<packageSettings>>(bpmPackagesPattern) ?? new Array();
-		if (packages) {
-			packageProvider.refresh(packages);
-		} else {
-			packageProvider.refresh([]);
+		let packages = context.globalState.get<Array<string>>(bpmPackagesPattern) ?? new Array();
+
+		if(packages.length > 0 && packages[0].targetFolderPath){
+			for(let i=0; i < packages.length; i++){
+				const item = packages[i].targetFolderPath;
+				packages[i] = item;
+			}
+			context.globalState.update(bpmPackagesPattern, packages);
 		}
+
+		packageProvider.refresh(packages);
 	});
 
 	vscode.commands.registerCommand('packageDeploymentManagement.refreshEntry', () => {
-		packageDeploymentProvider.refresh(BpmToolkit.Instance.packageDeploymentManager.getItems());
+		packageDeploymentProvider.refresh(bpmToolkit.packageDeploymentManager.getItems());
 	});
 
 }

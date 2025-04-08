@@ -1,16 +1,15 @@
 import { BasePackageActions } from "../../abstractions/basePackageActions";
-import { packageSettings } from "../../interfaces";
 import { UbsCreatePackageCommand, UbsPushPackageCommand } from '../../command/ubsCommands';
 
 export class UbsPackageActions extends BasePackageActions {
 
-    public override async createPackage(pkg: packageSettings): Promise<boolean> {
-        const command = new UbsCreatePackageCommand(this.terminal, pkg);
+    protected override async createGZFile(): Promise<boolean> {
+        const command = new UbsCreatePackageCommand(this.extensionManager, this.packageSettings!);
         return await command.execute();
     }
 
-    public override async pushPackage(pkg: packageSettings) {
-        const command = new UbsPushPackageCommand(this.terminal, pkg);
+    protected override async internalPushPackage(enviromentId: string) {
+        const command = new UbsPushPackageCommand(this.extensionManager.terminalWrapper, this.destinationFilePath!, enviromentId);
         return await command.execute();
     }
 }

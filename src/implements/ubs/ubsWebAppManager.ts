@@ -2,23 +2,22 @@ import * as vscode from 'vscode';
 import { BaseWebAppManager } from "../../abstractions/baseWebAppManager";
 import * as ubsCommands from "../../command/ubsCommands";
 import { enviromentSettings } from "../../interfaces";
-import { Logger } from '../../common/logger';
 
 export class UbsWebAppManager extends BaseWebAppManager{
 
     public override openSettings(): void {
-        const command = new ubsCommands.UbsOpenSettingsCommand(this.terminal);
+        const command = new ubsCommands.UbsOpenSettingsCommand(this.extensionManager.terminalWrapper);
         command.execute();
     }
 
     public override async webAppRegister(server: enviromentSettings): Promise<boolean> {
-        await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-        const command = new ubsCommands.UbsWebAppRegisterCommand(this.terminal, server);
+        await this.extensionManager.clearExecuteLogs();
+        const command = new ubsCommands.UbsWebAppRegisterCommand(this.extensionManager.terminalWrapper, server);
         return await command.execute();
     }
 
     public override async webAppUnregister(server: enviromentSettings) {
-        const command = new ubsCommands.UbsWebAppUnRegisterCommand(this.terminal, server);
+        const command = new ubsCommands.UbsWebAppUnRegisterCommand(this.extensionManager.terminalWrapper, server);
         const result = await command.execute();
         if (!result) {
             this.commandExecuteError('Unregister web app failed.');
@@ -26,7 +25,7 @@ export class UbsWebAppManager extends BaseWebAppManager{
     }
 
     public override async webAppPing(server: enviromentSettings): Promise<boolean> {
-        const command = new ubsCommands.UbsWebAppPingCommand(this.terminal, server);
+        const command = new ubsCommands.UbsWebAppPingCommand(this.extensionManager.terminalWrapper, server);
         const result = await command.execute();
         if(!result){
             this.commandExecuteError('Ping web app failed.');
@@ -40,8 +39,8 @@ export class UbsWebAppManager extends BaseWebAppManager{
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
-            await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-            const command = new ubsCommands.UbsWebAppRestartCommand(this.terminal, server);
+            await this.extensionManager.clearExecuteLogs();
+            const command = new ubsCommands.UbsWebAppRestartCommand(this.extensionManager.terminalWrapper, server);
             const result = await command.execute();
             if(!result){
                 this.commandExecuteError('Restart web app failed.');
@@ -55,8 +54,8 @@ export class UbsWebAppManager extends BaseWebAppManager{
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
-            await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-            const command = new ubsCommands.UbsClearRedisDbCommand(this.terminal, server);
+            await this.extensionManager.clearExecuteLogs();
+            const command = new ubsCommands.UbsClearRedisDbCommand(this.extensionManager.terminalWrapper, server);
             const result = await command.execute();
             if(!result){
                 this.commandExecuteError('Clear redis db failed.');
@@ -70,8 +69,8 @@ export class UbsWebAppManager extends BaseWebAppManager{
                 `You cannot execute this command because server ${server.id} is disabled.`
             );
         } else {
-            await this._fileManager.DeleteFile(Logger.getExecuteLogFilePath());
-            const command = new ubsCommands.UbsCompileConfigurationCommand(this.terminal, server);
+            await this.extensionManager.clearExecuteLogs();
+            const command = new ubsCommands.UbsCompileConfigurationCommand(this.extensionManager.terminalWrapper, server);
             const result = await command.execute();
             if(!result){
                 this.commandExecuteError('Compile configuration failed.');
