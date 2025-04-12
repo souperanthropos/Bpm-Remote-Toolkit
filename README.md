@@ -49,6 +49,7 @@ This extension contributes the following settings:
 - `isNetCore`: Target platform (**true** for .NET Core, **false** for .NET Framework)
 - `gitBranchName`: Name of the branch associated with the target environment.
 - `isEnable`: Availability of actions in view area **Bpm Environments**.
+- `postRunCommand`: Command to be executed in the terminal after deploying packages to the target environment. This can be used for additional actions, such as running custom scripts.
 
 **For example**:
 
