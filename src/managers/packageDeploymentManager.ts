@@ -2,9 +2,11 @@ import * as vscode from 'vscode';
 import { queueItem, enviromentSettings } from '../interfaces';
 import { GitHelper } from '../common/git';
 import { ExtensionManager } from './extensionManager';
+import { isNullOrWhitespace } from '../constants';
 import { Logger } from '../common/logger';
 import { BasePackageActions } from '../abstractions/basePackageActions';
 import { PackageSettings } from '../common/packageSettings';
+import { PowerShellRunCommand } from '../command/winCommand';
 
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
@@ -222,6 +224,14 @@ export class PackageDeploymentManager {
                     vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                 }
             }
+        }
+        const currentBranch = this._gitHelper.getCurrentBranch();
+        var currentEnviroment = this.extensionManager.environments?.filter(e => e.gitBranchName === currentBranch)[0];
+        if(currentEnviroment && !isNullOrWhitespace(currentEnviroment.postRunCommand)){
+            statusBarItem.text = '$(loading~spin) Post run command...';
+            await this.extensionManager.writeToExecuteLogFile(`Post run command`);
+            var command = new PowerShellRunCommand(this.extensionManager.terminalWrapper, currentEnviroment.postRunCommand!);
+            await command.execute();
         }
         await this.extensionManager.writeToExecuteLogFile('FINISH DEPLOYMENT');
         const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
