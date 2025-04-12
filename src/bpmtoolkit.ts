@@ -1,45 +1,17 @@
 import * as vscode from 'vscode';
-import { FileManager } from './managers/filemanager';
+import path from 'path';
 import { PackageDeploymentManager } from './managers/packageDeploymentManager';
 import { UtilityManagersFactory } from './factory/utilityManagersFactory';
 import { BaseWebAppManager } from './abstractions/baseWebAppManager';
 import { EmptyWebAppManager } from './implements/emptyWebAppManager';
+import { ExtensionManager } from './managers/extensionManager';
+import { DataTimeUtility } from './common/utilities/dataTimeUtility';
 
 export class BpmToolkit {
-    private static instance: BpmToolkit;
-
-    private _fileManager: FileManager;
     private _packageDeploymentManager!: PackageDeploymentManager;
     private _webAppManager!: BaseWebAppManager;
 
     private _selectedUtilityStatus: vscode.StatusBarItem;
-    private _selectedUtility: string;
-  
-    private constructor() {
-        this._selectedUtility = '';
-        this._selectedUtilityStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-        this._selectedUtilityStatus.show();
-        this._fileManager = new FileManager();
-        this._fileManager.createTempDir();
-        this.initializeUtilityManagers();
-        vscode.workspace.onDidChangeConfiguration(async event => {
-            if(event.affectsConfiguration('bpmtoolkit.general.utility')){
-                await this.initializeUtilityManagers();
-            }
-        });
-    }
-
-    public static get Instance(): BpmToolkit {
-        if (!BpmToolkit.instance) {
-          BpmToolkit.instance = new BpmToolkit();
-        }
-    
-        return BpmToolkit.instance;
-    }
-
-    public get fileManager(): FileManager{
-        return this._fileManager;
-    }
 
     public get packageDeploymentManager(): PackageDeploymentManager{
         return this._packageDeploymentManager;
@@ -48,26 +20,47 @@ export class BpmToolkit {
     public get webAppManager(): BaseWebAppManager{
         return this._webAppManager;
     }
+  
+    constructor(public readonly extensionManager: ExtensionManager) {
+        this._selectedUtilityStatus = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
+        this._selectedUtilityStatus.show();
+        this.initializeUtilityManagers();
+        extensionManager.onSelectedUtilityChanged = this.initializeUtilityManagers.bind(this);
+        vscode.workspace.onDidSaveTextDocument(async (document: vscode.TextDocument) => {
+			if (this.extensionManager.autoUpdateTime) {
+				await this.UpdateTimeInDescriptor(document);
+			}
+		});
+    }
 
-    public async initializeUtilityManagers() {
-        const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
-        const utilityName = generalConfig.get<string>('utility')!;
-        
-        if(this._selectedUtility !== utilityName){
-            var factory = new UtilityManagersFactory(utilityName);
-            this._selectedUtilityStatus.text = `Selected utility: ${factory.selectedUtility}`;
-            this._webAppManager = await factory.createWebAppManager();
-            this._packageDeploymentManager = await factory.createPackageDeploymentManager();
-            this._selectedUtility = utilityName;
+    private async initializeUtilityManagers() {
+        var factory = new UtilityManagersFactory(this.extensionManager);
+        this._selectedUtilityStatus.text = `Selected utility: ${factory.selectedUtility}`;
+        this._webAppManager = await factory.createWebAppManager();
+        this._packageDeploymentManager = await factory.createPackageDeploymentManager();
 
-            if(this._webAppManager instanceof EmptyWebAppManager){
-                if(factory.selectedUtility !== 'auto-detection failed'){
-                    this._selectedUtilityStatus.text += ' (not installed)';
-                }else{
-                    const options: vscode.MessageOptions = { modal: true };
-                    await vscode.window.showInformationMessage('Utility auto-detection failed.\n Go to extension setting "BPM Remote Toolkit" and select utility manually.', options);
-                }
+        if(this._webAppManager instanceof EmptyWebAppManager){
+            if(factory.selectedUtility !== 'auto-detection failed'){
+                this._selectedUtilityStatus.text += ' (not installed)';
+            }else{
+                const options: vscode.MessageOptions = { modal: true };
+                await vscode.window.showInformationMessage('Utility auto-detection failed.\nGo to extension setting "BPM Remote Toolkit" and select utility manually.', options);
             }
+        }
+    }
+
+    private async UpdateTimeInDescriptor(document: vscode.TextDocument) {
+        const fileStruct = path.parse(document.uri.fsPath);
+        if(fileStruct.ext === '.cs' || fileStruct.ext === '.js'){
+            const directory = fileStruct.dir;
+            const descriptorFile = path.join(directory, 'descriptor.json');
+    
+            const readData = await vscode.workspace.fs.readFile(vscode.Uri.file(descriptorFile));
+            let readStr = new TextDecoder('utf-8').decode(readData);
+
+            const pattern = /("ModifiedOnUtc": "\\\/Date\()([0-9]+)(\)\\\/")/;
+            var updateStr = readStr.replace(pattern, `$1${DataTimeUtility.getUnixTimeWithoutMilliseconds(Date.now())}$3`);
+            await vscode.workspace.fs.writeFile(vscode.Uri.file(descriptorFile), new TextEncoder().encode(updateStr));
         }
     }
   }

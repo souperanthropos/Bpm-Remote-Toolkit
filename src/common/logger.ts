@@ -1,41 +1,14 @@
 import * as vscode from 'vscode';
-import { ExtensionSettings } from './extensionSettings';
-import { FolderType } from '../constants';
-import { FileManager } from '../managers/filemanager';
 
 export class Logger {
 	private static terminalLog: vscode.OutputChannel;
-	private static outputPathLog = '';
-	private static readonly executeResultFileName = 'commandExecuteResult.log';
-	private static executeLogFileName = 'commandExecute.log';
-
-	private static readonly fileManager = new FileManager();
-
-	public static readonly terminalName = ExtensionSettings.terminalName;
-
-	public static getExecuteLogFilePath(): string {
-		if(Logger.outputPathLog === ''){
-			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
-		}
-		return `${Logger.outputPathLog}\\${Logger.executeLogFileName}`;
-	}
-
-	public static getExecuteResultFileName(): string {
-		if(Logger.outputPathLog === ''){
-			Logger.outputPathLog = ExtensionSettings.outputPath(FolderType.terminal);
-		}
-		return `${Logger.outputPathLog}\\${Logger.executeResultFileName}`;
-	}
+	private static readonly terminalName = 'bpmtoolkit';
 
 	public static writeToChannel(message: string) {
 		if (this.terminalLog === undefined) {
-			this.terminalLog = vscode.window.createOutputChannel(ExtensionSettings.terminalName);
+			this.terminalLog = vscode.window.createOutputChannel(Logger.terminalName);
 		}
 		this.terminalLog.show(true);
 		this.terminalLog.appendLine(message);
-	}
-
-	public static async writeToExecuteLogFile(message: string) {
-		await this.fileManager.appendToFile(this.getExecuteLogFilePath(), message);
 	}
 }

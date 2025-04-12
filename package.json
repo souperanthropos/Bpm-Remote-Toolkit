@@ -106,12 +106,12 @@
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
         },
-        "bpmtoolkit.general.outputPath": {
+        "bpmtoolkit.general.packToZip": {
           "order": 2,
-          "type": "string",
-          "default": "",
+          "type": "boolean",
+          "default": false,
           "scope": "application",
-          "description": "Specify output full path for .gz file. If empty, the extension folder is used."
+          "description": "If this option is enabled, the generated package will be packed into a zip file."
         }
       }
     },

@@ -9,19 +9,22 @@ export class DataTimeUtility {
         return time.toString();
     }
 
-    public static formatDate(date: Date): string {
+    public static formatDate(date: Date, separators: string = '- :'): string {
+        if(separators.length !== 3){
+            throw new Error('The separators must have 3 characters');
+        }
         return (
             [
                 date.getFullYear(),
                 this.padTo2Digits(date.getMonth() + 1),
                 this.padTo2Digits(date.getDate()),
-            ].join('-') +
-            ' ' +
+            ].join(separators[0]) +
+            separators[1] +
             [
                 this.padTo2Digits(date.getHours()),
                 this.padTo2Digits(date.getMinutes()),
                 this.padTo2Digits(date.getSeconds()),
-            ].join(':')
+            ].join(separators[2])
         );
     }
 }
