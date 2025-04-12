@@ -43,16 +43,6 @@ export const isMatchingWorkspace = function (sourcePath: string) : boolean {
 	return false;
 };
 
-export const showErrorMessage = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) => {
-	const buttonShowLog = showbutton ? "Show log file" : '';
-	vscode.window.showErrorMessage(message, buttonShowLog)
-		.then(selection => {
-			if (selection === buttonShowLog && executeLogFilePath) {
-				const folderUri = vscode.Uri.file(executeLogFilePath);
-				vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
-			}
-		});
-};
 
 export const showInformationMessage = (message: string, showbutton: boolean, executeLogFilePath: string | undefined) => {
 	const buttonShowLog = showbutton ? "Show log file" : '';

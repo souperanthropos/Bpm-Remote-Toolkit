@@ -1,21 +1,15 @@
-import { Logger } from "../common/logger";
-import { showErrorMessage } from "../constants";
 import { enviromentSettings } from "../interfaces";
-import { FileManager } from "../managers/filemanager";
-import { TerminalWrapper } from "../terminal/terminalwrapper";
+import { ExtensionManager } from "../managers/extensionManager";
 
 export abstract class BaseWebAppManager {
-    protected readonly _fileManager: FileManager;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
 
-    constructor(protected terminal: TerminalWrapper) {
-        this._fileManager = new FileManager();
-    }
+    constructor(protected extensionManager: ExtensionManager) {}
 
     protected commandExecuteError(message: string): void {
-        showErrorMessage(message, true, Logger.getExecuteLogFilePath());
+        this.extensionManager.showErrorMessage(message, true);
         if (this.onCommandExecuteError) {
             this.onCommandExecuteError(message, true);
         }
