@@ -33,7 +33,7 @@ export abstract class BasePackageActions {
 
     public async createPackage(pkg: PackageSettings): Promise<boolean> {
         this.packageSettings = pkg;
-        this.destinationFilePath = pkg.packageFileName + '.gz';
+        this.destinationFilePath = path.join(this.extensionManager.packageDirPath, pkg.packageFileName + '.gz');
 
         let result = await this.createGZFile();
         if(result && this.extensionManager.packToZip){
