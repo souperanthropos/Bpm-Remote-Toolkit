@@ -193,6 +193,10 @@
         "command": "packageDeploymentManagement.clear",
         "title": "Clear",
         "icon": "$(x)"
+      },
+      {
+        "command": "bpmnViewer.start",
+        "title": "Open BPMN Viewer"
       }
     ],
     "menus": {
@@ -275,12 +279,18 @@
     }
   },
   "scripts": {
+    "all": "run-s lint test",
+    "lint": "eslint .",
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "package": "npx @vscode/vsce pack",
+    "compile": "run-s compile:clean compile:app compile:tests",
+    "compile:app": "rollup -c rollup.config.mjs",
+    "compile:tests": "tsc -p ./",
+    "compile:clean": "shx rm -rf out",
+    "watch:app": "npm run compile:app -- -w",
+    "watch": "run-p watch:*",
+    "pretest": "run-s compile",
+    "test": "node ./out/test/run-tests.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.6",
@@ -295,5 +305,17 @@
   },
   "extensionDependencies": [
     "vscode.git"
-  ]
+  ],
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-url": "^8.0.2",
+    "bpmn-js": "^18.4.0",
+    "bpmn-js-xml-templater": "^1.0.1",
+    "bpmn-moddle": "^9.0.1",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^4.40.0",
+    "rollup-plugin-css-only": "^4.5.2",
+    "shx": "^0.4.0"
+  }
 }

@@ -20,6 +20,15 @@ export function isNullOrWhitespace(input: string | undefined) {
 export const stringFormat = (str: string, ...args: string[]) =>
 	str.replace(/{(\d+)}/g, (match, index) => args[index] || '');
 
+export function getNonce() {
+	let text = '';
+	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	for (let i = 0; i < 32; i++) {
+		text += possible.charAt(Math.floor(Math.random() * possible.length));
+	}
+	return text;
+}
+
 export const hash = function () {
 	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 		const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
@@ -29,7 +38,7 @@ export const hash = function () {
 	return '';
 };
 
-export const isMatchingWorkspace = function (sourcePath: string) : boolean {
+export const isMatchingWorkspace = function (sourcePath: string): boolean {
 	const path = require('path');
 	const wsFolder = vscode.workspace.workspaceFolders?.find(
 		(wf) => {
@@ -37,7 +46,7 @@ export const isMatchingWorkspace = function (sourcePath: string) : boolean {
 			return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 		}
 	);
-	if(wsFolder){
+	if (wsFolder) {
 		return true;
 	}
 	return false;
