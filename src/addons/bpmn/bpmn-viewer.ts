@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
-import { getNonce } from './constants';
+import { getNonce } from '../../constants';
+import { BpmnConverter } from './bpmn-converter';
 
 export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
+	private readonly _bpmnConverter: BpmnConverter;
+	private metadataJson = '';
+	private sourceXml = '';
 
-	private sourceXml = ``;
-
-	constructor(private readonly _context: vscode.ExtensionContext, xlmData?: string) {
+	constructor(private readonly _context: vscode.ExtensionContext) {
 		this._webviewPanel = vscode.window.createWebviewPanel(
 			'bpmnViewer',
 			'BPMN Viewer',
@@ -14,9 +16,7 @@ export class BpmnViewer {
 			{ enableScripts: true }
 		);
 
-		if(xlmData){
-			this.sourceXml = xlmData;
-		}
+		this._bpmnConverter = new BpmnConverter();
 
 		this._webviewPanel.webview.html = this.getHtmlForWebview(this._webviewPanel.webview);
 
@@ -38,7 +38,7 @@ export class BpmnViewer {
 
 		// local path to script and css for the webview
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this._context.extensionUri, 'out/client', 'bpmn-viewer.js'));
+			this._context.extensionUri, 'out/addons/bpmn/client', 'bpmn-viewer.js'));
 
 		const styleResetUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this._context.extensionUri, 'media', 'reset.css'));
@@ -47,7 +47,7 @@ export class BpmnViewer {
 			this._context.extensionUri, 'media', 'vscode.css'));
 
 		const styleMainUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this._context.extensionUri, 'out/client', 'bpmn-viewer.css'));
+			this._context.extensionUri, 'out/addons/bpmn/client', 'bpmn-viewer.css'));
 
 		// use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
@@ -77,5 +77,15 @@ export class BpmnViewer {
             <script nonce="${nonce}" src="${scriptUri}"></script>
           </body>
           </html>`;
+	}
+
+	public async readMetadataFromFile(uri: vscode.Uri){
+		const readData = await vscode.workspace.fs.readFile(uri);
+		this.metadataJson = new TextDecoder('utf-8').decode(readData);
+		this.sourceXml = await this._bpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData);
+		this.postMessage(this._webviewPanel, 'init', {
+			content: this.sourceXml,
+			editable: true,
+		});
 	}
 }

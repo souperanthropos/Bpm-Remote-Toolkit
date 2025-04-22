@@ -6,13 +6,13 @@ import css from 'rollup-plugin-css-only';
 
 export default [
 
-  // client
+  // bpmn
   {
-    input: 'src/client/bpmn-viewer.js',
+    input: 'src/addons/bpmn/client/bpmn-viewer.js',
     output: {
       sourcemap: true,
       format: 'iife',
-      file: './out/client/bpmn-viewer.js'
+      file: './out/addons/bpmn/client/bpmn-viewer.js'
     },
     plugins: [
       url({

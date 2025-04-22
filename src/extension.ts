@@ -7,11 +7,11 @@ import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { PackageDeploymentProvider } from './implements/packageDeploymentProvider';
 import { enviromentSettings } from './interfaces';
-import { hash, jsonToBpmn } from './constants';
+import { hash } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
 import { ExtensionManager } from './managers/extensionManager';
 import { PackageSettings } from './common/packageSettings';
-import { BpmnViewer } from './bpmn-viewer';
+import { BpmnViewer } from './addons/bpmn/bpmn-viewer';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
@@ -216,9 +216,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bpmnViewer.start', async () => {
-			const json = JSON.parse(`{ \"MetaData\": { \"Schema\": { \"ManagerName\": \"ProcessSchemaManager\", \"UId\": \"f9934026-b031-467e-8547-13dff947d860\", \"A2\": \"OmniProcess577ae732\", \"A5\": \"af2b71ef-e323-410f-9017-8059bfda38c8\", \"B1\": [], \"B2\": [], \"B3\": [], \"B6\": \"a00051f4-cde3-4f3f-b08e-c5ad1a5c735a\", \"B8\": \"7.15.4.3055\", \"FJ1\": [], \"IJ1\": true, \"BK8\": \"bb4d6607-026b-4b27-b640-8f5c77c1e89d\", \"IJ10\": true, \"BK15\": [], \"BK37\": { \"BL1\": \"Terrasoft.Core.Process.ProcessSchemaParameter\", \"UId\": \"cdd58be7-2dba-4a5e-869b-1ad5d6d7513a\", \"A2\": \"NotificationCaption\", \"A3\": \"f9934026-b031-467e-8547-13dff947d860\", \"A4\": \"f9934026-b031-467e-8547-13dff947d860\", \"L1\": \"8b3f29bb-ea14-4ce5-a5c5-293a929b6ba2\", \"L8\": { \"GS1\": 3, \"GS2\": \"[#[PropertyValue:Caption]#]\" } }, \"BK1\": \"FFFFFFFF\", \"BK2\": \"FFBBBBBB\", \"BK3\": [ { \"BL1\": \"Terrasoft.Core.Process.ProcessSchemaLaneSet\", \"UId\": \"e8b420fc-68ab-41b2-91f5-af7b06ebcaf9\", \"A2\": \"LaneSet1\", \"A3\": \"f9934026-b031-467e-8547-13dff947d860\", \"A4\": \"f9934026-b031-467e-8547-13dff947d860\", \"A5\": \"419e2d9e-74cb-4205-a81d-e59ad71f4500\", \"BL7\": \"11a47caf-a0d5-41fa-a274-a0b11f77447a\", \"BL8\": \"f9934026-b031-467e-8547-13dff947d860\", \"BM4\": [ { \"BL1\": \"Terrasoft.Core.Process.ProcessSchemaLane\", \"UId\": \"245b07af-f3b2-4849-ae2a-3381c06b4013\", \"A2\": \"Lane1\", \"A3\": \"f9934026-b031-467e-8547-13dff947d860\", \"A4\": \"f9934026-b031-467e-8547-13dff947d860\", \"A5\": \"419e2d9e-74cb-4205-a81d-e59ad71f4500\", \"IL2\": \"e8b420fc-68ab-41b2-91f5-af7b06ebcaf9\", \"BL7\": \"abcd74b9-5912-414b-82ac-f1aa4dcd554e\", \"BL8\": \"f9934026-b031-467e-8547-13dff947d860\", \"CD1\": [], \"CD2\": [], \"CD4\": \"e8b420fc-68ab-41b2-91f5-af7b06ebcaf9\", \"CD7\": [] } ] } ], \"BK5\": [], \"BK4\": [ { \"BL1\": \"Terrasoft.Core.Process.ProcessSchemaStartEvent\", \"UId\": \"5ed70c05-bc3b-41ab-b42a-9bacc78a90b1\", \"A2\": \"StartEvent1\", \"A3\": \"f9934026-b031-467e-8547-13dff947d860\", \"A4\": \"f9934026-b031-467e-8547-13dff947d860\", \"A5\": \"419e2d9e-74cb-4205-a81d-e59ad71f4500\", \"IL2\": \"245b07af-f3b2-4849-ae2a-3381c06b4013\", \"BL3\": \"50;184\", \"BL7\": \"53818048-7868-48f6-ada0-0ebaa65af628\", \"BL8\": \"f9934026-b031-467e-8547-13dff947d860\", \"BN2\": \"27;27\", \"BO3\": true, \"FC1\": [] }, { \"BL1\": \"Terrasoft.Core.Process.ProcessSchemaTerminateEvent\", \"UId\": \"704b58c5-9992-412b-b1d2-f694e40b1161\", \"A2\": \"TerminateEvent1\", \"A3\": \"f9934026-b031-467e-8547-13dff947d860\", \"A4\": \"f9934026-b031-467e-8547-13dff947d860\", \"A5\": \"419e2d9e-74cb-4205-a81d-e59ad71f4500\", \"IL2\": \"245b07af-f3b2-4849-ae2a-3381c06b4013\", \"BL3\": \"600;184\", \"BL7\": \"1bd93619-0574-454e-bb4e-cf53b9eb9470\", \"BL8\": \"f9934026-b031-467e-8547-13dff947d860\", \"BN2\": \"27;27\", \"BO3\": true, \"FC1\": [] }, { \"BL1\": \"Terrasoft.Core.Process.ProcessSchemaSequenceFlow\", \"UId\": \"22a654af-d023-439a-b1d0-02d477a6bb76\", \"A2\": \"SequenceFlow1\", \"A3\": \"f9934026-b031-467e-8547-13dff947d860\", \"A4\": \"f9934026-b031-467e-8547-13dff947d860\", \"A5\": \"419e2d9e-74cb-4205-a81d-e59ad71f4500\", \"BL7\": \"0d8351f6-c2f4-4737-bdd9-6fbfe0837fec\", \"BL8\": \"f9934026-b031-467e-8547-13dff947d860\", \"CI1\": \"5ed70c05-bc3b-41ab-b42a-9bacc78a90b1\", \"CI2\": \"704b58c5-9992-412b-b1d2-f694e40b1161\", \"CI3\": \"null\", \"CI5\": \"FF939598\", \"CI6\": 1 } ], \"BK9\": [], \"BK18\": \"Business Process\", \"BK29\": true, \"BK30\": true, \"BK34\": \"ru-RU\", \"BK24\": [] } } }`);
-			const xml = await jsonToBpmn(json);
-			const bpmnViewer = new BpmnViewer(context, xml);
+			const bpmnViewer = new BpmnViewer(context);
+			bpmnViewer.readMetadataFromFile(vscode.Uri.joinPath(context.extensionUri, 'out', 'test', 'metadata.json'));
 		})
 	  );
 	vscode.commands.executeCommand('bpmnViewer.start');
