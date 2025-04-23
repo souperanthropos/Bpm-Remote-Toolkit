@@ -18,85 +18,96 @@ const vscode = acquireVsCodeApi();
 handleMacOsKeyboard();
 
 const viewer = new BpmnNavigatedViewer({
-  container: '#canvas'
+	container: '#canvas'
 });
 
 viewer.on('import.done', event => {
-  return vscode.postMessage({
-    type: 'import',
-    error: event.error?.message,
-    warnings: event.warnings.map(warning => warning.message),
-    idx: -1
-  });
+	const eventBus = viewer.get('eventBus');
+	const selection = viewer.get('selection');
+
+	eventBus.on('element.click', (event) => {
+		const element = event.element;
+		if (element) {
+			selection.select(element);
+			console.log('Открываем окно свойств для:', element);
+		}
+	});
+	
+	return vscode.postMessage({
+		type: 'import',
+		error: event.error?.message,
+		warnings: event.warnings.map(warning => warning.message),
+		idx: -1
+	});
 });
 
 viewer.on('commandStack.changed', () => {
 
-  /**
-   * @type { import('diagram-js/lib/command/CommandStack').default }
-   */
-  const commandStack = viewer.get('commandStack');
+	/**
+	 * @type { import('diagram-js/lib/command/CommandStack').default }
+	 */
+	const commandStack = viewer.get('commandStack');
 
-  return vscode.postMessage({
-    type: 'change',
-    idx: commandStack._stackIdx
-  });
+	return vscode.postMessage({
+		type: 'change',
+		idx: commandStack._stackIdx
+	});
 });
 
 viewer.on('canvas.focus.changed', (event) => {
-  return vscode.postMessage({
-    type: 'canvas-focus-change',
-    value: event.focused
-  });
+	return vscode.postMessage({
+		type: 'canvas-focus-change',
+		value: event.focused
+	});
 });
 
 
 // handle messages from the extension
 window.addEventListener('message', async (event) => {
 
-  const {
-    type,
-    body,
-    requestId
-  } = event.data;
+	const {
+		type,
+		body,
+		requestId
+	} = event.data;
 
-  switch (type) {
-  case 'init':
-    if (!body.content) {
-      return viewer.createDiagram();
-    } else {
-      return viewer.importXML(body.content);
-    }
+	switch (type) {
+		case 'init':
+			if (!body.content) {
+				return viewer.createDiagram();
+			} else {
+				return viewer.importXML(body.content);
+			}
 
-  case 'update': {
-    if (body.content) {
-      return viewer.importXML(body.content);
-    }
+		case 'update': {
+			if (body.content) {
+				return viewer.importXML(body.content);
+			}
 
-    if (body.undo) {
-      return viewer.get('commandStack').undo();
-    }
+			if (body.undo) {
+				return viewer.get('commandStack').undo();
+			}
 
-    if (body.redo) {
-      return viewer.get('commandStack').redo();
-    }
+			if (body.redo) {
+				return viewer.get('commandStack').redo();
+			}
 
-    break;
-  }
+			break;
+		}
 
-  case 'getText':
-    return viewer.saveXML({ format: true }).then(({ xml }) => {
-      return vscode.postMessage({
-        type: 'response',
-        requestId,
-        body: xml
-      });
-    });
+		case 'getText':
+			return viewer.saveXML({ format: true }).then(({ xml }) => {
+				return vscode.postMessage({
+					type: 'response',
+					requestId,
+					body: xml
+				});
+			});
 
-  case 'focusCanvas':
-    viewer.get('canvas').focus();
-    return;
-  }
+		case 'focusCanvas':
+			viewer.get('canvas').focus();
+			return;
+	}
 });
 
 // signal to VS Code that the webview is initialized

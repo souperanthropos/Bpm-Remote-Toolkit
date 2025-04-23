@@ -26,6 +26,8 @@ export class BpmnConverter {
     public async convertToBpmn(metaData: MetaData): Promise<string> {
         var BpmnModdle = require('bpmn-moddle');
         var moddle = new BpmnModdle();
+
+        this.elements = {};
     
         // Создаем определения BPMN
         const definitions = moddle.create('bpmn:Definitions', {
@@ -53,7 +55,6 @@ export class BpmnConverter {
         definitions.get('rootElements').push(diagram);
     
         // Создаем элементы процесса (события, потоки)
-        const elements: Record<string, any> = {};
         metaData.Schema.BK4?.forEach(elementData => {
             let element;
             let shape;
@@ -62,7 +63,7 @@ export class BpmnConverter {
             switch (elementData.BL1) {
                 case 'Terrasoft.Core.Process.ProcessSchemaStartEvent':
                     element = moddle.create('bpmn:StartEvent', { id: `_${elementData.UId}` });
-                    elements[elementData.UId] = element;
+                    this.elements[elementData.UId] = element;
                     process.get('flowElements').push(element);
                     const xy = elementData.BL3.split(';');
                     const wh = elementData.BN2.split(';');
@@ -81,7 +82,7 @@ export class BpmnConverter {
                     break;
                 case 'Terrasoft.Core.Process.ProcessSchemaTerminateEvent':
                     element = moddle.create('bpmn:EndEvent', { id: `_${elementData.UId}` });
-                    elements[elementData.UId] = element;
+                    this.elements[elementData.UId] = element;
                     process.get('flowElements').push(element);
                     const xy1 = elementData.BL3.split(';');
                     const wh1 = elementData.BN2.split(';');
@@ -102,8 +103,8 @@ export class BpmnConverter {
                     if(elementData.CI1 && elementData.CI2){
                         element = moddle.create('bpmn:SequenceFlow', {
                             id: `_${elementData.UId}`,
-                            sourceRef: elements[elementData.CI1],
-                            targetRef: elements[elementData.CI2]
+                            sourceRef: this.elements[elementData.CI1],
+                            targetRef: this.elements[elementData.CI2]
                         });
                         process.get('flowElements').push(element);
                         const waypoint1 = moddle.create('dc:Point', { x: 77, y: 197 });

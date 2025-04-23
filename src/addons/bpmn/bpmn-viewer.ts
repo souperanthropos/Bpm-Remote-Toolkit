@@ -83,7 +83,7 @@ export class BpmnViewer {
 		const readData = await vscode.workspace.fs.readFile(uri);
 		this.metadataJson = new TextDecoder('utf-8').decode(readData);
 		this.sourceXml = await this._bpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData);
-		this.postMessage(this._webviewPanel, 'init', {
+		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,
 		});
