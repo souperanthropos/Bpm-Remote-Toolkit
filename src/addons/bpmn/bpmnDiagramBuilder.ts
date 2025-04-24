@@ -79,13 +79,33 @@ export class BpmnDiagramBuilder {
             }));
 
         } else {
+            let pointStart;
+            let pointEnd;
             const sourceBounds = this.getElementBounds(elementData.CI1);
             const targetBounds = this.getElementBounds(elementData.CI2);
-            const pointStart = { x: sourceBounds.x + sourceBounds.width, y: sourceBounds.y + sourceBounds.height / 2 };
-            const pointEnd = { x: targetBounds.x, y: targetBounds.y + targetBounds.height / 2 };
 
+            if (sourceBounds.x > targetBounds.x) {
+                pointStart = { x: sourceBounds.x + sourceBounds.width / 2, y: sourceBounds.y };
+                pointEnd = { x: targetBounds.x + targetBounds.width, y: targetBounds.y + targetBounds.height / 2 };
+            } else {
+                pointStart = { x: sourceBounds.x + sourceBounds.width, y: sourceBounds.y + sourceBounds.height / 2 };
+                pointEnd = { x: targetBounds.x, y: targetBounds.y + targetBounds.height / 2 };
+            }
 
             waypoints.push(this.moddle.create('dc:Point', pointStart));
+
+            if (elementData.CI10) {
+                Object.values(elementData.CI10).forEach(point => {
+                    if (typeof point === 'string') {
+                        const coords = point.split(';');
+                        waypoints.push(this.moddle.create('dc:Point', {
+                            x: parseFloat(coords[0]),
+                            y: parseFloat(coords[1])
+                        }));
+                    }
+                });
+            }
+
             waypoints.push(this.moddle.create('dc:Point', pointEnd));
         }
 
@@ -111,11 +131,38 @@ export class BpmnDiagramBuilder {
 
         switch (elementData.BL1) {
             case 'Terrasoft.Core.Process.ProcessSchemaStartEvent':
-                this.createBpmnElement('bpmn:StartEvent', elementData.UId);
+            case 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent':
+                if (elementData.BL1 === 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent') {
+                    additionalAttributes = {
+                        eventDefinitions: [
+                            this.moddle.create('bpmn:SignalEventDefinition', {
+                                id: `_${elementData.UId}_SignalEventDefinition`,
+                                signalRef: `_${elementData.UId}_Signal`
+                            })
+                        ]
+                    };
+                }
+                this.createBpmnElement('bpmn:StartEvent', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaTerminateEvent':
                 this.createBpmnElement('bpmn:EndEvent', elementData.UId);
+                this.createBpmnShape(elementData);
+                break;
+            case 'Terrasoft.Core.Process.ProcessSchemaIntermediateCatchTimerEvent':
+                additionalAttributes = {
+                    eventDefinitions: [
+                        this.moddle.create('bpmn:TimerEventDefinition', {
+                            id: `_${elementData.UId}_SignalEventDefinition`,
+                            timeDuration: this.moddle.create('bpmn:FormalExpression', { body: 'PT5M' }) // Таймер на 5 минут
+                        })
+                    ]
+                };
+                this.createBpmnElement('bpmn:IntermediateCatchEvent', elementData.UId, additionalAttributes);
+                this.createBpmnShape(elementData);
+                break;
+            case 'Terrasoft.Core.Process.ProcessSchemaExclusiveGateway':
+                this.createBpmnElement('bpmn:ExclusiveGateway', elementData.UId);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
