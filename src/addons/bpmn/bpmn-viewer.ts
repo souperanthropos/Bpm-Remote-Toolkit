@@ -4,7 +4,6 @@ import { BpmnConverter } from './bpmn-converter';
 
 export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
-	private readonly _bpmnConverter: BpmnConverter;
 	private metadataJson = '';
 	private sourceXml = '';
 
@@ -15,8 +14,6 @@ export class BpmnViewer {
 			vscode.ViewColumn.One,
 			{ enableScripts: true }
 		);
-
-		this._bpmnConverter = new BpmnConverter();
 
 		this._webviewPanel.webview.html = this.getHtmlForWebview(this._webviewPanel.webview);
 
@@ -82,7 +79,7 @@ export class BpmnViewer {
 	public async readMetadataFromFile(uri: vscode.Uri){
 		const readData = await vscode.workspace.fs.readFile(uri);
 		this.metadataJson = new TextDecoder('utf-8').decode(readData);
-		this.sourceXml = await this._bpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData);
+		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,
