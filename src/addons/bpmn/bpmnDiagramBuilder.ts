@@ -143,19 +143,21 @@ export class BpmnDiagramBuilder {
     public addElement(elementData: ProcessSchemaElement): void {
         
         let additionalAttributes: Record<string, any> = {};
+        let elementCaption = this.elementCaptions[elementData.A2];
 
         switch (elementData.BL1) {
             case 'Terrasoft.Core.Process.ProcessSchemaStartEvent':
             case 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent':
+                if (elementCaption) {
+                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                }
                 if (elementData.BL1 === 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent') {
-                    additionalAttributes = {
-                        eventDefinitions: [
-                            this.moddle.create('bpmn:SignalEventDefinition', {
-                                id: `id_${elementData.UId}_SignalEventDefinition`,
-                                signalRef: `id_${elementData.UId}_Signal`
-                            })
-                        ]
-                    };
+                    additionalAttributes.eventDefinitions = [
+                        this.moddle.create('bpmn:SignalEventDefinition', {
+                            id: `id_${elementData.UId}_SignalEventDefinition`,
+                            signalRef: `id_${elementData.UId}_Signal`
+                        })
+                    ];
                 }
                 this.createBpmnElement('bpmn:StartEvent', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
@@ -165,14 +167,12 @@ export class BpmnDiagramBuilder {
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaIntermediateCatchTimerEvent':
-                additionalAttributes = {
-                    eventDefinitions: [
-                        this.moddle.create('bpmn:TimerEventDefinition', {
-                            id: `id_${elementData.UId}_SignalEventDefinition`,
-                            timeDuration: this.moddle.create('bpmn:FormalExpression', { body: 'PT5M' }) // Таймер на 5 минут
-                        })
-                    ]
-                };
+                additionalAttributes.eventDefinitions = [
+                    this.moddle.create('bpmn:TimerEventDefinition', {
+                        id: `id_${elementData.UId}_SignalEventDefinition`,
+                        timeDuration: this.moddle.create('bpmn:FormalExpression', { body: 'PT5M' }) // Таймер на 5 минут
+                    })
+                ];
                 this.createBpmnElement('bpmn:IntermediateCatchEvent', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
@@ -185,43 +185,36 @@ export class BpmnDiagramBuilder {
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
-                additionalAttributes = {
-                    scriptFormat: 'C#',
-                    script: elementData.CH1
-                };
+                additionalAttributes.scriptFormat = 'C#';
+                additionalAttributes.script = elementData.CH1;
+                if (elementCaption) {
+                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                }
                 this.createBpmnElement('bpmn:ScriptTask', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaUserTask':
-                let elementCaption = this.elementCaptions[elementData.A2];
                 if(elementCaption){
-                    if(elementCaption.length > 16){
-                        elementCaption = elementCaption.substring(0, 16) + '...';
-                    }
-                    additionalAttributes = {
-                        name: elementCaption
-                    };
-                }else{
-                    additionalAttributes = {
-                        name: elementData.A2
-                    };
+                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
                 }
                 this.createBpmnElement('bpmn:Task', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaSubProcess':
-                additionalAttributes = {
-                    triggeredByEvent: false
-                };
+                additionalAttributes.triggeredByEvent = false;
+                if (elementCaption) {
+                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                }
                 this.createBpmnElement('bpmn:SubProcess', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow':
             case 'Terrasoft.Core.Process.ProcessSchemaSequenceFlow':
-                additionalAttributes = {
-                    sourceRef: this.elements[elementData.CI1],
-                    targetRef: this.elements[elementData.CI2]
-                };
+                if (elementCaption) {
+                    additionalAttributes.name = elementCaption;
+                }
+                additionalAttributes.sourceRef = this.elements[elementData.CI1];
+                additionalAttributes.targetRef = this.elements[elementData.CI2];
                 if (elementData.BL1 === 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow') {
                     additionalAttributes.conditionExpression = this.moddle.create('bpmn:FormalExpression', {
                         body: 'someVariable > 10'
