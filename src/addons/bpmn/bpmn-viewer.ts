@@ -18,6 +18,28 @@ export class Resource {
 		});
 	}
 
+	public static getParametersByElement(resources: Resource, path: string[]): Resource | string | undefined {
+		return path.reduce((acc: Resource | undefined, key) => {
+			if (typeof acc === "object" && acc !== null && key in acc) {
+				return acc[key] as Resource;
+			}
+			return undefined;
+		}, resources as Resource) as Resource | string | undefined;
+	}
+
+	public static getParameters(resources: Resource, elementName: string = ''): Record<string, string> {
+		const elementParameters: Record<string, string> = {};
+		const parameters = Resource.getParametersByElement(resources, ['BaseElements', elementName, 'Parameters']);
+		if(parameters && typeof parameters === 'object') {
+			Object.entries(parameters).forEach(([newKey, newValue]) => {
+				Object.entries(newValue).forEach(([newKey, newValue]) => {
+					elementParameters[`${newKey}`] = newValue as string;
+				});
+			});
+		}
+		return elementParameters;
+	}
+
     public static getElementsCaption(resources: Resource, elementName: string = ''): Record<string, string> {
 		const captions: Record<string, string> = {};
 
@@ -66,10 +88,12 @@ export class BpmnViewer {
 			if(e.type === 'clicked-element'){
 				if(e.elementName){
 					const elementCaption = this.elementCaptions[e.elementName];
+					const elementParameters = Resource.getParametersByElement(this.groupedResources, ['BaseElements', e.elementName, 'Parameters']);//Resource.getParameters(this.groupedResources, e.elementName);
 					this.postMessage(this._webviewPanel, 'show-element-caption', {
 						content: {
 							name: e.elementName,
-							caption: elementCaption
+							caption: elementCaption,
+							parameters: elementParameters
 						}
 					});
 				}
@@ -131,6 +155,7 @@ export class BpmnViewer {
 						<p id="element-caption"><strong>Caption: &nbsp;</strong>
 							<span id="element-caption-value"></span>
 						</p>
+						<p id="element-parameters"><strong>Parameters: &nbsp;</strong></p>
 					</div>
 				</div>
 			</div>

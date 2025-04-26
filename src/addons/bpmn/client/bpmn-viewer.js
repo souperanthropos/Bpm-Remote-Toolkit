@@ -92,7 +92,6 @@ window.addEventListener('message', async (event) => {
 
 	switch (type) {
 		case 'init':
-			closeModal();
 			if (!body.content) {
 				return viewer.createDiagram();
 			} else {

@@ -1,18 +1,8 @@
 import { ProcessSchemaElement } from "./bpmn-converter";
-import { Resource } from "./bpmn-viewer";
 
 interface BPMNShape {
     id: string;
     bounds: { x: number; y: number; width: number; height: number };
-}
-
-function getValue(obj: Resource, path: string[]): Resource | string | undefined {
-    return path.reduce((acc: Resource | undefined, key) => {
-        if (typeof acc === "object" && acc !== null && key in acc) {
-            return acc[key] as Resource;
-        }
-        return undefined;
-    }, obj as Resource) as Resource | string | undefined;
 }
 
 export class BpmnDiagramBuilder {
