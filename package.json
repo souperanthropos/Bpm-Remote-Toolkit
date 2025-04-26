@@ -283,11 +283,12 @@
     "lint": "eslint .",
     "vscode:prepublish": "npm run compile",
     "package": "npx @vscode/vsce pack",
-    "compile": "run-s compile:app compile:other copy:test",
+    "compile": "run-s compile:app compile:other copy:testJson copy:testXml",
     "compile:app": "rollup -c rollup.config.mjs",
     "compile:other": "tsc -p ./",
     "compile:clean": "shx rm -rf out",
-    "copy:test": "shx cp src/test/metadata.json out/test/metadata.json",
+    "copy:testJson": "shx cp src/test/metadata.json out/test/metadata.json",
+    "copy:testXml": "shx cp src/test/resource.ru-RU.xml out/test/resource.ru-RU.xml",
     "watch:app": "npm run compile:app -- -w",
     "watch": "run-p watch:*",
     "pretest": "run-s compile",
@@ -297,6 +298,7 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^18.19.44",
     "@types/vscode": "^1.85.0",
+    "@types/xml2js": "^0.4.14",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "@vscode/test-cli": "^0.0.4",
@@ -316,6 +318,7 @@
     "npm-run-all": "^4.1.5",
     "rollup": "^4.40.0",
     "rollup-plugin-css-only": "^4.5.2",
-    "shx": "^0.4.0"
+    "shx": "^0.4.0",
+    "xml2js": "^0.6.2"
   }
 }

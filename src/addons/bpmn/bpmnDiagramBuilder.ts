@@ -1,19 +1,31 @@
 import { ProcessSchemaElement } from "./bpmn-converter";
+import { Resource } from "./bpmn-viewer";
 
 interface BPMNShape {
     id: string;
     bounds: { x: number; y: number; width: number; height: number };
 }
 
+function getValue(obj: Resource, path: string[]): Resource | string | undefined {
+    return path.reduce((acc: Resource | undefined, key) => {
+        if (typeof acc === "object" && acc !== null && key in acc) {
+            return acc[key] as Resource;
+        }
+        return undefined;
+    }, obj as Resource) as Resource | string | undefined;
+}
+
 export class BpmnDiagramBuilder {
     private moddle: any;
     private process: any;
     private diagram: any;
+    private elementCaptions: Record<string, string>;
     private elements: Record<string, any> = {};
 
-    constructor(moddle: any, process: any) {
+    constructor(moddle: any, process: any, elementCaptions: Record<string, string>) {
         this.moddle = moddle;
         this.process = process;
+        this.elementCaptions = elementCaptions;
         this.diagram = this.moddle.create('bpmndi:BPMNDiagram', {
             id: `${process.id}_Diagram`,
             plane: this.moddle.create('bpmndi:BPMNPlane', {
@@ -25,7 +37,7 @@ export class BpmnDiagramBuilder {
     }
 
     private createBpmnElement(type: string, elementUid: string, additionalAttributes: Record<string, any> = {}) {
-        const element = this.moddle.create(type, { id: `_${elementUid}`, ...additionalAttributes });
+        const element = this.moddle.create(type, { id: `id_${elementUid}`, ...additionalAttributes });
         this.elements[elementUid] = element;
         this.process.get('flowElements').push(element);
     }
@@ -41,9 +53,12 @@ export class BpmnDiagramBuilder {
             height: parseFloat(size[1])
         });
         const shape = this.moddle.create('bpmndi:BPMNShape', {
-            id: `_${elementData.UId}_di`,
+            id: `id_${elementData.UId}_di`,
             bpmnElement: element,
-            bounds: bounds
+            bounds: bounds/*,
+            label: this.moddle.create('bpmndi:BPMNLabel', {
+                bounds: this.moddle.create('dc:Bounds', { x: 110, y: 140, width: 80, height: 20 })
+            })*/
         });
         this.diagram.plane.planeElement.push(shape);
     }
@@ -111,7 +126,7 @@ export class BpmnDiagramBuilder {
 
 
         const edge = this.moddle.create('bpmndi:BPMNEdge', {
-            id: `_${elementData.UId}_di`,
+            id: `id_${elementData.UId}_di`,
             bpmnElement: element,
             waypoint: waypoints
         });
@@ -120,13 +135,13 @@ export class BpmnDiagramBuilder {
     }
 
     private getElementBounds(elementDataId: string): BPMNShape["bounds"] {
-        const elementId = `_${elementDataId}_di`;
+        const elementId = `id_${elementDataId}_di`;
         const shape = this.diagram.plane.planeElement.find((el: BPMNShape) => el.id === elementId);
         return shape.bounds;
     }
 
     public addElement(elementData: ProcessSchemaElement): void {
-        let element;
+        
         let additionalAttributes: Record<string, any> = {};
 
         switch (elementData.BL1) {
@@ -136,8 +151,8 @@ export class BpmnDiagramBuilder {
                     additionalAttributes = {
                         eventDefinitions: [
                             this.moddle.create('bpmn:SignalEventDefinition', {
-                                id: `_${elementData.UId}_SignalEventDefinition`,
-                                signalRef: `_${elementData.UId}_Signal`
+                                id: `id_${elementData.UId}_SignalEventDefinition`,
+                                signalRef: `id_${elementData.UId}_Signal`
                             })
                         ]
                     };
@@ -153,7 +168,7 @@ export class BpmnDiagramBuilder {
                 additionalAttributes = {
                     eventDefinitions: [
                         this.moddle.create('bpmn:TimerEventDefinition', {
-                            id: `_${elementData.UId}_SignalEventDefinition`,
+                            id: `id_${elementData.UId}_SignalEventDefinition`,
                             timeDuration: this.moddle.create('bpmn:FormalExpression', { body: 'PT5M' }) // Таймер на 5 минут
                         })
                     ]
@@ -165,6 +180,10 @@ export class BpmnDiagramBuilder {
                 this.createBpmnElement('bpmn:ExclusiveGateway', elementData.UId);
                 this.createBpmnShape(elementData);
                 break;
+            case 'Terrasoft.Core.Process.ProcessSchemaParallelGateway':
+                this.createBpmnElement('bpmn:ParallelGateway', elementData.UId);
+                this.createBpmnShape(elementData);
+                break;
             case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
                 additionalAttributes = {
                     scriptFormat: 'C#',
@@ -174,12 +193,27 @@ export class BpmnDiagramBuilder {
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaUserTask':
-                element = this.moddle.create('bpmn:Task', {
-                    id: `_${elementData.UId}`,
-                    name: elementData.A2
-                });
-                this.elements[elementData.UId] = element;
-                this.process.get('flowElements').push(element);
+                let elementCaption = this.elementCaptions[elementData.A2];
+                if(elementCaption){
+                    if(elementCaption.length > 16){
+                        elementCaption = elementCaption.substring(0, 16) + '...';
+                    }
+                    additionalAttributes = {
+                        name: elementCaption
+                    };
+                }else{
+                    additionalAttributes = {
+                        name: elementData.A2
+                    };
+                }
+                this.createBpmnElement('bpmn:Task', elementData.UId, additionalAttributes);
+                this.createBpmnShape(elementData);
+                break;
+            case 'Terrasoft.Core.Process.ProcessSchemaSubProcess':
+                additionalAttributes = {
+                    triggeredByEvent: false
+                };
+                this.createBpmnElement('bpmn:SubProcess', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow':

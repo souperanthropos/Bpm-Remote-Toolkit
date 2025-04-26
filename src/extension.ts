@@ -217,7 +217,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bpmnViewer.start', async () => {
 			const bpmnViewer = new BpmnViewer(context);
-			bpmnViewer.readMetadataFromFile(vscode.Uri.joinPath(context.extensionUri, 'out', 'test', 'metadata.json'));
+			await bpmnViewer.readMetadataFromFile();
 		})
 	  );
 	vscode.commands.executeCommand('bpmnViewer.start');

@@ -1,9 +1,47 @@
 import * as vscode from 'vscode';
-import { getNonce } from '../../constants';
+import { getNonce, isNullOrWhitespace } from '../../constants';
 import { BpmnConverter } from './bpmn-converter';
+import { parseStringPromise } from 'xml2js';
+
+
+export class Resource {
+    [key: string]: string | Resource;
+
+	public static traverse(obj: Resource, path: string[] = []) {
+		Object.entries(obj).forEach(([key, value]) => {
+			const newPath = [...path, key];
+			if (typeof value === "object") {
+				Resource.traverse(value as Resource, newPath);
+			} else {
+				console.log(`Путь: ${newPath.join('.')} -> Значение: ${value}`);
+			}
+		});
+	}
+
+    public static getElementsCaption(resources: Resource, elementName: string = ''): Record<string, string> {
+		const captions: Record<string, string> = {};
+
+		if(resources){
+			Object.entries(resources).forEach(([key, value]) => {
+				if(isNullOrWhitespace(elementName)){
+					const newCaptions = Resource.getElementsCaption(value as Resource, key);
+					Object.entries(newCaptions).forEach(([newKey, newValue]) => {
+						captions[`${newKey}`] = newValue;
+					});
+				}else if(key === 'Caption') {
+					captions[elementName] = value as string;
+					return captions;
+				}
+			});
+		}
+
+        return captions;
+    }
+}
 
 export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
+	private groupedResources: Resource = {};
 	private metadataJson = '';
 	private sourceXml = '';
 
@@ -76,10 +114,32 @@ export class BpmnViewer {
           </html>`;
 	}
 
-	public async readMetadataFromFile(uri: vscode.Uri){
+	private async readResourceFromFile(uri: vscode.Uri){
 		const readData = await vscode.workspace.fs.readFile(uri);
+		const xml = new TextDecoder('utf-8').decode(readData);
+		const result = await parseStringPromise(xml, { explicitArray: false });
+
+		result.Resources.Group.Items.Item.forEach((item: any) => {
+			const keys = item.$.Name.split('.');
+			let current = this.groupedResources;
+
+			for (let i = 0; i < keys.length - 1; i++) {
+				current[keys[i]] = current[keys[i]] || {};
+				current = current[keys[i]] as Resource;
+			}
+
+			current[keys[keys.length - 1]] = item.$.Value;
+		});
+		//const i = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
+		//traverse(i as Resource);
+	}
+
+	public async readMetadataFromFile(){
+		await this.readResourceFromFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'resource.ru-RU.xml'));
+		const elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
+		const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
 		this.metadataJson = new TextDecoder('utf-8').decode(readData);
-		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData);
+		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData, elementCaptions);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,

@@ -1,4 +1,5 @@
 import { Logger } from "../../common/logger";
+import { Resource } from "./bpmn-viewer";
 import { BpmnDiagramBuilder } from "./bpmnDiagramBuilder";
 
 export interface ProcessSchemaElement {
@@ -28,7 +29,7 @@ interface MetaData {
 
 export class BpmnConverter {
 
-    public static async convertToBpmn(metaData: MetaData): Promise<string> {
+    public static async convertToBpmn(metaData: MetaData, elementCaptions: Record<string, string>): Promise<string> {
         var BpmnModdle = require('bpmn-moddle');
         var moddle = new BpmnModdle();
     
@@ -39,7 +40,7 @@ export class BpmnConverter {
         });
     
         // Создаем билдера диаграмм
-        const diagramBuilder = new BpmnDiagramBuilder(moddle, process);
+        const diagramBuilder = new BpmnDiagramBuilder(moddle, process, elementCaptions);
     
         // Добавляем элементы в диаграмму
         metaData.Schema.BK4?.forEach(elementData => {
@@ -48,7 +49,7 @@ export class BpmnConverter {
     
         // Создаем корневой элемент BPMN
         const definitions = moddle.create('bpmn:Definitions', {
-            id: metaData.Schema.UId,
+            id: `id_${metaData.Schema.UId}`,
             targetNamespace: 'http://bpmn.io/schema/bpmn',
             rootElements: [process, diagramBuilder.getDiagram()]
         });
