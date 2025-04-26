@@ -67,7 +67,10 @@ export class BpmnViewer {
 				if(e.elementName){
 					const elementCaption = this.elementCaptions[e.elementName];
 					this.postMessage(this._webviewPanel, 'show-element-caption', {
-						caption: elementCaption
+						content: {
+							name: e.elementName,
+							caption: elementCaption
+						}
 					});
 				}
 			}
@@ -120,8 +123,15 @@ export class BpmnViewer {
 
 			<div id="propertyModal" class="modal" style="display:none;">
 				<div class="modal-content">
-					<span class="close-popup">&times;</span>
-					<p>Это простое модальное окно!</p>
+					<span class="close-popup" style="text-align: right;">&times;</span>
+					<div class="modal-header" style="text-align: left;">
+						<p id="element-name"><strong>Name: &nbsp;</strong>
+							<span id="element-name-value"></span>
+						</p>
+						<p id="element-caption"><strong>Caption: &nbsp;</strong>
+							<span id="element-caption-value"></span>
+						</p>
+					</div>
 				</div>
 			</div>
 

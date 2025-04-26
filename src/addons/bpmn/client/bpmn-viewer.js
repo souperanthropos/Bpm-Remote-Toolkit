@@ -117,8 +117,8 @@ window.addEventListener('message', async (event) => {
 
 		case 'show-element-caption': {
 			document.getElementById("propertyModal").style.display = "flex";
-			const modalText = document.querySelector("#propertyModal p");
-			modalText.textContent = body.caption;
+			document.getElementById("element-name-value").innerHTML = body.content.name;
+			document.getElementById("element-caption-value").innerHTML = body.content.caption;
 			break;
 		}
 

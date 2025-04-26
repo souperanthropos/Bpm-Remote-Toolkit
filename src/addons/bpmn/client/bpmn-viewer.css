@@ -42,15 +42,21 @@ body {
   justify-content: center;
   align-items: center;
 }
+
 .modal-content {
+  position: relative;
+  min-width: 300px;
+  min-height: 100px;
   background-color: white;
   padding: 20px;
   border-radius: 5px;
   text-align: center;
 }
-.close {
-  cursor: pointer;
-  color: red;
-  font-size: 20px;
-}
 
+.close-popup {
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
