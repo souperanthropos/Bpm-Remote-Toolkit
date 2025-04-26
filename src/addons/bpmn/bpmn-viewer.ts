@@ -42,6 +42,7 @@ export class Resource {
 export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
 	private groupedResources: Resource = {};
+	private elementCaptions: Record<string, string> = {};
 	private metadataJson = '';
 	private sourceXml = '';
 
@@ -61,6 +62,14 @@ export class BpmnViewer {
 					content: this.sourceXml,
 					editable: true,
 				});
+			}
+			if(e.type === 'clicked-element'){
+				if(e.elementName){
+					const elementCaption = this.elementCaptions[e.elementName];
+					this.postMessage(this._webviewPanel, 'show-element-caption', {
+						caption: elementCaption
+					});
+				}
 			}
 		});
 	}
@@ -108,7 +117,14 @@ export class BpmnViewer {
           </head>
           <body>
             <div id="canvas"></div>
-    
+
+			<div id="propertyModal" class="modal" style="display:none;">
+				<div class="modal-content">
+					<span class="close-popup">&times;</span>
+					<p>Это простое модальное окно!</p>
+				</div>
+			</div>
+
             <script nonce="${nonce}" src="${scriptUri}"></script>
           </body>
           </html>`;
@@ -136,10 +152,10 @@ export class BpmnViewer {
 
 	public async readMetadataFromFile(){
 		await this.readResourceFromFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'resource.ru-RU.xml'));
-		const elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
+		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
 		const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
 		this.metadataJson = new TextDecoder('utf-8').decode(readData);
-		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData, elementCaptions);
+		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData, this.elementCaptions);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,

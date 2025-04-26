@@ -55,10 +55,7 @@ export class BpmnDiagramBuilder {
         const shape = this.moddle.create('bpmndi:BPMNShape', {
             id: `id_${elementData.UId}_di`,
             bpmnElement: element,
-            bounds: bounds/*,
-            label: this.moddle.create('bpmndi:BPMNLabel', {
-                bounds: this.moddle.create('dc:Bounds', { x: 110, y: 140, width: 80, height: 20 })
-            })*/
+            bounds: bounds
         });
         this.diagram.plane.planeElement.push(shape);
     }
@@ -142,7 +139,9 @@ export class BpmnDiagramBuilder {
 
     public addElement(elementData: ProcessSchemaElement): void {
         
-        let additionalAttributes: Record<string, any> = {};
+        let additionalAttributes: Record<string, any> = {
+            customProperty: `${elementData.A2}`
+        };
         let elementCaption = this.elementCaptions[elementData.A2];
 
         switch (elementData.BL1) {
@@ -163,7 +162,7 @@ export class BpmnDiagramBuilder {
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaTerminateEvent':
-                this.createBpmnElement('bpmn:EndEvent', elementData.UId);
+                this.createBpmnElement('bpmn:EndEvent', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaIntermediateCatchTimerEvent':
@@ -177,11 +176,11 @@ export class BpmnDiagramBuilder {
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaExclusiveGateway':
-                this.createBpmnElement('bpmn:ExclusiveGateway', elementData.UId);
+                this.createBpmnElement('bpmn:ExclusiveGateway', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaParallelGateway':
-                this.createBpmnElement('bpmn:ParallelGateway', elementData.UId);
+                this.createBpmnElement('bpmn:ParallelGateway', elementData.UId, additionalAttributes);
                 this.createBpmnShape(elementData);
                 break;
             case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':

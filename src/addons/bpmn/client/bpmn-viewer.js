@@ -30,9 +30,19 @@ viewer.on('import.done', event => {
 		if (element) {
 			selection.select(element);
 			console.log('Открываем окно свойств для:', element);
+			const elementName = element.businessObject.get("customProperty");
+			if (elementName) {
+				console.log('Custom Property:', elementName);
+				return vscode.postMessage({
+					type: 'clicked-element',
+					elementName: elementName
+				});
+			} else {
+				console.log('No custom property found.');
+			}
 		}
 	});
-	
+
 	return vscode.postMessage({
 		type: 'import',
 		error: event.error?.message,
@@ -61,6 +71,16 @@ viewer.on('canvas.focus.changed', (event) => {
 	});
 });
 
+let closePopupButton = document.querySelector('.close-popup');
+closePopupButton.addEventListener('click',() => {
+	document.getElementById("propertyModal").style.display = "none";
+});
+document.addEventListener('click', (e) => {
+	const modal = document.getElementById("propertyModal");
+    if (e.target === modal) {
+        modal.style.display = "none";
+    }
+});
 
 // handle messages from the extension
 window.addEventListener('message', async (event) => {
@@ -68,11 +88,11 @@ window.addEventListener('message', async (event) => {
 	const {
 		type,
 		body,
-		requestId
 	} = event.data;
 
 	switch (type) {
 		case 'init':
+			closeModal();
 			if (!body.content) {
 				return viewer.createDiagram();
 			} else {
@@ -95,14 +115,12 @@ window.addEventListener('message', async (event) => {
 			break;
 		}
 
-		case 'getText':
-			return viewer.saveXML({ format: true }).then(({ xml }) => {
-				return vscode.postMessage({
-					type: 'response',
-					requestId,
-					body: xml
-				});
-			});
+		case 'show-element-caption': {
+			document.getElementById("propertyModal").style.display = "flex";
+			const modalText = document.querySelector("#propertyModal p");
+			modalText.textContent = body.caption;
+			break;
+		}
 
 		case 'focusCanvas':
 			viewer.get('canvas').focus();
