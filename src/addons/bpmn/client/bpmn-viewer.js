@@ -106,7 +106,7 @@ window.addEventListener('message', async (event) => {
 		case 'show-element-caption': {
 			document.getElementById("element-name-value").innerHTML = body.content.name;
 			document.getElementById("element-caption-value").innerHTML = body.content.caption;
-			fillParameters(body.content.parameters);
+			fillSettings(body.content.settings);
 			document.getElementById("propertyModal").style.display = "flex";
 			break;
 		}
@@ -117,39 +117,36 @@ window.addEventListener('message', async (event) => {
 	}
 });
 
-function fillParameters(parameters) {
+function fillSettings(settings) {
     const parametersList = document.getElementById("parameters-list");
     parametersList.innerHTML = "";
 	const filterList = document.getElementById("filter-list");
 	filterList.innerHTML = "";
 
-	if(parameters.general['DataSourceFilters']) {
+	if(settings.filter) {
+		const filterData = JSON.parse(settings.filter);
+		const dataSourceFilters = JSON.parse(filterData.serializedFilterEditData);
+		Object.keys(dataSourceFilters.items).forEach(key => {
+			const filter = dataSourceFilters.items[key];
+	
+			const listItem = document.createElement("li");
+			listItem.innerHTML = `
+				<strong>Поле:</strong> ${filter.leftExpression.columnPath}<br>
+				<strong>Тип сравнения:</strong> ${filter.comparisonType}<br>
+				<strong>Значение:</strong> ${filter.rightExpression.parameter.value.displayValue}
+			`;
+			filterList.appendChild(listItem);
+		});	
 		document.getElementById("filter-display").style.display = "flex";
 	}else{
 		document.getElementById("filter-display").style.display = "none";
 	}
 
-    Object.keys(parameters.general).forEach(key => {
-        const param = parameters.general[key];
+    Object.keys(settings.parameters).forEach(key => {
+        const param = settings.parameters[key];
 		const listItem = document.createElement("li");
-		if(key === 'DataSourceFilters') {
-			const filterData = JSON.parse(param.DisplayValue);
-			const dataSourceFilters = JSON.parse(filterData.dataSourceFilters);
-			Object.keys(dataSourceFilters.items).forEach(key => {
-				const filter = dataSourceFilters.items[key];
-		
-				const listItem = document.createElement("li");
-				listItem.innerHTML = `
-					<strong>Поле:</strong> ${filter.leftExpression.columnPath}<br>
-					<strong>Тип сравнения:</strong> ${filter.comparisonType}<br>
-					<strong>Значение:</strong> ${filter.rightExpression.parameter.value.displayValue}
-				`;
-				filterList.appendChild(listItem);
-			});	
-		}else{
-			listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption} = ${param.DisplayValue}`;
-			parametersList.appendChild(listItem);
-		}
+		listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption} = ${param.DisplayValue}`;
+		parametersList.appendChild(listItem);
     });
 }
 

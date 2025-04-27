@@ -10,6 +10,7 @@ interface ElementParameter {
 
 interface ProcessElement {
     parameters: Record<string, ElementParameter>;
+	filter?: string;
 }
 
 export class Resource {
@@ -101,9 +102,7 @@ export class BpmnViewer {
 						content: {
 							name: e.elementName,
 							caption: elementCaption,
-							parameters: {
-								general: this.elementParameters[e.elementName].parameters
-							}
+							settings: this.elementParameters[e.elementName]
 						}
 					});
 				}
@@ -214,18 +213,22 @@ export class BpmnViewer {
 						if (!elements[elementName]) {
 							elements[elementName] = { parameters: {} };
 						}
-						const elementParameterCaption = Resource.getParametersByElement(
-							this.groupedResources, 
-							['BaseElements', elementName, 'Parameters', parameterName, 'Caption']
-						) as string;
-						const elementParameterValue = Resource.getParametersByElement(
-							this.groupedResources, 
-							['BaseElements', elementName, 'Parameters', parameterName, 'DisplayValue']
-						) as string;
-						elements[elementName].parameters[parameterName] = { 
-							Caption: elementParameterCaption, 
-							DisplayValue: elementParameterValue ?? parameterValue 
-						};
+						if(parameterName === 'DataSourceFilters'){
+							elements[elementName].filter = parameterValue;
+						}else{
+							const elementParameterCaption = Resource.getParametersByElement(
+								this.groupedResources, 
+								['BaseElements', elementName, 'Parameters', parameterName, 'Caption']
+							) as string;
+							const elementParameterValue = Resource.getParametersByElement(
+								this.groupedResources, 
+								['BaseElements', elementName, 'Parameters', parameterName, 'DisplayValue']
+							) as string;
+							elements[elementName].parameters[parameterName] = { 
+								Caption: elementParameterCaption, 
+								DisplayValue: elementParameterValue ?? parameterValue 
+							};
+						}
 					});
 				}
 			});
