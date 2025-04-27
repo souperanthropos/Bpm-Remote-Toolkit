@@ -92,32 +92,22 @@ window.addEventListener('message', async (event) => {
 
 	switch (type) {
 		case 'init':
-			if (!body.content) {
-				return viewer.createDiagram();
-			} else {
+			if (body.content) {
 				return viewer.importXML(body.content);
-			}
-
+			} 
+			break;
 		case 'update': {
 			if (body.content) {
 				return viewer.importXML(body.content);
 			}
-
-			if (body.undo) {
-				return viewer.get('commandStack').undo();
-			}
-
-			if (body.redo) {
-				return viewer.get('commandStack').redo();
-			}
-
 			break;
 		}
 
 		case 'show-element-caption': {
-			document.getElementById("propertyModal").style.display = "flex";
 			document.getElementById("element-name-value").innerHTML = body.content.name;
 			document.getElementById("element-caption-value").innerHTML = body.content.caption;
+			fillParameters(body.content.parameters);
+			document.getElementById("propertyModal").style.display = "flex";
 			break;
 		}
 
@@ -126,6 +116,45 @@ window.addEventListener('message', async (event) => {
 			return;
 	}
 });
+
+function fillParameters(parameters) {
+    const parametersList = document.getElementById("parameters-list");
+    parametersList.innerHTML = "";
+	const filterList = document.getElementById("filter-list");
+	filterList.innerHTML = "";
+
+	if(parameters.one['DataSourceFilters']) {
+		document.getElementById("filter-display").style.display = "flex";
+	}else{
+		document.getElementById("filter-display").style.display = "none";
+	}
+
+    Object.keys(parameters.one).forEach(key => {
+        const param = parameters.one[key];
+		const listItem = document.createElement("li");
+		if(key === 'DataSourceFilters') {
+			const filterData = JSON.parse(parameters.two[key]);
+			const dataSourceFilters = JSON.parse(filterData.dataSourceFilters);
+			Object.keys(dataSourceFilters.items).forEach(key => {
+				const filter = dataSourceFilters.items[key];
+		
+				const listItem = document.createElement("li");
+				listItem.innerHTML = `
+					<strong>Поле:</strong> ${filter.leftExpression.columnPath}<br>
+					<strong>Тип сравнения:</strong> ${filter.comparisonType}<br>
+					<strong>Значение:</strong> ${filter.rightExpression.parameter.value.displayValue}
+				`;
+				filterList.appendChild(listItem);
+			});		
+		}else{
+			if(param.DisplayValue === undefined) {
+				param.DisplayValue = parameters.two[key];
+			}
+			listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption} = ${param.DisplayValue}`;
+			parametersList.appendChild(listItem);
+		}
+    });
+}
 
 // signal to VS Code that the webview is initialized
 vscode.postMessage({ type: 'ready' });

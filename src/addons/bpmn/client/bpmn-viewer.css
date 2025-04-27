@@ -47,8 +47,11 @@ body {
   position: relative;
   min-width: 300px;
   min-height: 100px;
+  max-height: 600px;
   background-color: white;
   padding: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
   border-radius: 5px;
   text-align: center;
 }
@@ -60,3 +63,25 @@ body {
   font-size: 24px;
   cursor: pointer;
 }
+
+#element-parameters {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+#propertyModal {
+  scrollbar-color: #888 #f1f1f1;
+}
+
+#filter-display {
+  display: flex;
+  flex-direction: column; /* Гарантирует, что элементы идут друг за другом */
+  align-items: flex-start; /* Выравнивание элементов слева */
+}
+
+#filter-list {
+  width: 100%;
+  margin-top: 10px;
+  list-style-type: none; /* Если нужно убрать маркеры списка */
+}
+

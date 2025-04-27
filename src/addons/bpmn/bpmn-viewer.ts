@@ -4,6 +4,10 @@ import { BpmnConverter } from './bpmn-converter';
 import { parseStringPromise } from 'xml2js';
 
 
+interface ProcessElement {
+    parameters: Record<string, string>;
+}
+
 export class Resource {
     [key: string]: string | Resource;
 
@@ -64,6 +68,7 @@ export class Resource {
 export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
 	private groupedResources: Resource = {};
+	private elementParameters: Record<string, ProcessElement> = {};
 	private elementCaptions: Record<string, string> = {};
 	private metadataJson = '';
 	private sourceXml = '';
@@ -93,7 +98,10 @@ export class BpmnViewer {
 						content: {
 							name: e.elementName,
 							caption: elementCaption,
-							parameters: elementParameters
+							parameters: {
+								one: elementParameters,
+								two: this.elementParameters[e.elementName].parameters
+							}
 						}
 					});
 				}
@@ -155,7 +163,14 @@ export class BpmnViewer {
 						<p id="element-caption"><strong>Caption: &nbsp;</strong>
 							<span id="element-caption-value"></span>
 						</p>
-						<p id="element-parameters"><strong>Parameters: &nbsp;</strong></p>
+						<div id="element-parameters">
+							<div id="filter-display" style="display:none;">
+								<p><strong>Settings filter: &nbsp;</strong></p>
+								<ul id="filter-list"></ul>
+							</div>
+							<p><strong>Parameters: &nbsp;</strong></p>
+							<ul id="parameters-list"></ul>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -185,11 +200,36 @@ export class BpmnViewer {
 		//traverse(i as Resource);
 	}
 
+	private processJsonData(jsonData: any): Record<string, ProcessElement> {
+		const elements: Record<string, ProcessElement> = {};
+	
+		if (jsonData.MetaData?.Schema?.BK4) {
+			jsonData.MetaData.Schema.BK4.forEach((item: any) => {
+				const elementName = item.A2;
+				if(item.BP2){
+					item.BP2.forEach((subItem: any) => {
+						const parameterName = subItem.A2;
+						const parameterValue = subItem.L8.GS2 ?? "";
+
+						if (!elements[elementName]) {
+							elements[elementName] = { parameters: {} };
+						}
+
+						elements[elementName].parameters[parameterName] = parameterValue;
+					});
+				}
+			});
+		}
+	
+		return elements;
+	}	
+
 	public async readMetadataFromFile(){
 		await this.readResourceFromFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'resource.ru-RU.xml'));
-		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
 		const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
 		this.metadataJson = new TextDecoder('utf-8').decode(readData);
+		this.elementParameters = this.processJsonData(JSON.parse(this.metadataJson));
+		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
 		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData, this.elementCaptions);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
