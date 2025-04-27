@@ -123,17 +123,17 @@ function fillParameters(parameters) {
 	const filterList = document.getElementById("filter-list");
 	filterList.innerHTML = "";
 
-	if(parameters.one['DataSourceFilters']) {
+	if(parameters.general['DataSourceFilters']) {
 		document.getElementById("filter-display").style.display = "flex";
 	}else{
 		document.getElementById("filter-display").style.display = "none";
 	}
 
-    Object.keys(parameters.one).forEach(key => {
-        const param = parameters.one[key];
+    Object.keys(parameters.general).forEach(key => {
+        const param = parameters.general[key];
 		const listItem = document.createElement("li");
 		if(key === 'DataSourceFilters') {
-			const filterData = JSON.parse(parameters.two[key]);
+			const filterData = JSON.parse(param.DisplayValue);
 			const dataSourceFilters = JSON.parse(filterData.dataSourceFilters);
 			Object.keys(dataSourceFilters.items).forEach(key => {
 				const filter = dataSourceFilters.items[key];
@@ -145,11 +145,8 @@ function fillParameters(parameters) {
 					<strong>Значение:</strong> ${filter.rightExpression.parameter.value.displayValue}
 				`;
 				filterList.appendChild(listItem);
-			});		
+			});	
 		}else{
-			if(param.DisplayValue === undefined) {
-				param.DisplayValue = parameters.two[key];
-			}
 			listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption} = ${param.DisplayValue}`;
 			parametersList.appendChild(listItem);
 		}

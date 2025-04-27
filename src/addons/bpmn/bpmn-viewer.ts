@@ -3,9 +3,13 @@ import { getNonce, isNullOrWhitespace } from '../../constants';
 import { BpmnConverter } from './bpmn-converter';
 import { parseStringPromise } from 'xml2js';
 
+interface ElementParameter {
+	Caption: string;
+	DisplayValue: string;
+}
 
 interface ProcessElement {
-    parameters: Record<string, string>;
+    parameters: Record<string, ElementParameter>;
 }
 
 export class Resource {
@@ -93,14 +97,12 @@ export class BpmnViewer {
 			if(e.type === 'clicked-element'){
 				if(e.elementName){
 					const elementCaption = this.elementCaptions[e.elementName];
-					const elementParameters = Resource.getParametersByElement(this.groupedResources, ['BaseElements', e.elementName, 'Parameters']);//Resource.getParameters(this.groupedResources, e.elementName);
 					this.postMessage(this._webviewPanel, 'show-element-caption', {
 						content: {
 							name: e.elementName,
 							caption: elementCaption,
 							parameters: {
-								one: elementParameters,
-								two: this.elementParameters[e.elementName].parameters
+								general: this.elementParameters[e.elementName].parameters
 							}
 						}
 					});
@@ -196,11 +198,9 @@ export class BpmnViewer {
 
 			current[keys[keys.length - 1]] = item.$.Value;
 		});
-		//const i = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
-		//traverse(i as Resource);
 	}
 
-	private processJsonData(jsonData: any): Record<string, ProcessElement> {
+	private processElementParameters(jsonData: any): Record<string, ProcessElement> {
 		const elements: Record<string, ProcessElement> = {};
 	
 		if (jsonData.MetaData?.Schema?.BK4) {
@@ -214,8 +214,18 @@ export class BpmnViewer {
 						if (!elements[elementName]) {
 							elements[elementName] = { parameters: {} };
 						}
-
-						elements[elementName].parameters[parameterName] = parameterValue;
+						const elementParameterCaption = Resource.getParametersByElement(
+							this.groupedResources, 
+							['BaseElements', elementName, 'Parameters', parameterName, 'Caption']
+						) as string;
+						const elementParameterValue = Resource.getParametersByElement(
+							this.groupedResources, 
+							['BaseElements', elementName, 'Parameters', parameterName, 'DisplayValue']
+						) as string;
+						elements[elementName].parameters[parameterName] = { 
+							Caption: elementParameterCaption, 
+							DisplayValue: elementParameterValue ?? parameterValue 
+						};
 					});
 				}
 			});
@@ -228,7 +238,7 @@ export class BpmnViewer {
 		await this.readResourceFromFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'resource.ru-RU.xml'));
 		const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
 		this.metadataJson = new TextDecoder('utf-8').decode(readData);
-		this.elementParameters = this.processJsonData(JSON.parse(this.metadataJson));
+		this.elementParameters = this.processElementParameters(JSON.parse(this.metadataJson));
 		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
 		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData, this.elementCaptions);
 		this.postMessage(this._webviewPanel, 'update', {
