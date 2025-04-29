@@ -206,7 +206,7 @@ export class BpmnDiagramBuilder {
                 additionalAttributes.targetRef = this.elements[elementData.CI2];
                 if (elementData.BL1 === 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow') {
                     additionalAttributes.conditionExpression = this.moddle.create('bpmn:FormalExpression', {
-                        body: 'someVariable > 10'
+                        body: ''
                     });
                 }
                 this.createBpmnElement('bpmn:SequenceFlow', elementData.UId, additionalAttributes);

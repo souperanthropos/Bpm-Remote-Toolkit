@@ -106,7 +106,7 @@ window.addEventListener('message', async (event) => {
 		case 'show-element-caption': {
 			document.getElementById("element-name-value").innerHTML = body.content.name;
 			document.getElementById("element-caption-value").innerHTML = body.content.caption;
-			fillSettings(body.content.settings);
+			render(body.content.settings);
 			document.getElementById("propertyModal").style.display = "flex";
 			break;
 		}
@@ -117,37 +117,31 @@ window.addEventListener('message', async (event) => {
 	}
 });
 
-function fillSettings(settings) {
+function render(settings) {
     const parametersList = document.getElementById("parameters-list");
     parametersList.innerHTML = "";
-	const filterList = document.getElementById("filter-list");
-	filterList.innerHTML = "";
 
 	if(settings.filter) {
-		const filterData = JSON.parse(settings.filter);
-		const dataSourceFilters = JSON.parse(filterData.serializedFilterEditData);
-		Object.keys(dataSourceFilters.items).forEach(key => {
-			const filter = dataSourceFilters.items[key];
-	
-			const listItem = document.createElement("li");
-			listItem.innerHTML = `
-				<strong>Поле:</strong> ${filter.leftExpression.columnPath}<br>
-				<strong>Тип сравнения:</strong> ${filter.comparisonType}<br>
-				<strong>Значение:</strong> ${filter.rightExpression.parameter.value.displayValue}
-			`;
-			filterList.appendChild(listItem);
-		});	
+		document.getElementById("filter-value").innerHTML = settings.filter;
 		document.getElementById("filter-display").style.display = "flex";
 	}else{
 		document.getElementById("filter-display").style.display = "none";
 	}
 
-    Object.keys(settings.parameters).forEach(key => {
-        const param = settings.parameters[key];
-		const listItem = document.createElement("li");
-		listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption}: ${param.DisplayValue}`;
-		parametersList.appendChild(listItem);
-    });
+	if(settings.condition) {
+		document.getElementById("сonditionalFlowValue-display").style.display = "flex";
+		document.getElementById("parameters-display").style.display = "none";
+		document.getElementById("сonditionalFlow-value").innerHTML = settings.condition;
+	}else{
+		document.getElementById("сonditionalFlowValue-display").style.display = "none";
+		document.getElementById("parameters-display").style.display = "flex";
+		Object.keys(settings.parameters).forEach(key => {
+			const param = settings.parameters[key];
+			const listItem = document.createElement("li");
+			listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption}: ${param.DisplayValue}`;
+			parametersList.appendChild(listItem);
+		});
+	}
 }
 
 // signal to VS Code that the webview is initialized

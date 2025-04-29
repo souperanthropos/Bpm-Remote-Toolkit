@@ -17,6 +17,7 @@ export interface ElementParameter {
 
 export interface ProcessElement {
     parameters: Record<string, ElementParameter>;
+	condition?: string;
 	filter?: string;
 }
 
@@ -174,11 +175,21 @@ export class BpmnViewer {
 						</p>
 						<div id="element-parameters">
 							<div id="filter-display" style="display:none;">
-								<p><strong>Settings filter: &nbsp;</strong></p>
-								<ul id="filter-list"></ul>
+								<p><strong>Filter: &nbsp;</strong>
+									<br><br>
+									<span id="filter-value"></span>
+								</p>
 							</div>
-							<p><strong>Parameters: &nbsp;</strong></p>
-							<ul id="parameters-list"></ul>
+							<div id="сonditionalFlowValue-display" style="display:none;">
+								<p><strong>Condition: &nbsp;</strong>
+									<br><br>
+									<span id="сonditionalFlow-value"></span>
+								</p>
+							</div>
+							<div id="parameters-display" style="display:none;">
+								<p><strong>Parameters: &nbsp;</strong></p>
+								<ul id="parameters-list"></ul>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -231,7 +242,10 @@ export class BpmnViewer {
 							this.elementParameters[elementName] = { parameters: {} };
 						}
 						if(parameterName === 'DataSourceFilters'){
-							this.elementParameters[elementName].filter = parameterValue;
+							if(!isNullOrWhitespace(parameterValue)){
+								const formulaParser = new BpmnFormulaParserHelper(parameterValue);
+								this.elementParameters[elementName].filter = formulaParser.getFilterDisplayValue();
+							}
 						}else{
 							const elementParameterCaption = Resource.getParametersByElement(
 								this.groupedResources, 
@@ -255,11 +269,12 @@ export class BpmnViewer {
 					const parameterName = 'Condition';
 					const elementParameterCaption = 'Условие перехода';
 					const formulaParser = new BpmnFormulaParserHelper(item.CI3);
-					const conditionValue = formulaParser.getFormulaDisplayValue(this.elementCaptions, this.parameterMappings, this.elementParameters);
+					const conditionValue = formulaParser.getConditionFormulaDisplayValue(this.elementCaptions, this.parameterMappings, this.elementParameters);
+					this.elementParameters[elementName].condition = conditionValue;
 					this.elementParameters[elementName].parameters[parameterName] = { 
 						Uid: item.UId,
 						Caption: elementParameterCaption, 
-						DisplayValue: conditionValue === '' ? item.CI3 : conditionValue
+						DisplayValue: item.CI3
 					};
 				}
 			});

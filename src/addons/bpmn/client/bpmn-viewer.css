@@ -85,3 +85,9 @@ body {
   list-style-type: none; /* Если нужно убрать маркеры списка */
 }
 
+#parameters-display {
+  display: flex;
+  flex-direction: column; /* Гарантирует, что элементы идут друг за другом */
+  align-items: flex-start; /* Выравнивание элементов слева */
+}
+
