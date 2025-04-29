@@ -105,8 +105,14 @@ window.addEventListener('message', async (event) => {
 
 		case 'show-element-caption': {
 			document.getElementById("element-name-value").innerHTML = body.content.name;
-			document.getElementById("element-caption-value").innerHTML = body.content.caption;
-			render(body.content.settings);
+			document.getElementById("element-caption-value").innerHTML = body.content.caption ?? `[Нет данных]`;
+			if(body.content.settings) {
+				render(body.content.settings);
+			}else{
+				document.getElementById("filter-display").style.display = "none";
+				document.getElementById("сonditionalFlowValue-display").style.display = "none";
+				document.getElementById("parameters-display").style.display = "none";
+			}
 			document.getElementById("propertyModal").style.display = "flex";
 			break;
 		}
@@ -138,7 +144,13 @@ function render(settings) {
 		Object.keys(settings.parameters).forEach(key => {
 			const param = settings.parameters[key];
 			const listItem = document.createElement("li");
-			listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption}: ${param.DisplayValue}`;
+			const displayValue = param.DisplayValue === '' ? `[Нет данных]` : param.DisplayValue;
+			listItem.innerHTML = `
+				<div class="tooltip">${param.Caption}: 
+					<span class="tooltiptext">${key}</span>
+				</div>
+				<span>${displayValue}</span>
+			`;
 			parametersList.appendChild(listItem);
 		});
 	}

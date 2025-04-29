@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import { getNonce, isNullOrWhitespace } from '../../constants';
 import { BpmnConverter } from './bpmn-converter';
 import { parseStringPromise } from 'xml2js';
-import { BpmnFormulaParserHelper } from './bpmnFormulaParserHelper';
+import { BpmnFormulaParserHelper } from './helpers/bpmnFormulaParserHelper';
+import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
 
 export interface ParameterMapping {
 	elementName: string;
@@ -243,8 +244,8 @@ export class BpmnViewer {
 						}
 						if(parameterName === 'DataSourceFilters'){
 							if(!isNullOrWhitespace(parameterValue)){
-								const formulaParser = new BpmnFormulaParserHelper(parameterValue);
-								this.elementParameters[elementName].filter = formulaParser.getFilterDisplayValue();
+								const filterParser = new BpmnFilterParserHelper(parameterValue);
+								this.elementParameters[elementName].filter = filterParser.getFilterDisplayValue();
 							}
 						}else{
 							const elementParameterCaption = Resource.getParametersByElement(
