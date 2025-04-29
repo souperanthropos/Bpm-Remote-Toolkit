@@ -145,7 +145,7 @@ function fillSettings(settings) {
     Object.keys(settings.parameters).forEach(key => {
         const param = settings.parameters[key];
 		const listItem = document.createElement("li");
-		listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption} = ${param.DisplayValue}`;
+		listItem.innerHTML = `<strong>${key}</strong><br>${param.Caption}: ${param.DisplayValue}`;
 		parametersList.appendChild(listItem);
     });
 }

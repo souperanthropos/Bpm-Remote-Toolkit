@@ -2,13 +2,20 @@ import * as vscode from 'vscode';
 import { getNonce, isNullOrWhitespace } from '../../constants';
 import { BpmnConverter } from './bpmn-converter';
 import { parseStringPromise } from 'xml2js';
+import { BpmnFormulaParserHelper } from './bpmnFormulaParserHelper';
 
-interface ElementParameter {
+export interface ParameterMapping {
+	elementName: string;
+	parameterId: string;
+}
+
+export interface ElementParameter {
+	Uid: string;
 	Caption: string;
 	DisplayValue: string;
 }
 
-interface ProcessElement {
+export interface ProcessElement {
     parameters: Record<string, ElementParameter>;
 	filter?: string;
 }
@@ -16,7 +23,7 @@ interface ProcessElement {
 export class Resource {
     [key: string]: string | Resource;
 
-	public static traverse(obj: Resource, path: string[] = []) {
+	/*public static traverse(obj: Resource, path: string[] = []) {
 		Object.entries(obj).forEach(([key, value]) => {
 			const newPath = [...path, key];
 			if (typeof value === "object") {
@@ -25,7 +32,7 @@ export class Resource {
 				console.log(`Путь: ${newPath.join('.')} -> Значение: ${value}`);
 			}
 		});
-	}
+	}*/
 
 	public static getParametersByElement(resources: Resource, path: string[]): Resource | string | undefined {
 		return path.reduce((acc: Resource | undefined, key) => {
@@ -74,8 +81,9 @@ export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
 	private groupedResources: Resource = {};
 	private elementParameters: Record<string, ProcessElement> = {};
+	private parameterMappings: Record<string, ParameterMapping> = {};
 	private elementCaptions: Record<string, string> = {};
-	private metadataJson = '';
+	private processMetadata = '';
 	private sourceXml = '';
 
 	constructor(private readonly _context: vscode.ExtensionContext) {
@@ -199,8 +207,17 @@ export class BpmnViewer {
 		});
 	}
 
-	private processElementParameters(jsonData: any): Record<string, ProcessElement> {
-		const elements: Record<string, ProcessElement> = {};
+	private processElementParameters(jsonData: any) {
+		this.elementParameters = {};
+		this.parameterMappings = {};
+
+		if(jsonData.MetaData?.Schema?.BK15) {
+			jsonData.MetaData.Schema.BK15.forEach((item: any) => {
+				if (!this.parameterMappings[item.GT2]) {
+					this.parameterMappings[item.GT2] = { elementName: item.A2, parameterId: item.GT3 };
+				}
+			});
+		}
 	
 		if (jsonData.MetaData?.Schema?.BK4) {
 			jsonData.MetaData.Schema.BK4.forEach((item: any) => {
@@ -210,11 +227,11 @@ export class BpmnViewer {
 						const parameterName = subItem.A2;
 						const parameterValue = subItem.L8.GS2 ?? "";
 
-						if (!elements[elementName]) {
-							elements[elementName] = { parameters: {} };
+						if (!this.elementParameters[elementName]) {
+							this.elementParameters[elementName] = { parameters: {} };
 						}
 						if(parameterName === 'DataSourceFilters'){
-							elements[elementName].filter = parameterValue;
+							this.elementParameters[elementName].filter = parameterValue;
 						}else{
 							const elementParameterCaption = Resource.getParametersByElement(
 								this.groupedResources, 
@@ -224,26 +241,39 @@ export class BpmnViewer {
 								this.groupedResources, 
 								['BaseElements', elementName, 'Parameters', parameterName, 'DisplayValue']
 							) as string;
-							elements[elementName].parameters[parameterName] = { 
+							this.elementParameters[elementName].parameters[parameterName] = { 
+								Uid: subItem.UId,
 								Caption: elementParameterCaption, 
 								DisplayValue: elementParameterValue ?? parameterValue 
 							};
 						}
 					});
+				}else if(item.CI3 !== undefined && item.CI3 !== "null"){
+					if (!this.elementParameters[elementName]) {
+						this.elementParameters[elementName] = { parameters: {} };
+					}
+					const parameterName = 'Condition';
+					const elementParameterCaption = 'Условие перехода';
+					const formulaParser = new BpmnFormulaParserHelper(item.CI3);
+					const conditionValue = formulaParser.getFormulaDisplayValue(this.elementCaptions, this.parameterMappings, this.elementParameters);
+					this.elementParameters[elementName].parameters[parameterName] = { 
+						Uid: item.UId,
+						Caption: elementParameterCaption, 
+						DisplayValue: conditionValue === '' ? item.CI3 : conditionValue
+					};
 				}
 			});
 		}
-	
-		return elements;
 	}	
 
 	public async readMetadataFromFile(){
 		await this.readResourceFromFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'resource.ru-RU.xml'));
 		const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
-		this.metadataJson = new TextDecoder('utf-8').decode(readData);
-		this.elementParameters = this.processElementParameters(JSON.parse(this.metadataJson));
+		this.processMetadata = new TextDecoder('utf-8').decode(readData);
 		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
-		this.sourceXml = await BpmnConverter.convertToBpmn(JSON.parse(this.metadataJson).MetaData, this.elementCaptions);
+		const processMetadataJson = JSON.parse(this.processMetadata);
+		this.processElementParameters(processMetadataJson);
+		this.sourceXml = await BpmnConverter.convertToBpmn(processMetadataJson.MetaData, this.elementCaptions);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,

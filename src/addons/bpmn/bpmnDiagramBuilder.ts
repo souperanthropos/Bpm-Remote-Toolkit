@@ -159,7 +159,7 @@ export class BpmnDiagramBuilder {
                 additionalAttributes.eventDefinitions = [
                     this.moddle.create('bpmn:TimerEventDefinition', {
                         id: `id_${elementData.UId}_SignalEventDefinition`,
-                        timeDuration: this.moddle.create('bpmn:FormalExpression', { body: 'PT5M' }) // Таймер на 5 минут
+                        timeDuration: this.moddle.create('bpmn:FormalExpression', { body: '' })
                     })
                 ];
                 this.createBpmnElement('bpmn:IntermediateCatchEvent', elementData.UId, additionalAttributes);
