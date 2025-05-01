@@ -31,6 +31,25 @@ export class BpmToolkit {
 				await this.UpdateTimeInDescriptor(document);
 			}
 		});
+        vscode.workspace.onDidOpenTextDocument(async (document: vscode.TextDocument) => {
+            if (document.uri.scheme === 'file' && document.uri.path.endsWith('metadata.json')){
+                if(await this.isProcessFileOpened(path.dirname(document.uri.path))){
+                    vscode.commands.executeCommand('bpmnViewer.startRender', document);
+                }
+            }
+        });
+        vscode.commands.executeCommand('bpmnViewer.requestLogin');
+    }
+
+    private async isProcessFileOpened(folderPath: string): Promise<boolean> {
+        try {
+            const descriptorFilePath = path.join(folderPath, 'descriptor.json');
+            const readData = await vscode.workspace.fs.readFile(vscode.Uri.file(descriptorFilePath));
+            const descriptorData = new TextDecoder('utf-8').decode(readData);
+            return descriptorData.includes('ProcessSchemaManager');
+        } catch {}
+
+        return false;
     }
 
     private async initializeUtilityManagers() {
@@ -44,7 +63,10 @@ export class BpmToolkit {
                 this._selectedUtilityStatus.text += ' (not installed)';
             }else{
                 const options: vscode.MessageOptions = { modal: true };
-                await vscode.window.showInformationMessage('Utility auto-detection failed.\nGo to extension setting "BPM Remote Toolkit" and select utility manually.', options);
+                await vscode.window.showInformationMessage(
+                    'Utility auto-detection failed.\nGo to extension setting "BPM Remote Toolkit" and select utility manually.', 
+                    options
+                );
             }
         }
     }

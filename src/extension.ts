@@ -7,11 +7,12 @@ import { EnvironmentsProvider } from './implements/environmentsProvider';
 import { PackageProvider } from './implements/packageProvider';
 import { PackageDeploymentProvider } from './implements/packageDeploymentProvider';
 import { enviromentSettings } from './interfaces';
-import { hash } from './constants';
+import { hash, isNullOrWhitespace } from './constants';
 import { BpmToolkit } from './bpmtoolkit';
 import { ExtensionManager } from './managers/extensionManager';
 import { PackageSettings } from './common/packageSettings';
 import { BpmnViewer } from './addons/bpmn/bpmn-viewer';
+import { ConnectionConfig } from './managers/entitySchemaRequestManager';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
@@ -92,7 +93,7 @@ function registerButtonCommands(context: vscode.ExtensionContext, bpmToolkit: Bp
 	// #endregion
 }
 
-function registerContextMenus(context: vscode.ExtensionContext, bpmToolkit: BpmToolkit){
+function registerContextMenus(context: vscode.ExtensionContext, bpmToolkit: BpmToolkit) {
 
 	// #region context menu for Package Explorer
 
@@ -112,9 +113,9 @@ function registerContextMenus(context: vscode.ExtensionContext, bpmToolkit: BpmT
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand('packagesExplorer.package.addDeployment', (contextSelection: PackageSettings, allSelections: PackageSettings[]) => {
-		if(allSelections !== undefined){
+		if (allSelections !== undefined) {
 			bpmToolkit.packageDeploymentManager.addQueueItems(allSelections);
-		}else{
+		} else {
 			bpmToolkit.packageDeploymentManager.addQueueItem(contextSelection, false);
 		}
 	}));
@@ -199,8 +200,8 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('packagesExplorer.refreshEntry', () => {
 		let packages = context.globalState.get<Array<string>>(bpmPackagesPattern) ?? new Array();
 
-		if(packages.length > 0 && packages[0].targetFolderPath){
-			for(let i=0; i < packages.length; i++){
+		if (packages.length > 0 && packages[0].targetFolderPath) {
+			for (let i = 0; i < packages.length; i++) {
 				const item = packages[i].targetFolderPath;
 				packages[i] = item;
 			}
@@ -214,13 +215,58 @@ export function activate(context: vscode.ExtensionContext) {
 		packageDeploymentProvider.refresh(bpmToolkit.packageDeploymentManager.getItems());
 	});
 
+	vscode.commands.registerCommand('bpmnViewer.requestLogin', async (isForce: boolean) => {
+		let conectionConfig = context.globalState.get<ConnectionConfig>('bpmnViewerConnectionConfig1');
+		if (isForce || !conectionConfig) {
+			const options: vscode.MessageOptions = { modal: true };
+			vscode.window
+				.showInformationMessage('Correct display of business process parameters requires connection to the application', options, "Connect")
+				.then(async answer => {
+					if (answer === "Connect") {
+						conectionConfig = {
+							host: '',
+							username: '',
+							password: ''
+						};
+						const host = await vscode.window.showInputBox({
+							placeHolder: "Host",
+							prompt: "Enter host address for connecting to Bpmsoft"
+						});
+						if (!isNullOrWhitespace(host)) {
+							const login = await vscode.window.showInputBox({
+								placeHolder: "Login",
+								prompt: "Enter login for connecting to Bpmsoft"
+							});
+							if (!isNullOrWhitespace(login)) {
+								const password = await vscode.window.showInputBox({
+									placeHolder: "Password",
+									prompt: "Enter password for connecting to Bpmsoft",
+									password: true
+								});
+								if (!isNullOrWhitespace(password)) {
+									conectionConfig = {
+										host: host!,
+										username: login!,
+										password: password!
+									};
+								}
+							}
+							context.globalState.update('bpmnViewerConnectionConfig1', conectionConfig);
+						}
+					}
+				}
+				);
+		}
+	});
+
 	context.subscriptions.push(
-		vscode.commands.registerCommand('bpmnViewer.start', async () => {
-			const bpmnViewer = new BpmnViewer(context);
-			await bpmnViewer.readMetadataFromFile();
+		vscode.commands.registerCommand('bpmnViewer.startRender', async (document: vscode.TextDocument) => {
+			if(document){
+				const bpmnViewer = new BpmnViewer(context, document);
+				await bpmnViewer.renderDiagram();
+			}
 		})
-	  );
-	vscode.commands.executeCommand('bpmnViewer.start');
+	);
 }
 
 // This method is called when your extension is deactivated

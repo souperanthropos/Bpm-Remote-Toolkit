@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
-import { getNonce, isNullOrWhitespace } from '../../constants';
+import path from 'path';
+import { getDirectoryName, getNonce, isNullOrWhitespace } from '../../constants';
 import { BpmnConverter } from './bpmn-converter';
 import { parseStringPromise } from 'xml2js';
 import { BpmnFormulaParserHelper } from './helpers/bpmnFormulaParserHelper';
 import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
+import { ConnectionConfig, EntitySchemaRequestManager } from '../../managers/entitySchemaRequestManager';
 
 export interface ParameterMapping {
 	elementName: string;
@@ -88,7 +90,9 @@ export class BpmnViewer {
 	private processMetadata = '';
 	private sourceXml = '';
 
-	constructor(private readonly _context: vscode.ExtensionContext) {
+	constructor(private readonly _context: vscode.ExtensionContext,
+		private readonly document: vscode.TextDocument
+	) {
 		this._webviewPanel = vscode.window.createWebviewPanel(
 			'bpmnViewer',
 			'BPMN Viewer',
@@ -201,24 +205,6 @@ export class BpmnViewer {
           </html>`;
 	}
 
-	private async readResourceFromFile(uri: vscode.Uri){
-		const readData = await vscode.workspace.fs.readFile(uri);
-		const xml = new TextDecoder('utf-8').decode(readData);
-		const result = await parseStringPromise(xml, { explicitArray: false });
-
-		result.Resources.Group.Items.Item.forEach((item: any) => {
-			const keys = item.$.Name.split('.');
-			let current = this.groupedResources;
-
-			for (let i = 0; i < keys.length - 1; i++) {
-				current[keys[i]] = current[keys[i]] || {};
-				current = current[keys[i]] as Resource;
-			}
-
-			current[keys[keys.length - 1]] = item.$.Value;
-		});
-	}
-
 	private processElementParameters(jsonData: any) {
 		this.elementParameters = {};
 		this.parameterMappings = {};
@@ -282,10 +268,37 @@ export class BpmnViewer {
 		}
 	}	
 
-	public async readMetadataFromFile(){
-		await this.readResourceFromFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'resource.ru-RU.xml'));
-		const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
-		this.processMetadata = new TextDecoder('utf-8').decode(readData);
+	private getProcessResourceFileUri(processPath: string): vscode.Uri {
+		const processDirectoryPath = path.dirname(processPath);
+		const processName = getDirectoryName(processDirectoryPath);
+		const processresourcePath = path.join(processDirectoryPath, '..', '..', 'Resources', processName + '.Process', 'resource.ru-RU.xml');
+		return vscode.Uri.file(processresourcePath);
+	}
+
+	private async readResourceFromFile(processPath: string){
+		const resourceUri = this.getProcessResourceFileUri(processPath);
+		const readData = await vscode.workspace.fs.readFile(resourceUri);
+		const xml = new TextDecoder('utf-8').decode(readData);
+		const result = await parseStringPromise(xml, { explicitArray: false });
+
+		result.Resources.Group.Items.Item.forEach((item: any) => {
+			const keys = item.$.Name.split('.');
+			let current = this.groupedResources;
+
+			for (let i = 0; i < keys.length - 1; i++) {
+				current[keys[i]] = current[keys[i]] || {};
+				current = current[keys[i]] as Resource;
+			}
+
+			current[keys[keys.length - 1]] = item.$.Value;
+		});
+	}
+
+	public async renderDiagram(){
+		await this.readResourceFromFile(this.document.uri.path);
+		//const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
+		//this.processMetadata = new TextDecoder('utf-8').decode(readData);
+		this.processMetadata = this.document.getText();
 		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
 		const processMetadataJson = JSON.parse(this.processMetadata);
 		this.processElementParameters(processMetadataJson);
@@ -294,5 +307,17 @@ export class BpmnViewer {
 			content: this.sourceXml,
 			editable: true,
 		});
+
+		const conectionConfig = this._context.globalState.get<ConnectionConfig>('bpmnViewerConnectionConfig1');
+		if(conectionConfig){
+			const requestManager = new EntitySchemaRequestManager(conectionConfig);
+			const data = await requestManager.getSchemasInfo();
+			const schemaData = await requestManager.getSchemaData(
+				{ 
+					uId: "ecb16f49-82c6-4d4c-8b4c-bc3e2b41c29e", 
+					packageUId: "94158239-125e-480f-a6a1-d3833516c0f8" 
+				}
+			);
+		}
 	}
 }
