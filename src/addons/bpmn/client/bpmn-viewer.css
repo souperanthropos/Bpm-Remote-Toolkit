@@ -125,3 +125,12 @@ body {
   list-style-type: none; /* Если нужно убрать маркеры списка */
 }
 
+pre {
+  padding: 10px;
+  background: #f4f4f4 !important; /* Единый цвет фона */
+  border-radius: 5px; /* Закруглённые углы */
+}
+
+code {
+  background: none; /* Убираем возможные конфликты */
+}

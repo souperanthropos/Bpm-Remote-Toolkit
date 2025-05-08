@@ -6,6 +6,7 @@ import { parseStringPromise } from 'xml2js';
 import { BpmnFormulaParserHelper } from './helpers/bpmnFormulaParserHelper';
 import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
 import { ConnectionConfig, EntitySchemaRequestManager } from '../../managers/entitySchemaRequestManager';
+import { ProcessSchemaWrapper } from './processSchema';
 
 export interface ParameterMapping {
 	elementName: string;
@@ -85,8 +86,6 @@ export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
 	private groupedResources: Resource = {};
 	private elementParameters: Record<string, ProcessElement> = {};
-	private parameterMappings: Record<string, ParameterMapping> = {};
-	private elementCaptions: Record<string, string> = {};
 	private processMetadata = '';
 	private sourceXml = '';
 
@@ -111,7 +110,7 @@ export class BpmnViewer {
 			}
 			if(e.type === 'clicked-element'){
 				if(e.elementName){
-					const elementCaption = this.elementCaptions[e.elementName];
+					const elementCaption = ProcessSchemaWrapper.getElementCaption(e.elementName);
 					this.postMessage(this._webviewPanel, 'show-element-caption', {
 						content: {
 							name: e.elementName,
@@ -196,6 +195,7 @@ export class BpmnViewer {
 								<ul id="parameters-list"></ul>
 							</div>
 						</div>
+						<pre><code id="code-block" class="language-csharp"></code></pre>
 					</div>
 				</div>
 			</div>
@@ -205,7 +205,7 @@ export class BpmnViewer {
           </html>`;
 	}
 
-	private processElementParameters(jsonData: any) {
+	/*private processElementParameters(jsonData: any) {
 		this.elementParameters = {};
 		this.parameterMappings = {};
 
@@ -219,8 +219,30 @@ export class BpmnViewer {
 	
 		if (jsonData.MetaData?.Schema?.BK4) {
 			jsonData.MetaData.Schema.BK4.forEach((item: any) => {
-				const elementName = item.A2;
-				if(item.BP2){
+				const elementName = item.A2 as string;
+				if(elementName.includes('FormulaTask')){
+					if (!this.elementParameters[elementName]) {
+						this.elementParameters[elementName] = { parameters: {} };
+					}
+					//HS1 = 'a1caa860-48dc-4984-a1c0-de054f93c082'
+					//CH1 = 'true'
+				}else if(elementName.includes('ConditionalSequenceFlow')){
+					if(item.CI3 !== undefined && item.CI3 !== "null"){
+						if (!this.elementParameters[elementName]) {
+							this.elementParameters[elementName] = { parameters: {} };
+						}
+						const parameterName = 'Condition';
+						const elementParameterCaption = 'Условие перехода';
+						const formulaParser = new BpmnFormulaParserHelper(item.CI3);
+						const conditionValue = formulaParser.getConditionFormulaDisplayValue(this.elementCaptions, this.parameterMappings, this.elementParameters);
+						this.elementParameters[elementName].condition = conditionValue;
+						this.elementParameters[elementName].parameters[parameterName] = { 
+							Uid: item.UId,
+							Caption: elementParameterCaption, 
+							DisplayValue: item.CI3
+						};
+					}
+				}else if(item.BP2){
 					item.BP2.forEach((subItem: any) => {
 						const parameterName = subItem.A2;
 						const parameterValue = subItem.L8.GS2 ?? "";
@@ -249,24 +271,10 @@ export class BpmnViewer {
 							};
 						}
 					});
-				}else if(item.CI3 !== undefined && item.CI3 !== "null"){
-					if (!this.elementParameters[elementName]) {
-						this.elementParameters[elementName] = { parameters: {} };
-					}
-					const parameterName = 'Condition';
-					const elementParameterCaption = 'Условие перехода';
-					const formulaParser = new BpmnFormulaParserHelper(item.CI3);
-					const conditionValue = formulaParser.getConditionFormulaDisplayValue(this.elementCaptions, this.parameterMappings, this.elementParameters);
-					this.elementParameters[elementName].condition = conditionValue;
-					this.elementParameters[elementName].parameters[parameterName] = { 
-						Uid: item.UId,
-						Caption: elementParameterCaption, 
-						DisplayValue: item.CI3
-					};
 				}
 			});
 		}
-	}	
+	}	*/
 
 	private getProcessResourceFileUri(processPath: string): vscode.Uri {
 		const processDirectoryPath = path.dirname(processPath);
@@ -296,13 +304,11 @@ export class BpmnViewer {
 
 	public async renderDiagram(){
 		await this.readResourceFromFile(this.document.uri.path);
-		//const readData = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(this._context.extensionUri, 'out', 'test', 'metadata.json'));
-		//this.processMetadata = new TextDecoder('utf-8').decode(readData);
 		this.processMetadata = this.document.getText();
-		this.elementCaptions = Resource.getElementsCaption(this.groupedResources["BaseElements"] as Resource);
-		const processMetadataJson = JSON.parse(this.processMetadata);
-		this.processElementParameters(processMetadataJson);
-		this.sourceXml = await BpmnConverter.convertToBpmn(processMetadataJson.MetaData, this.elementCaptions);
+
+		ProcessSchemaWrapper.setMetadata(this.processMetadata, this.groupedResources["BaseElements"] as Resource);
+		
+		this.sourceXml = await BpmnConverter.convertToBpmn(ProcessSchemaWrapper.processSchema);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,

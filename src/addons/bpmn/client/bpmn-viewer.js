@@ -6,9 +6,16 @@ import 'bpmn-js/dist/assets/bpmn-js.css';
 
 import './bpmn-viewer.css';
 
+import hljs from 'highlight.js';
+import "highlight.js/styles/nnfx-light.css";
+
 import BpmnNavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { handleMacOsKeyboard } from './utils/macos-keyboard';
+
+function highlightHLJS(code) {
+    return hljs.highlightAuto(code).value;
+}
 
 /**
  * @type { import('vscode') }
@@ -104,6 +111,15 @@ window.addEventListener('message', async (event) => {
 		}
 
 		case 'show-element-caption': {
+			document.getElementById("code-block").innerHTML = highlightHLJS(`
+using System;
+
+class Program {
+	static void Main() {
+		Console.WriteLine("Hello, world!");
+	}
+}`
+			);
 			document.getElementById("element-name-value").innerHTML = body.content.name;
 			document.getElementById("element-caption-value").innerHTML = body.content.caption ?? `[Нет данных]`;
 			if(body.content.settings) {

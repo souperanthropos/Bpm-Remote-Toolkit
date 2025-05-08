@@ -1,4 +1,4 @@
-import { ProcessSchemaElement } from "./bpmn-converter";
+import { Element, ProcessSchemaWrapper } from "./processSchema";
 
 interface BPMNShape {
     id: string;
@@ -9,13 +9,11 @@ export class BpmnDiagramBuilder {
     private moddle: any;
     private process: any;
     private diagram: any;
-    private elementCaptions: Record<string, string>;
     private elements: Record<string, any> = {};
 
-    constructor(moddle: any, process: any, elementCaptions: Record<string, string>) {
+    constructor(moddle: any, process: any) {
         this.moddle = moddle;
         this.process = process;
-        this.elementCaptions = elementCaptions;
         this.diagram = this.moddle.create('bpmndi:BPMNDiagram', {
             id: `${process.id}_Diagram`,
             plane: this.moddle.create('bpmndi:BPMNPlane', {
@@ -32,59 +30,55 @@ export class BpmnDiagramBuilder {
         this.process.get('flowElements').push(element);
     }
 
-    private createBpmnShape(elementData: ProcessSchemaElement) {
-        const element = this.elements[elementData.UId];
-        const coordinate = elementData.BL3.split(';');
-        const size = elementData.BN2.split(';');
+    private createBpmnShape(processElement: Element) {
+        const element = this.elements[processElement.UId];
         const bounds = this.moddle.create('dc:Bounds', {
-            x: parseFloat(coordinate[0]),
-            y: parseFloat(coordinate[1]),
-            width: parseFloat(size[0]),
-            height: parseFloat(size[1])
+            x: processElement.Location?.X,
+            y: processElement.Location?.Y,
+            width: processElement.Size?.Width,
+            height: processElement.Size?.Height
         });
         const shape = this.moddle.create('bpmndi:BPMNShape', {
-            id: `id_${elementData.UId}_di`,
+            id: `id_${processElement.UId}_di`,
             bpmnElement: element,
             bounds: bounds
         });
         this.diagram.plane.planeElement.push(shape);
     }
 
-    private createBpmnEdge(elementData: ProcessSchemaElement) {
-        const element = this.elements[elementData.UId];
+    private createBpmnEdge(processElement: Element) {
+        const element = this.elements[processElement.UId];
         const waypoints = [];
 
-        if (elementData.CI11 && elementData.CI12) {
+        if (processElement.StartPoint && processElement.EndPoint) {
             // Добавляем начальную точку
             waypoints.push(this.moddle.create('dc:Point', {
-                x: parseFloat(elementData.CI11.split(';')[0]),
-                y: parseFloat(elementData.CI11.split(';')[1])
+                x: processElement.StartPoint.X,
+                y: processElement.StartPoint.Y
             }));
 
             // Добавляем промежуточные точки, если они есть
-            if (elementData.CI10) {
-                Object.values(elementData.CI10).forEach(point => {
-                    if (typeof point === 'string') {
-                        const coords = point.split(';');
-                        waypoints.push(this.moddle.create('dc:Point', {
-                            x: parseFloat(coords[0]),
-                            y: parseFloat(coords[1])
-                        }));
-                    }
+            if (processElement.MidPoints) {
+                Object.entries(processElement.MidPoints).forEach(([key, value]) => {
+                    waypoints.push(this.moddle.create('dc:Point', {
+                        x: value.X,
+                        y: value.Y
+                    }));
                 });
+
             }
 
             // Добавляем конечную точку
             waypoints.push(this.moddle.create('dc:Point', {
-                x: parseFloat(elementData.CI12.split(';')[0]),
-                y: parseFloat(elementData.CI12.split(';')[1])
+                x: processElement.EndPoint.X,
+                y: processElement.EndPoint.Y
             }));
 
         } else {
             let pointStart;
             let pointEnd;
-            const sourceBounds = this.getElementBounds(elementData.CI1);
-            const targetBounds = this.getElementBounds(elementData.CI2);
+            const sourceBounds = this.getElementBounds(processElement.SourceRef);
+            const targetBounds = this.getElementBounds(processElement.TargetRef);
 
             if (sourceBounds.x > targetBounds.x) {
                 pointStart = { x: sourceBounds.x + sourceBounds.width / 2, y: sourceBounds.y };
@@ -96,15 +90,12 @@ export class BpmnDiagramBuilder {
 
             waypoints.push(this.moddle.create('dc:Point', pointStart));
 
-            if (elementData.CI10) {
-                Object.values(elementData.CI10).forEach(point => {
-                    if (typeof point === 'string') {
-                        const coords = point.split(';');
-                        waypoints.push(this.moddle.create('dc:Point', {
-                            x: parseFloat(coords[0]),
-                            y: parseFloat(coords[1])
-                        }));
-                    }
+            if (processElement.MidPoints) {
+                Object.entries(processElement.MidPoints).forEach(([key, value]) => {
+                    waypoints.push(this.moddle.create('dc:Point', {
+                        x: value.X,
+                        y: value.Y
+                    }));
                 });
             }
 
@@ -113,7 +104,7 @@ export class BpmnDiagramBuilder {
 
 
         const edge = this.moddle.create('bpmndi:BPMNEdge', {
-            id: `id_${elementData.UId}_di`,
+            id: `id_${processElement.UId}_di`,
             bpmnElement: element,
             waypoint: waypoints
         });
@@ -127,92 +118,94 @@ export class BpmnDiagramBuilder {
         return shape.bounds;
     }
 
-    public addElement(elementData: ProcessSchemaElement): void {
-        
-        let additionalAttributes: Record<string, any> = {
-            customProperty: `${elementData.A2}`
-        };
-        let elementCaption = this.elementCaptions[elementData.A2];
+    public addElements(elements: Element[]): void {
+        elements.forEach(element => {
+            let additionalAttributes: Record<string, any> = {
+                customProperty: `${element.Name}`
+            };
+            let elementCaption = ProcessSchemaWrapper.getElementCaption(element.Name);
 
-        switch (elementData.BL1) {
-            case 'Terrasoft.Core.Process.ProcessSchemaStartEvent':
-            case 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent':
-                if (elementCaption) {
-                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
-                }
-                if (elementData.BL1 === 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent') {
+            switch (element.Namespace) {
+                case 'Terrasoft.Core.Process.ProcessSchemaStartEvent':
+                case 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent':
+                    if (elementCaption) {
+                        additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                    }
+                    if (element.Namespace === 'Terrasoft.Core.Process.ProcessSchemaStartSignalEvent') {
+                        additionalAttributes.eventDefinitions = [
+                            this.moddle.create('bpmn:SignalEventDefinition', {
+                                id: `id_${element.UId}_SignalEventDefinition`,
+                                signalRef: `id_${element.UId}_Signal`
+                            })
+                        ];
+                    }
+                    this.createBpmnElement('bpmn:StartEvent', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaTerminateEvent':
+                    this.createBpmnElement('bpmn:EndEvent', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaIntermediateCatchTimerEvent':
                     additionalAttributes.eventDefinitions = [
-                        this.moddle.create('bpmn:SignalEventDefinition', {
-                            id: `id_${elementData.UId}_SignalEventDefinition`,
-                            signalRef: `id_${elementData.UId}_Signal`
+                        this.moddle.create('bpmn:TimerEventDefinition', {
+                            id: `id_${element.UId}_SignalEventDefinition`,
+                            timeDuration: this.moddle.create('bpmn:FormalExpression', { body: '' })
                         })
                     ];
-                }
-                this.createBpmnElement('bpmn:StartEvent', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaTerminateEvent':
-                this.createBpmnElement('bpmn:EndEvent', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaIntermediateCatchTimerEvent':
-                additionalAttributes.eventDefinitions = [
-                    this.moddle.create('bpmn:TimerEventDefinition', {
-                        id: `id_${elementData.UId}_SignalEventDefinition`,
-                        timeDuration: this.moddle.create('bpmn:FormalExpression', { body: '' })
-                    })
-                ];
-                this.createBpmnElement('bpmn:IntermediateCatchEvent', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaExclusiveGateway':
-                this.createBpmnElement('bpmn:ExclusiveGateway', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaParallelGateway':
-                this.createBpmnElement('bpmn:ParallelGateway', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
-                additionalAttributes.scriptFormat = 'C#';
-                additionalAttributes.script = elementData.CH1;
-                if (elementCaption) {
-                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
-                }
-                this.createBpmnElement('bpmn:ScriptTask', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaUserTask':
-                if(elementCaption){
-                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
-                }
-                this.createBpmnElement('bpmn:Task', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaSubProcess':
-                additionalAttributes.triggeredByEvent = false;
-                if (elementCaption) {
-                    additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
-                }
-                this.createBpmnElement('bpmn:SubProcess', elementData.UId, additionalAttributes);
-                this.createBpmnShape(elementData);
-                break;
-            case 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow':
-            case 'Terrasoft.Core.Process.ProcessSchemaSequenceFlow':
-                if (elementCaption) {
-                    additionalAttributes.name = elementCaption;
-                }
-                additionalAttributes.sourceRef = this.elements[elementData.CI1];
-                additionalAttributes.targetRef = this.elements[elementData.CI2];
-                if (elementData.BL1 === 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow') {
-                    additionalAttributes.conditionExpression = this.moddle.create('bpmn:FormalExpression', {
-                        body: ''
-                    });
-                }
-                this.createBpmnElement('bpmn:SequenceFlow', elementData.UId, additionalAttributes);
-                this.createBpmnEdge(elementData);
-                break;
-        }
+                    this.createBpmnElement('bpmn:IntermediateCatchEvent', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaExclusiveGateway':
+                    this.createBpmnElement('bpmn:ExclusiveGateway', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaParallelGateway':
+                    this.createBpmnElement('bpmn:ParallelGateway', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
+                    additionalAttributes.scriptFormat = 'C#';
+                    additionalAttributes.script = element.BodyScript;
+                    if (elementCaption) {
+                        additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                    }
+                    this.createBpmnElement('bpmn:ScriptTask', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaUserTask':
+                case 'Terrasoft.Core.Process.ProcessSchemaFormulaTask':
+                    if (elementCaption) {
+                        additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                    }
+                    this.createBpmnElement('bpmn:Task', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaSubProcess':
+                    additionalAttributes.triggeredByEvent = false;
+                    if (elementCaption) {
+                        additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
+                    }
+                    this.createBpmnElement('bpmn:SubProcess', element.UId, additionalAttributes);
+                    this.createBpmnShape(element);
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow':
+                case 'Terrasoft.Core.Process.ProcessSchemaSequenceFlow':
+                    if (elementCaption) {
+                        additionalAttributes.name = elementCaption;
+                    }
+                    additionalAttributes.sourceRef = this.elements[element.SourceRef];
+                    additionalAttributes.targetRef = this.elements[element.TargetRef];
+                    if (element.Namespace === 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow') {
+                        additionalAttributes.conditionExpression = this.moddle.create('bpmn:FormalExpression', {
+                            body: ''
+                        });
+                    }
+                    this.createBpmnElement('bpmn:SequenceFlow', element.UId, additionalAttributes);
+                    this.createBpmnEdge(element);
+                    break;
+            }
+        });
     }
 
     public getDiagram(): any {

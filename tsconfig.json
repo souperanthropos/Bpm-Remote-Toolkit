@@ -1,5 +1,7 @@
 {
 	"compilerOptions": {
+		"experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
 		"module": "Node16",
 		"target": "ES2022",
 		"outDir": "out",
