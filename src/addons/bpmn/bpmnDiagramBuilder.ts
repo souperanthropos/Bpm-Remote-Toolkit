@@ -166,7 +166,6 @@ export class BpmnDiagramBuilder {
                     break;
                 case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
                     additionalAttributes.scriptFormat = 'C#';
-                    additionalAttributes.script = element.BodyScript;
                     if (elementCaption) {
                         additionalAttributes.name = elementCaption.length > 16 ? elementCaption.substring(0, 16) + '...' : elementCaption;
                     }

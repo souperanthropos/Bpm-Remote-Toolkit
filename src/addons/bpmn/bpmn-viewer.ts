@@ -111,11 +111,12 @@ export class BpmnViewer {
 			if(e.type === 'clicked-element'){
 				if(e.elementName){
 					const elementCaption = ProcessSchemaWrapper.getElementCaption(e.elementName);
+					const settings = ProcessSchemaWrapper.getElementSettings(e.elementName);
 					this.postMessage(this._webviewPanel, 'show-element-caption', {
 						content: {
 							name: e.elementName,
 							caption: elementCaption,
-							settings: this.elementParameters[e.elementName]
+							settings: settings
 						}
 					});
 				}
@@ -170,14 +171,14 @@ export class BpmnViewer {
 			<div id="propertyModal" class="modal" style="display:none;">
 				<div class="modal-content">
 					<span class="close-popup" style="text-align: right;">&times;</span>
-					<div class="modal-header" style="text-align: left;">
+					<div class="modal-header" style="text-align: left;max">
 						<p id="element-name"><strong>Name: &nbsp;</strong>
 							<span id="element-name-value"></span>
 						</p>
 						<p id="element-caption"><strong>Caption: &nbsp;</strong>
 							<span id="element-caption-value"></span>
 						</p>
-						<div id="element-parameters">
+						<div id="element-parameters" style="display:none;">
 							<div id="filter-display" style="display:none;">
 								<p><strong>Filter: &nbsp;</strong>
 									<br><br>
@@ -195,7 +196,9 @@ export class BpmnViewer {
 								<ul id="parameters-list"></ul>
 							</div>
 						</div>
-						<pre><code id="code-block" class="language-csharp"></code></pre>
+						<div id="code-block-display" style="display:none;">
+							<pre><code id="code-block" class="language-csharp"></code></pre>
+						</div>
 					</div>
 				</div>
 			</div>

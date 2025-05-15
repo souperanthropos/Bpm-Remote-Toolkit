@@ -126,11 +126,12 @@ body {
 }
 
 pre {
-  padding: 10px;
-  background: #f4f4f4 !important; /* Единый цвет фона */
-  border-radius: 5px; /* Закруглённые углы */
+  max-height: 430px;
+  overflow-y: auto;
+  border-radius: 5px;
+  overflow-x: hidden !important;
 }
 
-code {
-  background: none; /* Убираем возможные конфликты */
+code[class*="language-"], pre[class*="language-"] {
+    white-space: pre-wrap !important;
 }

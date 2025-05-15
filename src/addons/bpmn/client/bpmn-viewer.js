@@ -6,16 +6,13 @@ import 'bpmn-js/dist/assets/bpmn-js.css';
 
 import './bpmn-viewer.css';
 
-import hljs from 'highlight.js';
-import "highlight.js/styles/nnfx-light.css";
+import Prism from 'prismjs';
+import 'prismjs/components/prism-csharp';
+import "prismjs/themes/prism.css";
 
 import BpmnNavigatedViewer from 'bpmn-js/lib/NavigatedViewer';
 
 import { handleMacOsKeyboard } from './utils/macos-keyboard';
-
-function highlightHLJS(code) {
-    return hljs.highlightAuto(code).value;
-}
 
 /**
  * @type { import('vscode') }
@@ -35,6 +32,19 @@ viewer.on('import.done', event => {
 	eventBus.on('element.click', (event) => {
 		const element = event.element;
 		if (element) {
+
+			/*const gfx = viewer.get('canvas').getGraphics(element);
+			if (!gfx) {
+				return; // Проверяем, что графический элемент существует
+			}
+
+			const path = gfx.querySelector('path') || gfx.querySelector('polygon') || gfx.querySelector('rect') || gfx.querySelector('polyline');
+			if (!path) {
+				return; // Проверяем, что нашли нужный элемент
+			}
+
+			path.style.cssText += 'stroke: green !important;';*/
+
 			selection.select(element);
 			console.log('Открываем окно свойств для:', element);
 			const elementName = element.businessObject.get("customProperty");
@@ -111,23 +121,13 @@ window.addEventListener('message', async (event) => {
 		}
 
 		case 'show-element-caption': {
-			document.getElementById("code-block").innerHTML = highlightHLJS(`
-using System;
-
-class Program {
-	static void Main() {
-		Console.WriteLine("Hello, world!");
-	}
-}`
-			);
 			document.getElementById("element-name-value").innerHTML = body.content.name;
 			document.getElementById("element-caption-value").innerHTML = body.content.caption ?? `[Нет данных]`;
 			if(body.content.settings) {
 				render(body.content.settings);
 			}else{
-				document.getElementById("filter-display").style.display = "none";
-				document.getElementById("сonditionalFlowValue-display").style.display = "none";
-				document.getElementById("parameters-display").style.display = "none";
+				document.getElementById("element-parameters").style.display = "none";
+				document.getElementById("code-block-display").style.display = "none";
 			}
 			document.getElementById("propertyModal").style.display = "flex";
 			break;
@@ -143,6 +143,16 @@ function render(settings) {
     const parametersList = document.getElementById("parameters-list");
     parametersList.innerHTML = "";
 
+	if(settings.script){
+		document.getElementById("code-block").innerHTML = Prism.highlight(settings.script, Prism.languages.csharp, 'csharp');
+		document.getElementById("code-block-display").style.display = "flex";
+		document.getElementById("element-parameters").style.display = "none";
+	}else{
+		document.getElementById("element-parameters").style.display = "flex";
+		document.getElementById("code-block-display").style.display = "none";
+		document.getElementById("code-block").innerHTML = '';
+	}
+
 	if(settings.filter) {
 		document.getElementById("filter-value").innerHTML = settings.filter;
 		document.getElementById("filter-display").style.display = "flex";
@@ -157,18 +167,20 @@ function render(settings) {
 	}else{
 		document.getElementById("сonditionalFlowValue-display").style.display = "none";
 		document.getElementById("parameters-display").style.display = "flex";
-		Object.keys(settings.parameters).forEach(key => {
-			const param = settings.parameters[key];
-			const listItem = document.createElement("li");
-			const displayValue = param.DisplayValue === '' ? `[Нет данных]` : param.DisplayValue;
-			listItem.innerHTML = `
-				<div class="tooltip">${param.Caption}: 
-					<span class="tooltiptext">${key}</span>
-				</div>
-				<span>${displayValue}</span>
-			`;
-			parametersList.appendChild(listItem);
-		});
+		if(settings.parameters){
+			Object.keys(settings.parameters).forEach(key => {
+				const param = settings.parameters[key];
+				const listItem = document.createElement("li");
+				const displayValue = param.DisplayValue === '' ? `[Нет данных]` : param.DisplayValue;
+				listItem.innerHTML = `
+					<div class="tooltip">${param.Caption}: 
+						<span class="tooltiptext">${key}</span>
+					</div>
+					<span>${displayValue}</span>
+				`;
+				parametersList.appendChild(listItem);
+			});
+		}
 	}
 }
 

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { Expose, plainToClass, Transform, Type } from "class-transformer";
 import { isNullOrWhitespace } from '../../constants';
 import { Resource } from './bpmn-viewer';
+import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
 
 function convertToPoint(input: string): Point | undefined {
     if (!isNullOrWhitespace(input)) {
@@ -138,6 +139,10 @@ export class Element {
     @Type(() => Point)
     @Transform(({ value }) => convertToPoint(value), { toClassOnly: true })
     EndPoint?: Point;
+
+    @Expose({ name: 'BP2' })
+    @Type(() => Parameter)
+    Parameters?: Parameter[];
 }
 
 export class ProcessSchema {
@@ -158,9 +163,17 @@ export class ProcessSchema {
     Elements: Element[] = [];
 }
 
+export interface ElementSettings {
+    //parameters?: Record<string, ElementParameter>;
+    script?: string;
+    condition?: string;
+    filter?: string;
+}
+
 export class ProcessSchemaWrapper {
     private static _processSchema: ProcessSchema;
-    private static elementCaptions: Record<string, string> = {};
+    private static _elementCaptions: Record<string, string> = {};
+    private static _elementSettingsCache: Record<string, ElementSettings> = {};
 
     public static get processSchema(): ProcessSchema {
         return this._processSchema;
@@ -169,10 +182,36 @@ export class ProcessSchemaWrapper {
     public static setMetadata(metadata: string, resource: Resource){
         const processMetadataJson = JSON.parse(metadata);
         this._processSchema = plainToClass(ProcessSchema, processMetadataJson.MetaData.Schema);
-        this.elementCaptions = Resource.getElementsCaption(resource);
+        this._elementCaptions = Resource.getElementsCaption(resource);
+        this._elementSettingsCache = {};
     }
 
     public static getElementCaption(elementName: string): string {
-        return this.elementCaptions[elementName];
+        return this._elementCaptions[elementName];
+    }
+
+    public static getElementSettings(elementName: string): ElementSettings {
+        if(this._elementSettingsCache[elementName]){
+            return this._elementSettingsCache[elementName];
+        }
+        const element = this._processSchema.Elements.find(e=>e.Name === elementName);
+        const settings: ElementSettings = { };
+        if(element){
+            switch(element.Namespace){
+                case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
+                    settings.script = element.BodyScript;
+                    this._elementSettingsCache[elementName] = settings;
+                    return settings;
+                default:
+                    if(element.Parameters){
+                        const filter = element.Parameters.find(p=>p.Name === 'DataSourceFilters');
+                        if(filter){
+                            const filterHelper = new BpmnFilterParserHelper(filter.Value!.Formula);
+                            settings.filter = filter.Value?.Formula;
+                        }
+                    }
+            }
+        }
+        return settings;
     }
 }

@@ -1,41 +1,48 @@
+import 'reflect-metadata';
+import { plainToClass, Transform, Type } from "class-transformer";
+import { FilterType, LogicalOperatorType } from "./filterConstants";
+import { isNullOrWhitespace } from '../../../constants';
+
+function serializedFilterEditDataConverter(value: string): SerializedFilterEditData | undefined {
+    if (!isNullOrWhitespace(value)) {
+        const filterJson = JSON.parse(value);
+        return plainToClass(SerializedFilterEditData, filterJson);
+    }
+    return undefined;
+}
+
+class SerializedFilterEditData {
+    className: string = '';
+    isEnabled: boolean = false;
+    rootSchemaName: string = '';
+    key: string = '';
+
+    @Transform(({ value }) => FilterType[value])
+    filterType: FilterType = FilterType.NONE;
+
+    @Transform(({ value }) => LogicalOperatorType[value])
+    logicalOperation: LogicalOperatorType = LogicalOperatorType.AND;
+}
+
+export class Filter {
+    className: string = '';
+
+    @Type(() => SerializedFilterEditData)
+    @Transform(({ value }) => serializedFilterEditDataConverter(value))
+    serializedFilterEditData?: SerializedFilterEditData;
+    dataSourceFilters: string = '';
+}
+
 export class BpmnFilterParserHelper {
+    private readonly filter: Filter;
 
     constructor(private readonly originalFormula: string){
-
-    }
-
-    private getComparisonSymbol(comparisonType: number): string {
-        switch(comparisonType) {
-            case 3:
-                return ' = ';
-            default:
-                return ` [Нет данных] `;
-        }
+        const filterJson = JSON.parse(originalFormula);
+        this.filter = plainToClass(Filter, filterJson);
     }
 
     public getFilterDisplayValue(): string {
         let filterDisplayValue = '';
-
-        const filterDataJson = JSON.parse(this.originalFormula);
-        if(filterDataJson.serializedFilterEditData) {
-            const dataSourceFilters = JSON.parse(filterDataJson.serializedFilterEditData);
-            Object.keys(dataSourceFilters.items).forEach(key => {
-                const filter = dataSourceFilters.items[key];
-                let leftExpression = '';
-                let rightExpression = '';
-                if(filter.className === 'Terrasoft.InFilter'){
-                    leftExpression = filter.leftExpressionCaption;
-                    rightExpression = filter.rightExpressions[0].parameter.value.displayValue;
-                    if(filter.rightExpressions.length > 1){
-                        throw('rightExpressions.length > 1');
-                    }
-                }else{
-                    leftExpression = filter.leftExpression.columnPath;
-                    rightExpression = filter.rightExpression.parameter.value.displayValue;
-                }
-                filterDisplayValue = `${leftExpression}${this.getComparisonSymbol(filter.comparisonType)}${rightExpression}`;
-            });	
-        }
         
         return filterDisplayValue;
     }
