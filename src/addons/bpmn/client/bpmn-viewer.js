@@ -154,7 +154,7 @@ function render(settings) {
 	}
 
 	if(settings.filter) {
-		document.getElementById("filter-value").innerHTML = settings.filter;
+		document.getElementById("filter-display").innerHTML = settings.filter;
 		document.getElementById("filter-display").style.display = "flex";
 	}else{
 		document.getElementById("filter-display").style.display = "none";

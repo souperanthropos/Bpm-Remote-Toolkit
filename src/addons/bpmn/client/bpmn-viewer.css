@@ -1,137 +1,171 @@
-html, body {
-  width: 100%;
-  height: 100%;
+html,
+body {
+	width: 100%;
+	height: 100%;
 }
 
 body {
-  color: #333;
-  background: white;
+	color: #333;
+	background: white;
 }
 
 #canvas {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
 }
 
 #canvas svg:focus {
-  outline: none;
+	outline: none;
 }
 
 /* COLOR PICKER */
 
 .djs-popup.color-picker .entry {
-  margin: 0;
+	margin: 0;
 }
 
 .djs-popup.color-picker .djs-popup-group {
-  display: grid;
-  grid: auto-flow / 1fr 1fr 1fr;
+	display: grid;
+	grid: auto-flow / 1fr 1fr 1fr;
 }
 
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+	display: none;
+	position: fixed;
+	z-index: 1;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
 .modal-content {
-  position: relative;
-  min-width: 300px;
-  min-height: 100px;
-  max-height: 600px;
-  background-color: white;
-  padding: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
-  border-radius: 5px;
-  text-align: center;
+	position: relative;
+	min-width: 300px;
+	min-height: 100px;
+	max-height: 600px;
+	background-color: white;
+	padding: 20px;
+	margin-left: 20px;
+	margin-right: 20px;
+	border-radius: 5px;
+	text-align: center;
 }
 
 .close-popup {
-  position: absolute;
-  top: 0px;
-  right: 10px;
-  font-size: 24px;
-  cursor: pointer;
+	position: absolute;
+	top: 0px;
+	right: 10px;
+	font-size: 24px;
+	cursor: pointer;
 }
 
 .tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black;
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black;
 }
 
 .tooltip .tooltiptext {
-  visibility: hidden;
-  width: auto;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px;
-  
-  /* Position the tooltip */
-  position: absolute;
-  z-index: 1;
+	visibility: hidden;
+	width: auto;
+	background-color: black;
+	color: #fff;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px;
+
+	/* Position the tooltip */
+	position: absolute;
+	z-index: 1;
 }
 
 .tooltip:hover .tooltiptext {
-  visibility: visible;
+	visibility: visible;
 }
 
 #element-parameters {
-  max-height: 500px;
-  overflow-y: auto;
-  word-wrap: break-word;
-  overflow-x: hidden;
+	display: flex;
+	flex-direction: column;
+	max-height: 500px;
+	overflow-y: auto;
+	word-wrap: break-word;
+	overflow-x: hidden;
 }
 
 #propertyModal {
-  scrollbar-color: #888 #f1f1f1;
+	scrollbar-color: #888 #f1f1f1;
 }
 
 #filter-display {
-  display: flex;
-  flex-direction: column; /* Гарантирует, что элементы идут друг за другом */
-  align-items: flex-start; /* Выравнивание элементов слева */
+	display: flex;
+	flex-direction: column;
+	/* Гарантирует, что элементы идут друг за другом */
+	align-items: flex-start;
+	/* Выравнивание элементов слева */
 }
 
 #filter-list {
-  width: 100%;
-  margin-top: 10px;
-  list-style-type: none; /* Если нужно убрать маркеры списка */
+	width: 100%;
+	margin-top: 10px;
+	list-style-type: none;
+	/* Если нужно убрать маркеры списка */
 }
 
 #parameters-display {
-  display: flex;
-  flex-direction: column; /* Гарантирует, что элементы идут друг за другом */
-  align-items: flex-start; /* Выравнивание элементов слева */
+	display: flex;
+	flex-direction: column;
+	/* Гарантирует, что элементы идут друг за другом */
+	align-items: flex-start;
+	/* Выравнивание элементов слева */
 }
 
 #parameters-list {
-  width: 100%;
-  margin-top: 0;
-  padding-left: 5px;
-  margin-left: 5px;
-  list-style-type: none; /* Если нужно убрать маркеры списка */
+	width: 100%;
+	margin-top: 0;
+	padding-left: 5px;
+	margin-left: 5px;
+	list-style-type: none;
+	/* Если нужно убрать маркеры списка */
 }
 
 pre {
-  max-height: 430px;
-  overflow-y: auto;
-  border-radius: 5px;
-  overflow-x: hidden !important;
+	max-height: 430px;
+	overflow-y: auto;
+	border-radius: 5px;
+	overflow-x: hidden !important;
 }
 
-code[class*="language-"], pre[class*="language-"] {
-    white-space: pre-wrap !important;
+code[class*="language-"],
+pre[class*="language-"] {
+	white-space: pre-wrap !important;
+}
+
+.general-conteiner {
+	display: flex;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+	background-color: #f5f2f0;
+	padding: 10px;
+	border-radius: 5px;
+}
+
+.vl {
+    border-left: 2px solid black;
+    min-height: 20px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.childs-conteiner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

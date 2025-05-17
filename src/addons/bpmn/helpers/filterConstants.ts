@@ -170,7 +170,7 @@ export const AggregationTypeResource: Record<AggregationType, string> = {
     [AggregationType.MAX]: 'максимум'
 };
 
-export const ComparisonTypeResource: Record<ComparisonType, string> = {
+export const ComparisonTypeResource: Record<string, string> = {
     [ComparisonType.BETWEEN]: 'входит в диапазон',
     [ComparisonType.CONTAIN]: 'содержит',
     [ComparisonType.END_WITH]: 'заканчивается на',

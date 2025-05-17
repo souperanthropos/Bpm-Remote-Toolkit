@@ -180,10 +180,6 @@ export class BpmnViewer {
 						</p>
 						<div id="element-parameters" style="display:none;">
 							<div id="filter-display" style="display:none;">
-								<p><strong>Filter: &nbsp;</strong>
-									<br><br>
-									<span id="filter-value"></span>
-								</p>
 							</div>
 							<div id="сonditionalFlowValue-display" style="display:none;">
 								<p><strong>Condition: &nbsp;</strong>

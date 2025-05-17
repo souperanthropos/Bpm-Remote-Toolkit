@@ -207,7 +207,7 @@ export class ProcessSchemaWrapper {
                         const filter = element.Parameters.find(p=>p.Name === 'DataSourceFilters');
                         if(filter){
                             const filterHelper = new BpmnFilterParserHelper(filter.Value!.Formula);
-                            settings.filter = filter.Value?.Formula;
+                            settings.filter = filterHelper.getRenderFilter();
                         }
                     }
             }
