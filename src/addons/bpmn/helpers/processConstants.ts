@@ -156,12 +156,40 @@ export enum LogicalOperatorType {
     OR = 1
 }
 
-export const LogicalOperatorTypeResource: Record<LogicalOperatorType, string> = {
+export enum ReadDataResultType {
+    ENTITY = 0,
+    FUNCTION = 1,
+    ENTITY_COLLECTION = 2
+}
+
+export enum AggregateFunctionType {
+    Count = 0,
+    Sum = 1,
+    Average = 2,
+    Minimum = 3,
+    Maximum = 4
+}
+
+export const AggregateFunctionTypeResource: Record<string, string> = {
+    [AggregateFunctionType.Count]: 'количество записей',
+    [AggregateFunctionType.Sum]: 'сумма',
+    [AggregateFunctionType.Average]: 'среднее',
+    [AggregateFunctionType.Minimum]: 'минимум',
+    [AggregateFunctionType.Maximum]: 'максимум'
+};
+
+export const ReadDataResultTypeResource: Record<string, string> = {
+    [ReadDataResultType.ENTITY]: 'Читать первую запись из выборки',
+    [ReadDataResultType.FUNCTION]: 'Считать функцию',
+    [ReadDataResultType.ENTITY_COLLECTION]: 'Считать коллекцию записей'
+};
+
+export const LogicalOperatorTypeResource: Record<string, string> = {
     [LogicalOperatorType.AND]: 'И',
     [LogicalOperatorType.OR]: 'ИЛИ',
 };
 
-export const AggregationTypeResource: Record<AggregationType, string> = {
+export const AggregationTypeResource: Record<string, string> = {
     [AggregationType.NONE]: 'операция не выбрана',
     [AggregationType.COUNT]: 'количество',
     [AggregationType.SUM]: 'сумма',

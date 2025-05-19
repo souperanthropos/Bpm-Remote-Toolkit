@@ -140,8 +140,6 @@ window.addEventListener('message', async (event) => {
 });
 
 function render(settings) {
-    const parametersList = document.getElementById("parameters-list");
-    parametersList.innerHTML = "";
 
 	if(settings.script){
 		document.getElementById("code-block").innerHTML = Prism.highlight(settings.script, Prism.languages.csharp, 'csharp');
@@ -160,27 +158,28 @@ function render(settings) {
 		document.getElementById("filter-display").style.display = "none";
 	}
 
+	document.getElementById("parameters-display").style.display = "none";
+	if(settings.parameters){
+		const parametersList = document.getElementById("parameters-list");
+    	parametersList.innerHTML = "";
+		Object.keys(settings.parameters).forEach(key => {
+			const param = settings.parameters[key];
+			const listItem = document.createElement("li");
+			listItem.innerHTML = `
+				<span>${key}: ${param}</span>
+			`;
+			parametersList.appendChild(listItem);
+		});
+		if(parametersList.appendChild.length > 0){
+			document.getElementById("parameters-display").style.display = "flex";
+		}
+	}
+
 	if(settings.condition) {
 		document.getElementById("сonditionalFlowValue-display").style.display = "flex";
-		document.getElementById("parameters-display").style.display = "none";
 		document.getElementById("сonditionalFlow-value").innerHTML = settings.condition;
 	}else{
 		document.getElementById("сonditionalFlowValue-display").style.display = "none";
-		document.getElementById("parameters-display").style.display = "flex";
-		if(settings.parameters){
-			Object.keys(settings.parameters).forEach(key => {
-				const param = settings.parameters[key];
-				const listItem = document.createElement("li");
-				const displayValue = param.DisplayValue === '' ? `[Нет данных]` : param.DisplayValue;
-				listItem.innerHTML = `
-					<div class="tooltip">${param.Caption}: 
-						<span class="tooltiptext">${key}</span>
-					</div>
-					<span>${displayValue}</span>
-				`;
-				parametersList.appendChild(listItem);
-			});
-		}
 	}
 }
 

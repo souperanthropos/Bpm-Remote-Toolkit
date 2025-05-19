@@ -3,6 +3,7 @@ import { Expose, plainToClass, Transform, Type } from "class-transformer";
 import { isNullOrWhitespace } from '../../constants';
 import { Resource } from './bpmn-viewer';
 import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
+import { AggregateFunctionTypeResource, ReadDataResultType, ReadDataResultTypeResource } from './helpers/processConstants';
 
 function convertToPoint(input: string): Point | undefined {
     if (!isNullOrWhitespace(input)) {
@@ -80,7 +81,7 @@ class ParameterMapping {
 
 class ParameterValue {
     @Expose({ name: 'GS2' })
-	Formula: string = '';
+	Content: string = '';
 }
 
 class Parameter {
@@ -168,6 +169,7 @@ export interface ElementSettings {
     script?: string;
     condition?: string;
     filter?: string;
+    parameters: Record<string, string>;
 }
 
 export class ProcessSchemaWrapper {
@@ -195,7 +197,7 @@ export class ProcessSchemaWrapper {
             return this._elementSettingsCache[elementName];
         }
         const element = this._processSchema.Elements.find(e=>e.Name === elementName);
-        const settings: ElementSettings = { };
+        const settings: ElementSettings = { parameters: {} };
         if(element){
             switch(element.Namespace){
                 case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
@@ -206,8 +208,23 @@ export class ProcessSchemaWrapper {
                     if(element.Parameters){
                         const filter = element.Parameters.find(p=>p.Name === 'DataSourceFilters');
                         if(filter){
-                            const filterHelper = new BpmnFilterParserHelper(filter.Value!.Formula);
+                            const filterHelper = new BpmnFilterParserHelper(filter.Value!.Content);
+                            settings.parameters["Объект"] = filterHelper.getRootSchemaName();
                             settings.filter = filterHelper.getRenderFilter();
+                        }
+                        const readDataResult = element.Parameters.find(p=>p.Name === 'ResultType');
+                        if(readDataResult){
+                            let displayValue = ReadDataResultTypeResource[readDataResult.Value!.Content];
+                            const readDataResultType = Number(readDataResult.Value!.Content);
+
+                            if(readDataResultType === ReadDataResultType.FUNCTION){
+                                const functionType = element.Parameters.find(p=>p.Name === 'FunctionType');
+                                if(functionType){
+                                    displayValue += ': ' + AggregateFunctionTypeResource[functionType.Value!.Content];
+                                }
+                            }
+
+                            settings.parameters["Режим чтения"] = displayValue;
                         }
                     }
             }

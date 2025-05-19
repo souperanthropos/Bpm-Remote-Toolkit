@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { plainToClass, Transform, Type } from "class-transformer";
-import { ComparisonType, ComparisonTypeResource, DataValueType, ExpressionType, FilterType, LogicalOperatorType } from "./filterConstants";
+import { ComparisonType, ComparisonTypeResource, DataValueType, ExpressionType, FilterType, LogicalOperatorType } from "./processConstants";
 import { isNullOrWhitespace } from '../../../constants';
 
 function serializedFilterEditDataConverter(value: string): SerializedFilterEditData | undefined {
@@ -36,7 +36,7 @@ class ParameterExpression {
     dataValueType: DataValueType = DataValueType.GUID;
 
     @Type(() => ParameterValue)
-    value?: ParameterValue;
+    value!: ParameterValue;
 }
 
 class LeftExpression {
@@ -54,7 +54,7 @@ class RightExpression {
     expressionType: ExpressionType = ExpressionType.SCHEMA_COLUMN;
 
     @Type(() => ParameterExpression)
-    parameter?: ParameterExpression;
+    parameter!: ParameterExpression;
 }
 
 class FilterEditDataItem {
@@ -72,13 +72,13 @@ class FilterEditDataItem {
     comparisonType: ComparisonType = ComparisonType.BETWEEN;
 
     @Transform(({ value }) => DataValueType[value])
-    dataValueType: DataValueType = DataValueType.GUID;
+    dataValueType!: DataValueType;
 
     @Type(() => LeftExpression)
     leftExpression?: LeftExpression;
 
     @Type(() => RightExpression)
-    rightExpression?: RightExpression;
+    rightExpression!: RightExpression;
 }
 
 class SerializedFilterEditData {
@@ -102,7 +102,7 @@ export class Filter {
 
     @Type(() => SerializedFilterEditData)
     @Transform(({ value }) => serializedFilterEditDataConverter(value))
-    serializedFilterEditData?: SerializedFilterEditData;
+    serializedFilterEditData!: SerializedFilterEditData;
 }
 
 export class BpmnFilterParserHelper {
@@ -113,29 +113,52 @@ export class BpmnFilterParserHelper {
         this.filter = plainToClass(Filter, filterJson);
     }
 
+    private getRightExpressionDisplayValue(parameter: ParameterExpression): string {
+        let displayValue = '';
+        const dataValueType = DataValueType[parameter.dataValueType.toString() as keyof typeof DataValueType];
+
+        switch(dataValueType){
+            case DataValueType.BOOLEAN:
+                displayValue = parameter.value ? 'ДА' : 'НЕТ';
+                break;
+            case DataValueType.MAPPING:
+            default:
+                displayValue = parameter.value.displayValue;
+                break;
+        }
+
+        return displayValue;
+    }
+
     private getRenderSubFilter(key: string, subFilter: FilterEditDataItem): string {
         const comparisonKey = ComparisonType[subFilter.comparisonType];
+
         let innerHtml = `
 			<div class="${key}-child-conteiner">
                 <span id="leftExpression">${subFilter.leftExpressionCaption}</span>
                 <span id="comparationType">${ComparisonTypeResource[comparisonKey]}</span>
-                <span id="rightExpression">${subFilter.rightExpression!.parameter!.value!.displayValue}</span>
+                <span id="rightExpression">${this.getRightExpressionDisplayValue(subFilter.rightExpression.parameter)}</span>
             </div>
         `;
+
         return innerHtml;
+    }
+
+    public getRootSchemaName(): string {
+        return this.filter.serializedFilterEditData.rootSchemaName;
     }
 
     public getRenderFilter(): string {
         let childsInnerHtml = `
         `;
 
-        Object.entries(this.filter.serializedFilterEditData!.items).forEach(([key, subFilter]) => {
+        Object.entries(this.filter.serializedFilterEditData.items).forEach(([key, subFilter]) => {
             childsInnerHtml += this.getRenderSubFilter(key, subFilter);
         });
 
         let innerHtml = `
 			<div class="general-conteiner">
-                <span id="logicaloperation">${this.filter.serializedFilterEditData?.logicalOperation}</span>
+                <span id="logicaloperation">${this.filter.serializedFilterEditData.logicalOperation}</span>
                 <div class="vl"></div>
                 <div class="childs-conteiner">${childsInnerHtml}</div>
             </div>
