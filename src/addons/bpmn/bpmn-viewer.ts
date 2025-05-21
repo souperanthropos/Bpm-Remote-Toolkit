@@ -195,7 +195,7 @@ export class BpmnViewer {
 								</p>
 							</div>
 							<div id="parameters-display" style="display:none;">
-								<p><strong>Parameters: &nbsp;</strong></p>
+								<p><strong>Parameters:</strong></p>
 								<ul id="parameters-list"></ul>
 							</div>
 						</div>

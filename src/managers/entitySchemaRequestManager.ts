@@ -32,8 +32,12 @@ class ObjectInfoList {
     @Type(() => ObjectInfo)
     collection: ObjectInfo[] = [];
 
-    public getObjectInfo(objectName: string): ObjectInfo | undefined {
+    public getObjectInfoByName(objectName: string): ObjectInfo | undefined {
         return this.collection.find(o=>o.name === objectName);
+    }
+
+    public getObjectInfoByUid(uId: string): ObjectInfo | undefined {
+        return this.collection.find(o=>o.uId === uId);
     }
 }
 
@@ -161,7 +165,7 @@ export class EntitySchemaRequestManager {
             await this.getSchemasInfo();
         }
 
-        const objectInfo = this.objectInfoList?.getObjectInfo(objectName);
+        const objectInfo = this.objectInfoList?.getObjectInfoByName(objectName);
         if(objectInfo === undefined){
             return undefined;
         }
@@ -194,5 +198,18 @@ export class EntitySchemaRequestManager {
             return objectSchemaInfo.getColumnsInfo(uIds);
         }
         return [];
+    }
+
+    public async getObjectName(uId: string): Promise<string> {
+        if(this.objectInfoList === undefined){
+            await this.getSchemasInfo();
+        }
+
+        const objectInfo = this.objectInfoList?.getObjectInfoByUid(uId);
+        if(objectInfo){
+            return objectInfo.name;
+        }
+
+        return '';
     }
 }

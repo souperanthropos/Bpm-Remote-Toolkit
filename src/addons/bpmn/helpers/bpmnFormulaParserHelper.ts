@@ -1,27 +1,47 @@
-import { ParameterMapping, ProcessElement } from "../bpmn-viewer";
+import { ProcessSchema } from "../processSchema";
 
 export class BpmnFormulaParserHelper {
-    
-    constructor(private readonly originalFormula: string){
+    private formula: string = '';
+
+    constructor(private readonly processSchema: ProcessSchema,
+        private readonly elementCaptions: Record<string, string>
+    ){
 
     }
 
     private extractAllElementParameters(): string[] {
 		const regex = /\[Element:{[^}]+}\]\.\[Parameter:{[^}]+}\]/g;
-		const matches = this.originalFormula.match(regex);
+		const matches = this.formula.match(regex);
 		return matches || [];
 	}
 
+    private extractParameterValue(): string {
+        const regex = /Parameter:\s*{([^}]*)}/;
+        const match = this.formula.match(regex);
+        return match ? match[1] : '';
+    }
+
     private getDisplayValue(replacements: string[]): string {
-		const cleanedString = this.originalFormula.replace(/\[IsOwnerSchema:false\]\.\[IsSchema:false\]\./g, '');
+		const cleanedString = this.formula.replace(/\[IsOwnerSchema:false\]\.\[IsSchema:false\]\./g, '');
 		let index = 0;
 		return cleanedString.replace(/\[Element:{[^}]+}\]\.\[Parameter:{[^}]+}\]/g, () => {
 			return index < replacements.length ? replacements[index++] : `[Нет данных]`;
 		});
 	}
 
-    public getConditionFormulaDisplayValue(elementCaptions: Record<string, string>, parameterMappings: Record<string, ParameterMapping>, elementParameters: Record<string, ProcessElement>): string {
-        const extractedParameters = this.extractAllElementParameters();
+    public getParameterName(formula: string): string {
+        this.formula = formula;
+        const parameterUid = this.extractParameterValue();
+        const parameter = this.processSchema.Parameters.find(p=>p.UId === parameterUid);
+		if(parameter){
+            return parameter.Name;
+        }
+        return '';
+	}
+
+    public getConditionFormulaDisplayValue(formula: string): string {
+        this.formula = formula;
+        /*const extractedParameters = this.extractAllElementParameters();
         const formulaParts = new Array<string>();
         extractedParameters.forEach(param => {
             const parameterMapping = parameterMappings[param];
@@ -39,5 +59,7 @@ export class BpmnFormulaParserHelper {
             }
         });
         return this.getDisplayValue(formulaParts);
+        */
+       return '';
     }
 }

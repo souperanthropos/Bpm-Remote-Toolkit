@@ -3,8 +3,9 @@ import { Expose, plainToClass, Transform, Type } from "class-transformer";
 import { isNullOrWhitespace } from '../../constants';
 import { Resource } from './bpmn-viewer';
 import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
-import { AggregateFunctionTypeResource, ReadDataResultType, ReadDataResultTypeResource } from './helpers/processConstants';
+import { AggregateFunctionTypeResource, OrderDirectionTypeResource, ReadDataResultType, ReadDataResultTypeResource } from './helpers/processConstants';
 import { EntitySchemaRequestManager } from '../../managers/entitySchemaRequestManager';
+import { BpmnFormulaParserHelper } from './helpers/bpmnFormulaParserHelper';
 
 function convertToPoint(input: string): Point | undefined {
     if (!isNullOrWhitespace(input)) {
@@ -63,6 +64,11 @@ class Size {
     }
 }
 
+class ParameterValue {
+    @Expose({ name: 'GS2' })
+	Content?: string;
+}
+
 class ParameterMapping {
     @Expose({ name: 'BL1' })
     Namespace: string = '';
@@ -77,12 +83,7 @@ class ParameterMapping {
 
     @Expose({ name: 'GT1' })
     @Type(() => ParameterValue)
-    Value: {} = {};
-}
-
-class ParameterValue {
-    @Expose({ name: 'GS2' })
-	Content?: string;
+    Value!: ParameterValue;
 }
 
 class Parameter {
@@ -174,9 +175,10 @@ export interface ElementSettings {
 }
 
 export class ProcessSchemaWrapper {
-    private _processSchema: ProcessSchema;
-    private _elementCaptions: Record<string, string> = {};
-    private _elementSettingsCache: Record<string, ElementSettings> = {};
+    private readonly _processSchema: ProcessSchema;
+    private readonly _elementCaptions: Record<string, string> = {};
+    private readonly _elementSettingsCache: Record<string, ElementSettings> = {};
+    private readonly _formulaParser: BpmnFormulaParserHelper;
 
     public get processSchema(): ProcessSchema {
         return this._processSchema;
@@ -189,6 +191,7 @@ export class ProcessSchemaWrapper {
         this._processSchema = plainToClass(ProcessSchema, processMetadataJson.MetaData.Schema);
         this._elementCaptions = Resource.getElementsCaption(resource);
         this._elementSettingsCache = {};
+        this._formulaParser = new BpmnFormulaParserHelper(this._processSchema, this._elementCaptions);
     }
 
     public getElementCaption(elementName: string): string {
@@ -207,7 +210,7 @@ export class ProcessSchemaWrapper {
                     settings.script = element.BodyScript;
                     this._elementSettingsCache[elementName] = settings;
                     return settings;
-                default:
+                case 'Terrasoft.Core.Process.ProcessSchemaUserTask':
                     if(element.Parameters){
                         const filter = element.Parameters.find(p=>p.Name === 'DataSourceFilters');
                         if(filter && filter.Value.Content){
@@ -234,7 +237,13 @@ export class ProcessSchemaWrapper {
                         const orderInfo = element.Parameters.find(p=>p.Name === 'OrderInfo');
                         if(orderInfo && orderInfo.Value.Content)
                         {
-                            settings.parameters["Сортировка"] = orderInfo.Value.Content;
+                            let columnRendererList = '';
+                            const columns = orderInfo.Value.Content.split(';');
+                            columns.forEach(c=>{
+                                const columnParameters = c.split(':');
+                                columnRendererList+= `<span>${columnParameters[0]} - ${OrderDirectionTypeResource[columnParameters[1]]}</span><br>`;
+                            });
+                            settings.parameters["Сортировка"] = columnRendererList;
                         }
 
                         const entityColumnMetaPathes = element.Parameters.find(p=>p.Name === 'EntityColumnMetaPathes');
@@ -254,6 +263,25 @@ export class ProcessSchemaWrapper {
                             }else{
                                 settings.parameters["Колонки"] = 'Все';
                             }
+                        }
+
+                        const entitySchemaId = element.Parameters.find(p=>p.Name === 'EntitySchemaId');
+                        if(entitySchemaId && entitySchemaId.Value.Content){
+                            let content = entitySchemaId.Value.Content;
+                            if(this.requestManager){
+                                content = await this.requestManager.getObjectName(entitySchemaId.Value.Content);
+                            }
+                            settings.parameters["Объект привязки"] = content;
+                        }
+
+                        const entityId = element.Parameters.find(p=>p.Name === 'EntityId');
+                        if(entityId && entityId.Value.Content){
+                            const parameterName = this._formulaParser.getParameterName(entityId.Value.Content);
+                            let content = entityId.Value.Content;
+                            if(!isNullOrWhitespace(parameterName)){
+                                content = '[#' + parameterName + '#]';
+                            }
+                            settings.parameters["Запись привязки"] = content;
                         }
                     }
                     this._elementSettingsCache[elementName] = settings;
