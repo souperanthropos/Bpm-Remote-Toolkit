@@ -125,14 +125,36 @@ body {
 	/* Выравнивание элементов слева */
 }
 
-#parameters-list {
-	width: 100%;
-	margin-top: 0;
-	padding-left: 5px;
-	margin-left: 5px;
-	list-style-type: none;
-	/* Если нужно убрать маркеры списка */
-}
+  #parameters-list {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+  }
+
+  #parameters-list li {
+    display: contents; /* Позволяет элементам быть частью сетки */
+  }
+
+  .key {
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #ccc;
+	border-radius: 5px;
+    background-color: #f0f0f0;
+    text-align: left;
+	display: flex;
+	align-items: center;
+  }
+
+  .value {
+    padding: 5px;
+    border: 1px solid #ccc;
+	border-radius: 5px;
+    background-color: #f9f9f9;
+    text-align: left;
+  }
 
 pre {
 	max-height: 430px;
@@ -173,4 +195,31 @@ pre[class*="language-"] {
 
 #logicaloperation {
     align-self: center;
+}
+
+#loading-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

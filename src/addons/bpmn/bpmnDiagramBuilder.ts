@@ -11,7 +11,7 @@ export class BpmnDiagramBuilder {
     private diagram: any;
     private elements: Record<string, any> = {};
 
-    constructor(moddle: any, process: any) {
+    constructor(private readonly processSchemaWrapper: ProcessSchemaWrapper, moddle: any, process: any) {
         this.moddle = moddle;
         this.process = process;
         this.diagram = this.moddle.create('bpmndi:BPMNDiagram', {
@@ -123,7 +123,7 @@ export class BpmnDiagramBuilder {
             let additionalAttributes: Record<string, any> = {
                 customProperty: `${element.Name}`
             };
-            let elementCaption = ProcessSchemaWrapper.getElementCaption(element.Name);
+            let elementCaption = this.processSchemaWrapper.getElementCaption(element.Name);
 
             switch (element.Namespace) {
                 case 'Terrasoft.Core.Process.ProcessSchemaStartEvent':

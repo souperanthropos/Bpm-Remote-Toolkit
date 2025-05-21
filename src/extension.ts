@@ -12,7 +12,7 @@ import { BpmToolkit } from './bpmtoolkit';
 import { ExtensionManager } from './managers/extensionManager';
 import { PackageSettings } from './common/packageSettings';
 import { BpmnViewer } from './addons/bpmn/bpmn-viewer';
-import { ConnectionConfig } from './managers/entitySchemaRequestManager';
+import { ConnectionConfig, EntitySchemaRequestManager } from './managers/entitySchemaRequestManager';
 
 const bpmPackagesPattern = `${hash()}_bpmPackages`;
 
@@ -171,6 +171,8 @@ export function activate(context: vscode.ExtensionContext) {
 	const packageProvider = new PackageProvider();
 	const packageDeploymentProvider = new PackageDeploymentProvider();
 
+	let requestManager: EntitySchemaRequestManager;
+
 	vscode.window.registerTreeDataProvider('bpmEnvironments', environmentsProvider);
 
 	vscode.window.createTreeView('packagesExplorer', {
@@ -252,17 +254,21 @@ export function activate(context: vscode.ExtensionContext) {
 								}
 							}
 							context.globalState.update('bpmnViewerConnectionConfig1', conectionConfig);
+							requestManager = new EntitySchemaRequestManager(conectionConfig);
 						}
 					}
-				}
-				);
+				});
 		}
 	});
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand('bpmnViewer.startRender', async (document: vscode.TextDocument) => {
 			if(document){
-				const bpmnViewer = new BpmnViewer(context, document);
+				const conectionConfig = context.globalState.get<ConnectionConfig>('bpmnViewerConnectionConfig1');
+				if(conectionConfig && requestManager === undefined){
+					requestManager = new EntitySchemaRequestManager(conectionConfig);
+				}
+				const bpmnViewer = new BpmnViewer(context, document, requestManager);
 				await bpmnViewer.renderDiagram();
 			}
 		})

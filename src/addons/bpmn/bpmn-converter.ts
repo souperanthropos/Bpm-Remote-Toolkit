@@ -1,12 +1,14 @@
 import { Logger } from "../../common/logger";
 import { BpmnDiagramBuilder } from "./bpmnDiagramBuilder";
-import { ProcessSchema } from "./processSchema";
+import { ProcessSchemaWrapper } from "./processSchema";
 
 export class BpmnConverter {
 
-    public static async convertToBpmn(processSchema: ProcessSchema): Promise<string> {
+    public static async convertToBpmn(processSchemaWrapper: ProcessSchemaWrapper): Promise<string> {
         var BpmnModdle = require('bpmn-moddle');
         var moddle = new BpmnModdle();
+
+        const processSchema = processSchemaWrapper.processSchema;
     
         // Создаем процесс
         const process = moddle.create('bpmn:Process', {
@@ -15,7 +17,7 @@ export class BpmnConverter {
         });
     
         // Создаем билдера диаграмм
-        const diagramBuilder = new BpmnDiagramBuilder(moddle, process);
+        const diagramBuilder = new BpmnDiagramBuilder(processSchemaWrapper, moddle, process);
     
         // Добавляем элементы в диаграмму
         diagramBuilder.addElements(processSchema.Elements);

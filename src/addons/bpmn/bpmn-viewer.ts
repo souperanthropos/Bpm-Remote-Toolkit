@@ -3,10 +3,8 @@ import path from 'path';
 import { getDirectoryName, getNonce, isNullOrWhitespace } from '../../constants';
 import { BpmnConverter } from './bpmn-converter';
 import { parseStringPromise } from 'xml2js';
-import { BpmnFormulaParserHelper } from './helpers/bpmnFormulaParserHelper';
-import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
-import { ConnectionConfig, EntitySchemaRequestManager } from '../../managers/entitySchemaRequestManager';
 import { ProcessSchemaWrapper } from './processSchema';
+import { EntitySchemaRequestManager } from '../../managers/entitySchemaRequestManager';
 
 export interface ParameterMapping {
 	elementName: string;
@@ -85,12 +83,13 @@ export class Resource {
 export class BpmnViewer {
 	private readonly _webviewPanel: vscode.WebviewPanel;
 	private groupedResources: Resource = {};
-	private elementParameters: Record<string, ProcessElement> = {};
+	private processSchemaWrapper?: ProcessSchemaWrapper;
 	private processMetadata = '';
 	private sourceXml = '';
 
 	constructor(private readonly _context: vscode.ExtensionContext,
-		private readonly document: vscode.TextDocument
+		private readonly document: vscode.TextDocument,
+		private readonly requestManager?: EntitySchemaRequestManager
 	) {
 		this._webviewPanel = vscode.window.createWebviewPanel(
 			'bpmnViewer',
@@ -101,24 +100,29 @@ export class BpmnViewer {
 
 		this._webviewPanel.webview.html = this.getHtmlForWebview(this._webviewPanel.webview);
 
-		this._webviewPanel.webview.onDidReceiveMessage(e => {
+		this._webviewPanel.webview.onDidReceiveMessage(async e => {
 			if (e.type === 'ready') {
-				this.postMessage(this._webviewPanel, 'init', {
+				/*this.postMessage(this._webviewPanel, 'init', {
 					content: this.sourceXml,
 					editable: true,
-				});
+				});*/
 			}
 			if(e.type === 'clicked-element'){
 				if(e.elementName){
-					const elementCaption = ProcessSchemaWrapper.getElementCaption(e.elementName);
-					const settings = ProcessSchemaWrapper.getElementSettings(e.elementName);
-					this.postMessage(this._webviewPanel, 'show-element-caption', {
-						content: {
-							name: e.elementName,
-							caption: elementCaption,
-							settings: settings
-						}
-					});
+					const elementCaption = this.processSchemaWrapper!.getElementCaption(e.elementName);
+					this.postMessage(this._webviewPanel, 'show-loadingMask');
+					try{
+						const settings = await this.processSchemaWrapper!.getElementSettings(e.elementName);
+						this.postMessage(this._webviewPanel, 'show-element-caption', {
+							content: {
+								name: e.elementName,
+								caption: elementCaption,
+								settings: settings
+							}
+						});
+					}catch(e){
+						this.postMessage(this._webviewPanel, 'hide-loadingMask');
+					}
 				}
 			}
 		});
@@ -166,6 +170,9 @@ export class BpmnViewer {
             <title>BPMN Editor</title>
           </head>
           <body>
+		  	<div id="loading-mask" style="display:none;">
+				<div class="loader"></div>
+			</div>
             <div id="canvas"></div>
 
 			<div id="propertyModal" class="modal" style="display:none;">
@@ -204,77 +211,6 @@ export class BpmnViewer {
           </html>`;
 	}
 
-	/*private processElementParameters(jsonData: any) {
-		this.elementParameters = {};
-		this.parameterMappings = {};
-
-		if(jsonData.MetaData?.Schema?.BK15) {
-			jsonData.MetaData.Schema.BK15.forEach((item: any) => {
-				if (!this.parameterMappings[item.GT2]) {
-					this.parameterMappings[item.GT2] = { elementName: item.A2, parameterId: item.GT3 };
-				}
-			});
-		}
-	
-		if (jsonData.MetaData?.Schema?.BK4) {
-			jsonData.MetaData.Schema.BK4.forEach((item: any) => {
-				const elementName = item.A2 as string;
-				if(elementName.includes('FormulaTask')){
-					if (!this.elementParameters[elementName]) {
-						this.elementParameters[elementName] = { parameters: {} };
-					}
-					//HS1 = 'a1caa860-48dc-4984-a1c0-de054f93c082'
-					//CH1 = 'true'
-				}else if(elementName.includes('ConditionalSequenceFlow')){
-					if(item.CI3 !== undefined && item.CI3 !== "null"){
-						if (!this.elementParameters[elementName]) {
-							this.elementParameters[elementName] = { parameters: {} };
-						}
-						const parameterName = 'Condition';
-						const elementParameterCaption = 'Условие перехода';
-						const formulaParser = new BpmnFormulaParserHelper(item.CI3);
-						const conditionValue = formulaParser.getConditionFormulaDisplayValue(this.elementCaptions, this.parameterMappings, this.elementParameters);
-						this.elementParameters[elementName].condition = conditionValue;
-						this.elementParameters[elementName].parameters[parameterName] = { 
-							Uid: item.UId,
-							Caption: elementParameterCaption, 
-							DisplayValue: item.CI3
-						};
-					}
-				}else if(item.BP2){
-					item.BP2.forEach((subItem: any) => {
-						const parameterName = subItem.A2;
-						const parameterValue = subItem.L8.GS2 ?? "";
-
-						if (!this.elementParameters[elementName]) {
-							this.elementParameters[elementName] = { parameters: {} };
-						}
-						if(parameterName === 'DataSourceFilters'){
-							if(!isNullOrWhitespace(parameterValue)){
-								const filterParser = new BpmnFilterParserHelper(parameterValue);
-								this.elementParameters[elementName].filter = filterParser.getFilterDisplayValue();
-							}
-						}else{
-							const elementParameterCaption = Resource.getParametersByElement(
-								this.groupedResources, 
-								['BaseElements', elementName, 'Parameters', parameterName, 'Caption']
-							) as string;
-							const elementParameterValue = Resource.getParametersByElement(
-								this.groupedResources, 
-								['BaseElements', elementName, 'Parameters', parameterName, 'DisplayValue']
-							) as string;
-							this.elementParameters[elementName].parameters[parameterName] = { 
-								Uid: subItem.UId,
-								Caption: elementParameterCaption, 
-								DisplayValue: elementParameterValue ?? parameterValue 
-							};
-						}
-					});
-				}
-			});
-		}
-	}	*/
-
 	private getProcessResourceFileUri(processPath: string): vscode.Uri {
 		const processDirectoryPath = path.dirname(processPath);
 		const processName = getDirectoryName(processDirectoryPath);
@@ -304,25 +240,15 @@ export class BpmnViewer {
 	public async renderDiagram(){
 		await this.readResourceFromFile(this.document.uri.path);
 		this.processMetadata = this.document.getText();
-
-		ProcessSchemaWrapper.setMetadata(this.processMetadata, this.groupedResources["BaseElements"] as Resource);
-		
-		this.sourceXml = await BpmnConverter.convertToBpmn(ProcessSchemaWrapper.processSchema);
+		this.processSchemaWrapper = new ProcessSchemaWrapper(
+			this.processMetadata, 
+			this.groupedResources["BaseElements"] as Resource, 
+			this.requestManager
+		);
+		this.sourceXml = await BpmnConverter.convertToBpmn(this.processSchemaWrapper);
 		this.postMessage(this._webviewPanel, 'update', {
 			content: this.sourceXml,
 			editable: true,
 		});
-
-		const conectionConfig = this._context.globalState.get<ConnectionConfig>('bpmnViewerConnectionConfig1');
-		if(conectionConfig){
-			const requestManager = new EntitySchemaRequestManager(conectionConfig);
-			const data = await requestManager.getSchemasInfo();
-			const schemaData = await requestManager.getSchemaData(
-				{ 
-					uId: "ecb16f49-82c6-4d4c-8b4c-bc3e2b41c29e", 
-					packageUId: "94158239-125e-480f-a6a1-d3833516c0f8" 
-				}
-			);
-		}
 	}
 }

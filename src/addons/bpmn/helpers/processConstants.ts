@@ -170,6 +170,21 @@ export enum AggregateFunctionType {
     Maximum = 4
 }
 
+//Name:0:1 - отключена
+//Name:1:1 - по возрастанию
+//Name:2:1 - по убыванию
+export enum OrderDirectionType {
+    None = 0,
+    Ascending = 1,
+    Descending = 2
+}
+
+export const OrderDirectionTypeResource: Record<string, string> = {
+    [OrderDirectionType.None]: 'Отключена',
+    [OrderDirectionType.Ascending]: 'По возрастанию',
+    [OrderDirectionType.Descending]: 'По убыванию'
+};
+
 export const AggregateFunctionTypeResource: Record<string, string> = {
     [AggregateFunctionType.Count]: 'количество записей',
     [AggregateFunctionType.Sum]: 'сумма',

@@ -1,4 +1,74 @@
+import { plainToClass, Transform, Type } from "class-transformer";
 import { isNullOrWhitespace } from "../constants";
+
+function convertToColumnsData(input: any): ColumnInfo[] {
+    const columns: ColumnInfo[] = [];
+
+    if (typeof input === 'object') {
+        Object.entries(input).forEach(([key, value]) => {
+            if(value && typeof value === 'object'){
+                Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+                    columns.push(plainToClass(ColumnInfo, nestedValue));
+                });
+            }
+        });
+    }
+    
+    return columns;
+}
+
+class ObjectInfo {
+    isVirtual: boolean = false;
+    id: string = '';
+    name: string = '';
+    caption: string = '';
+    uId: string = '';
+    packageUId: string = '';
+    parentUId: string = '';
+    extendParent: boolean = false;
+}
+
+class ObjectInfoList {
+    @Type(() => ObjectInfo)
+    collection: ObjectInfo[] = [];
+
+    public getObjectInfo(objectName: string): ObjectInfo | undefined {
+        return this.collection.find(o=>o.name === objectName);
+    }
+}
+
+class ColumnInfo {
+    uId: string = '';
+    name: string = '';
+    caption: Record<string,string> = {};
+}
+
+class ObjectSchemaInfo {
+    @Type(() => ColumnInfo)
+    @Transform(({ value }) => convertToColumnsData(value))
+    columns: ColumnInfo[] = [];
+
+    public getColumnsInfo(uIds: string[]): string[] {
+        const columnsInfo: string[] = [];
+
+        uIds.forEach(uId =>{
+            const columnInfo = this.columns.find(o=>o.uId === uId);
+            if(columnInfo){
+                columnsInfo.push(columnInfo.caption['ru-RU']);
+            }
+        });
+        
+        return columnsInfo;
+    }
+}
+
+class ObjectSchemaInfoResult {
+    @Type(() => ObjectSchemaInfo)
+    schema?: ObjectSchemaInfo;
+
+    success: boolean = false;
+    maxEntitySchemaNameLength: number = 0;
+}
 
 export interface ConnectionConfig {
     host: string;
@@ -19,6 +89,8 @@ export class EntitySchemaRequestManager {
 
     private tokenValue: string = '';
     private cookie: string = '';
+
+    private objectInfoList?: ObjectInfoList;
 
     constructor(private readonly config: ConnectionConfig){
 
@@ -59,7 +131,7 @@ export class EntitySchemaRequestManager {
         });
     }
 
-    public async getSchemasInfo(): Promise<string> {
+    private async getSchemasInfo() {
         if(isNullOrWhitespace(this.tokenValue)){
             await this.getToken();
         }
@@ -76,21 +148,32 @@ export class EntitySchemaRequestManager {
             throw new Error(`Ошибка: ${response.status}`);
         }
 
-        return await response.text();
+        const body = await response.text();
+        this.objectInfoList = plainToClass(ObjectInfoList, JSON.parse(body));
     }
 
-    public async getSchemaData(request: EntitySchemaRequest): Promise<string> {
+    private async getObjectSchemaInfo(objectName: string): Promise<ObjectSchemaInfo | undefined> {
         if(isNullOrWhitespace(this.tokenValue)){
             await this.getToken();
         }
+
+        if(this.objectInfoList === undefined){
+            await this.getSchemasInfo();
+        }
+
+        const objectInfo = this.objectInfoList?.getObjectInfo(objectName);
+        if(objectInfo === undefined){
+            return undefined;
+        }
+
         const url = this.config.host + this.entitySchemaRequestPath;
         const additionalHeaders = { 
             "Cookie": this.cookie, 
             "BPMCSRF": this.tokenValue 
         };
         const body = JSON.stringify({
-            uId: request.uId,
-            packageUId: request.packageUId
+            uId: objectInfo.uId,
+            packageUId: objectInfo.packageUId
         });
         const response = await this.sendPostRequest(url, additionalHeaders, body);
 
@@ -100,6 +183,16 @@ export class EntitySchemaRequestManager {
             throw new Error(`Ошибка: ${response.status}`);
         }
 
-        return await response.text();
+        const responseBody = await response.text();
+        const objectSchemaInfoResult = plainToClass(ObjectSchemaInfoResult, JSON.parse(responseBody));
+        return objectSchemaInfoResult.schema;
+    }
+
+    public async getColumnNameList(objectName: string, uIds: string[]): Promise<string[]> {
+        const objectSchemaInfo = await this.getObjectSchemaInfo(objectName);
+        if(objectSchemaInfo){
+            return objectSchemaInfo.getColumnsInfo(uIds);
+        }
+        return [];
     }
 }

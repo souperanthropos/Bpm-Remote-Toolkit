@@ -133,6 +133,14 @@ window.addEventListener('message', async (event) => {
 			break;
 		}
 
+		case 'show-loadingMask':
+			document.getElementById('loading-mask').style.display = 'flex';
+			return;
+
+		case 'hide-loadingMask':
+			document.getElementById('loading-mask').style.display = 'none';
+			return;
+
 		case 'focusCanvas':
 			viewer.get('canvas').focus();
 			return;
@@ -140,7 +148,7 @@ window.addEventListener('message', async (event) => {
 });
 
 function render(settings) {
-
+	document.getElementById('loading-mask').style.display = 'none';
 	if(settings.script){
 		document.getElementById("code-block").innerHTML = Prism.highlight(settings.script, Prism.languages.csharp, 'csharp');
 		document.getElementById("code-block-display").style.display = "flex";
@@ -166,7 +174,7 @@ function render(settings) {
 			const param = settings.parameters[key];
 			const listItem = document.createElement("li");
 			listItem.innerHTML = `
-				<span>${key}: ${param}</span>
+				<span class="key">${key}: </span><div class="value">${param}</div></li>
 			`;
 			parametersList.appendChild(listItem);
 		});

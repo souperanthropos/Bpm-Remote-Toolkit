@@ -4,6 +4,7 @@ import { isNullOrWhitespace } from '../../constants';
 import { Resource } from './bpmn-viewer';
 import { BpmnFilterParserHelper } from './helpers/bpmnFilterParserHelper';
 import { AggregateFunctionTypeResource, ReadDataResultType, ReadDataResultTypeResource } from './helpers/processConstants';
+import { EntitySchemaRequestManager } from '../../managers/entitySchemaRequestManager';
 
 function convertToPoint(input: string): Point | undefined {
     if (!isNullOrWhitespace(input)) {
@@ -81,7 +82,7 @@ class ParameterMapping {
 
 class ParameterValue {
     @Expose({ name: 'GS2' })
-	Content: string = '';
+	Content?: string;
 }
 
 class Parameter {
@@ -95,7 +96,7 @@ class Parameter {
 
     @Expose({ name: 'L8' })
     @Type(() => ParameterValue)
-    Value?: ParameterValue;
+    Value!: ParameterValue;
 }
 
 export class Element {
@@ -173,26 +174,28 @@ export interface ElementSettings {
 }
 
 export class ProcessSchemaWrapper {
-    private static _processSchema: ProcessSchema;
-    private static _elementCaptions: Record<string, string> = {};
-    private static _elementSettingsCache: Record<string, ElementSettings> = {};
+    private _processSchema: ProcessSchema;
+    private _elementCaptions: Record<string, string> = {};
+    private _elementSettingsCache: Record<string, ElementSettings> = {};
 
-    public static get processSchema(): ProcessSchema {
+    public get processSchema(): ProcessSchema {
         return this._processSchema;
     }
 
-    public static setMetadata(metadata: string, resource: Resource){
+    public constructor(metadata: string, resource: Resource,
+        private readonly requestManager?: EntitySchemaRequestManager
+    ){
         const processMetadataJson = JSON.parse(metadata);
         this._processSchema = plainToClass(ProcessSchema, processMetadataJson.MetaData.Schema);
         this._elementCaptions = Resource.getElementsCaption(resource);
         this._elementSettingsCache = {};
     }
 
-    public static getElementCaption(elementName: string): string {
+    public getElementCaption(elementName: string): string {
         return this._elementCaptions[elementName];
     }
 
-    public static getElementSettings(elementName: string): ElementSettings {
+    public async getElementSettings(elementName: string): Promise<ElementSettings> {
         if(this._elementSettingsCache[elementName]){
             return this._elementSettingsCache[elementName];
         }
@@ -207,26 +210,54 @@ export class ProcessSchemaWrapper {
                 default:
                     if(element.Parameters){
                         const filter = element.Parameters.find(p=>p.Name === 'DataSourceFilters');
-                        if(filter){
-                            const filterHelper = new BpmnFilterParserHelper(filter.Value!.Content);
+                        if(filter && filter.Value.Content){
+                            const filterHelper = new BpmnFilterParserHelper(filter.Value.Content);
                             settings.parameters["Объект"] = filterHelper.getRootSchemaName();
                             settings.filter = filterHelper.getRenderFilter();
                         }
+
                         const readDataResult = element.Parameters.find(p=>p.Name === 'ResultType');
-                        if(readDataResult){
-                            let displayValue = ReadDataResultTypeResource[readDataResult.Value!.Content];
-                            const readDataResultType = Number(readDataResult.Value!.Content);
+                        if(readDataResult && readDataResult.Value.Content){
+                            let displayValue = ReadDataResultTypeResource[readDataResult.Value.Content];
+                            const readDataResultType = Number(readDataResult.Value.Content);
 
                             if(readDataResultType === ReadDataResultType.FUNCTION){
                                 const functionType = element.Parameters.find(p=>p.Name === 'FunctionType');
-                                if(functionType){
-                                    displayValue += ': ' + AggregateFunctionTypeResource[functionType.Value!.Content];
+                                if(functionType && functionType.Value.Content){
+                                    displayValue += ': ' + AggregateFunctionTypeResource[functionType.Value.Content];
                                 }
                             }
 
                             settings.parameters["Режим чтения"] = displayValue;
                         }
+
+                        const orderInfo = element.Parameters.find(p=>p.Name === 'OrderInfo');
+                        if(orderInfo && orderInfo.Value.Content)
+                        {
+                            settings.parameters["Сортировка"] = orderInfo.Value.Content;
+                        }
+
+                        const entityColumnMetaPathes = element.Parameters.find(p=>p.Name === 'EntityColumnMetaPathes');
+                        if(entityColumnMetaPathes && entityColumnMetaPathes.Value.Content){
+                            const columnUids = entityColumnMetaPathes.Value.Content.split(';');
+                            if(columnUids.length > 0){
+                                if(this.requestManager){
+                                    const columnNameList = await this.requestManager.getColumnNameList(settings.parameters["Объект"], columnUids);
+                                    let columnNameRendererList = '';
+                                    columnNameList.forEach(c=>{
+                                        columnNameRendererList+= `<span>${c}</span><br>`;
+                                    });
+                                    settings.parameters["Колонки"] = columnNameRendererList;
+                                }else{
+                                    settings.parameters["Колонки"] = entityColumnMetaPathes.Value.Content;
+                                }
+                            }else{
+                                settings.parameters["Колонки"] = 'Все';
+                            }
+                        }
                     }
+                    this._elementSettingsCache[elementName] = settings;
+                    break;
             }
         }
         return settings;
