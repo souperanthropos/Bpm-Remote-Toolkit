@@ -112,6 +112,9 @@ export class Element {
     @Expose({ name: 'CH1' })
 	BodyScript: string = '';
 
+    @Expose({ name: 'CI3' })
+	Condition: string = '';
+
     @Expose({ name: 'BL3' })
     @Type(() => Point)
     @Transform(({ value }) => convertToPoint(value), { toClassOnly: true })
@@ -167,7 +170,6 @@ export class ProcessSchema {
 }
 
 export interface ElementSettings {
-    //parameters?: Record<string, ElementParameter>;
     script?: string;
     condition?: string;
     filter?: string;
@@ -191,7 +193,7 @@ export class ProcessSchemaWrapper {
         this._processSchema = plainToClass(ProcessSchema, processMetadataJson.MetaData.Schema);
         this._elementCaptions = Resource.getElementsCaption(resource);
         this._elementSettingsCache = {};
-        this._formulaParser = new BpmnFormulaParserHelper(this._processSchema, this._elementCaptions);
+        this._formulaParser = new BpmnFormulaParserHelper(this._processSchema, resource);
     }
 
     public getElementCaption(elementName: string): string {
@@ -209,7 +211,10 @@ export class ProcessSchemaWrapper {
                 case 'Terrasoft.Core.Process.ProcessSchemaScriptTask':
                     settings.script = element.BodyScript;
                     this._elementSettingsCache[elementName] = settings;
-                    return settings;
+                    break;
+                case 'Terrasoft.Core.Process.ProcessSchemaConditionalFlow':
+                    settings.parameters["Условие"] = this._formulaParser.getFormulaDisplayValue(element.Condition);
+                    break;
                 case 'Terrasoft.Core.Process.ProcessSchemaUserTask':
                     if(element.Parameters){
                         const filter = element.Parameters.find(p=>p.Name === 'DataSourceFilters');
@@ -276,12 +281,7 @@ export class ProcessSchemaWrapper {
 
                         const entityId = element.Parameters.find(p=>p.Name === 'EntityId');
                         if(entityId && entityId.Value.Content){
-                            const parameterName = this._formulaParser.getParameterName(entityId.Value.Content);
-                            let content = entityId.Value.Content;
-                            if(!isNullOrWhitespace(parameterName)){
-                                content = '[#' + parameterName + '#]';
-                            }
-                            settings.parameters["Запись привязки"] = content;
+                            settings.parameters["Запись привязки"] = this._formulaParser.getFormulaDisplayValue(entityId.Value.Content);
                         }
                     }
                     this._elementSettingsCache[elementName] = settings;

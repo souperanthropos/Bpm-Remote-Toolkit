@@ -37,7 +37,7 @@ export class Resource {
 		});
 	}*/
 
-	public static getParametersByElement(resources: Resource, path: string[]): Resource | string | undefined {
+	private static getParametersByElement(resources: Resource, path: string[]): Resource | string | undefined {
 		return path.reduce((acc: Resource | undefined, key) => {
 			if (typeof acc === "object" && acc !== null && key in acc) {
 				return acc[key] as Resource;
@@ -57,6 +57,10 @@ export class Resource {
 			});
 		}
 		return elementParameters;
+	}
+
+	public static getParameterCaption(resources: Resource, elementName: string, parameterName: string): string {
+		return Resource.getParametersByElement(resources, [elementName, 'Parameters', parameterName, 'Caption']) as string;
 	}
 
     public static getElementsCaption(resources: Resource, elementName: string = ''): Record<string, string> {
