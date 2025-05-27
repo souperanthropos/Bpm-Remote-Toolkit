@@ -11,7 +11,7 @@ export interface enviromentSettings {
 }
 
 export interface queueItem {
-	package: PackageSettings;
+	package?: PackageSettings;
 	isRunning: boolean;
 	Completed: { isSuccess: boolean } | null
 }
