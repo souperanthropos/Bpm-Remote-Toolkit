@@ -181,6 +181,9 @@ export class PackageDeploymentManager {
             if (!await this._gitHelper.checkBranch(this._selectedServer!.gitBranchName!)){
                 break;
             }
+            if(!element.package){
+                continue;
+            }
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
