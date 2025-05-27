@@ -34,6 +34,7 @@ export class ExtensionManager {
 	constructor() {
 		this.registerEvents();
 		this.initializeProperties();
+		this.initializeEnvironments();
 		this.fileManager = new FileManager();
 		this.terminalWrapper = new PowerShellWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
 	}
@@ -42,8 +43,6 @@ export class ExtensionManager {
 		vscode.workspace.onDidChangeConfiguration((configEvent) =>{
 			this.initializeProperties(configEvent);
 			this.initializeEnvironments();
-			vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
-			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 		});
 	}
 
@@ -62,6 +61,8 @@ export class ExtensionManager {
 		} else {
 			vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 		}
+		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
+		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 	}
 
 	private initializeProperties(configEvent?: vscode.ConfigurationChangeEvent) {

@@ -41,13 +41,24 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 	}
 
     getTreeItem(element: queueItem): vscode.TreeItem {
-		var treeItem = new queueTreeItem(
-			element.package.packageFileName,
-            element.package,
-			element.isRunning,
-			vscode.TreeItemCollapsibleState.None
-		);
-		treeItem.tooltip = element.package.targetFolderPath;
+		let treeItem: queueTreeItem;
+		if(!element.package){
+			treeItem = new queueTreeItem(
+				'packages.zip',
+				false,
+				vscode.TreeItemCollapsibleState.Expanded
+			);
+			treeItem.tooltip = 'packages.zip';
+		}else{
+			treeItem = new queueTreeItem(
+				element.package.packageFileName,
+				element.isRunning,
+				vscode.TreeItemCollapsibleState.None,
+				element.package
+			);
+			treeItem.tooltip = element.package.targetFolderPath;
+		}
+
 		if(element.isRunning){
 			treeItem.iconPath = new vscode.ThemeIcon('loading~spin');
 		}else{
@@ -64,12 +75,18 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 		return treeItem;
 	}
 
-    getChildren(): Thenable<queueItem[]> {
-		if (!this._queueItems) {
+    getChildren(element?: queueItem): Thenable<queueItem[]> {
+		if (!element && this._queueItems.length === 0) {
 			return Promise.resolve([]);
 		}
-
-		return Promise.resolve(this._queueItems);
+		if(element || this._queueItems.length === 1){
+			return Promise.resolve(this._queueItems);
+		}
+		return Promise.resolve([{
+			package: undefined,
+			isRunning: false,
+			Completed: null
+		}]);
 	}
 
 	private itemMove(element: queueItem, newIndex: number) {
@@ -82,9 +99,9 @@ export class PackageDeploymentProvider implements vscode.TreeDataProvider<queueI
 export class queueTreeItem extends vscode.TreeItem {
 	constructor(
 		public readonly name: string,
-        public readonly pkg: PackageSettings,
 		public readonly isRunning: boolean,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+		public readonly pkg?: PackageSettings,
 		public contextValue: string = 'queueTreeItem'
 	) {
 		super(name, collapsibleState);
