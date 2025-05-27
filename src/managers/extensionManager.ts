@@ -10,7 +10,6 @@ export class ExtensionManager {
 	private _environments: enviromentSettings[] = [];
 	private _selectedUtility: string = 'auto';
 	private _autoUpdateTime = false;
-	private _packToZip = false;
 
 	public readonly terminalWrapper: TerminalWrapper;
 
@@ -24,10 +23,6 @@ export class ExtensionManager {
 	
 	public get autoUpdateTime(): boolean {
 		return this._autoUpdateTime;
-	}
-
-	public get packToZip(): boolean {
-		return this._packToZip;
 	}
 
 	public get packageDirPath(): string {
@@ -73,7 +68,6 @@ export class ExtensionManager {
 		const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
 		this._selectedUtility = generalConfig.get<string>('utility')!;
 		this._autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-		this._packToZip = generalConfig.get<boolean>('packToZip')!;
 
 		if(configEvent && configEvent.affectsConfiguration('bpmtoolkit.general.utility')){
 			if (this.onSelectedUtilityChanged) {
