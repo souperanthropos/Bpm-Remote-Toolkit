@@ -71,7 +71,7 @@ export class PackageDeploymentManager {
         );
     }
 
-    public async pushPackage(settings: PackageSettings): Promise<boolean>  {
+    public async pushPackage(): Promise<boolean>  {
         if (this._selectedServer === null) {
             Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
@@ -169,23 +169,6 @@ export class PackageDeploymentManager {
     }
 
     public async startDeployment() {
-        let ignorePushError = false;
-        let abortDeployment = false;
-        if(this._queueItems.length > 1){
-            const options: vscode.MessageOptions = { modal: true };
-            await vscode.window
-                .showInformationMessage('Ignore package installation errors?', options, "Yes", "No")
-                .then(answer => {
-                    if (answer === "Yes") {
-                        ignorePushError = true;
-                    }else if (answer === undefined){
-                        abortDeployment = true;
-                    }
-                });
-        }
-        if(abortDeployment){
-            return;
-        }
         await this.extensionManager.clearPackageFolder();
         await this.extensionManager.clearExecuteLogs();
         const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -203,28 +186,38 @@ export class PackageDeploymentManager {
             statusBarItem.text = '$(loading~spin) Create package...';
             await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.packageFileName}.`);
             var result = await this.createPackage(element.package);
+            element.isRunning = false;
+            element.Completed = { isSuccess: result };
+            vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             if (!result) {
-                element.isRunning = false;
-                element.Completed = { isSuccess: false };
-                vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                 break;
-            } else {
-                statusBarItem.text = '$(loading~spin) Sending package...';
-                await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.packageFileName}.`);
-                result = await this.pushPackage(element.package);
-                element.isRunning = false;
-                if (!result) {
-                    element.Completed = { isSuccess: false };
-                    vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
-                    if (!ignorePushError) {
-                        break;
-                    }
-                } else {
-                    element.Completed = { isSuccess: true };
-                    vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
-                }
             }
         }
+
+        statusBarItem.text = '$(loading~spin) Sending package...';
+        await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading`);
+
+        for await (const element of this._queueItems) {
+            if (!await this._gitHelper.checkBranch(this._selectedServer!.gitBranchName!)){
+                break;
+            }
+            element.isRunning = true;
+        }
+        
+        vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+        
+        result = await this.pushPackage();
+
+        for await (const element of this._queueItems) {
+            if (!await this._gitHelper.checkBranch(this._selectedServer!.gitBranchName!)){
+                break;
+            }
+            element.isRunning = false;
+            element.Completed = { isSuccess: result };
+        }
+
+        vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+        
         const currentBranch = this._gitHelper.getCurrentBranch();
         var currentEnviroment = this.extensionManager.environments?.filter(e => e.gitBranchName === currentBranch)[0];
         if(currentEnviroment && !isNullOrWhitespace(currentEnviroment.postRunCommand)){

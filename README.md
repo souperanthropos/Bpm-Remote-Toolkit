@@ -47,7 +47,6 @@ This extension contributes the following settings:
 
 * `bpmtoolkit.general.utility`: Select utility: **clio** (for Creatio), **ubs** (for BPMSoft), or **auto** (for automatic detection of the utility based on the path).
 * `bpmtoolkit.general.autoUpdateTime`: Automatically updates the `ModifiedOnUtc` field in the `Descriptor.json` file when saving `.cs` or `.js` files.
-* `bpmtoolkit.general.packToZip`: If enabled, the `.gz` file is also compressed into a `.zip` file.
 
 ## Settings For .code-workspace file
 
