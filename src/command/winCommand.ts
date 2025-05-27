@@ -12,9 +12,9 @@ export class PowerShellRunCommand extends BaseCommand {
 
 export class PowerShellZipCommand extends BaseCommand {
 
-    constructor(terminalWrapper: TerminalWrapper, sourceFilePath: string, destinationFilePath: string){
+    constructor(terminalWrapper: TerminalWrapper, sourcePath: string, destinationFilePath: string){
         super(terminalWrapper);
-        this.command = `Compress-Archive -Path ${sourceFilePath} -DestinationPath ${destinationFilePath}`;
+        this.command = `Compress-Archive -Path ${sourcePath} -DestinationPath ${destinationFilePath}`;
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 }

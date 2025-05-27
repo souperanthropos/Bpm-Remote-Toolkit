@@ -1,27 +1,27 @@
 import path from "path";
 import { PackageSettings } from "../common/packageSettings";
-import { DataTimeUtility } from "../common/utilities/dataTimeUtility";
 import { PowerShellZipCommand } from "../command/winCommand";
 import { ExtensionManager } from "../managers/extensionManager";
+import { getDirectoryName } from "../constants";
 
 export abstract class BasePackageActions {
     protected packageSettings?: PackageSettings;
-    protected destinationFilePath?: string;
+    protected filesForZip: string[] = [];
+    protected pushingFilePath: string = '';
 
     constructor(protected extensionManager: ExtensionManager) {}
 
     private async createZipFile(): Promise<boolean> {
-        const pkg = this.packageSettings!;
-        const sourceFilePath = path.join(this.extensionManager.packageDirPath, pkg.packageFileName + '.gz');
-        const generatedZipFileName = `${pkg.packageFileName}_${DataTimeUtility.formatDate(new Date(), '-_.')}.zip`;
-        this.destinationFilePath = path.join(this.extensionManager.packageDirPath, generatedZipFileName);
-        const command = new PowerShellZipCommand(this.extensionManager.terminalWrapper, sourceFilePath, this.destinationFilePath);
+        const sourcePath = path.join(this.extensionManager.packageDirPath, '*.gz');
+        const generatedZipFileName = `${getDirectoryName(this.extensionManager.packageDirPath)}.zip`;
+        this.pushingFilePath = path.join(this.extensionManager.packageDirPath, generatedZipFileName);
+        const command = new PowerShellZipCommand(this.extensionManager.terminalWrapper, sourcePath, this.pushingFilePath);
         return await command.execute();
     }
 
     private cleanProperties(): void {
+        this.filesForZip = [];
         this.packageSettings = undefined;
-        this.destinationFilePath = undefined;
     }
 
     protected commandExecuteError(message: string): void {
@@ -33,26 +33,31 @@ export abstract class BasePackageActions {
 
     public async createPackage(pkg: PackageSettings): Promise<boolean> {
         this.packageSettings = pkg;
-        this.destinationFilePath = path.join(this.extensionManager.packageDirPath, pkg.packageFileName + '.gz');
+        const destinationFilePath = path.join(this.extensionManager.packageDirPath, pkg.packageFileName + '.gz');
+        this.filesForZip.push(destinationFilePath);
 
-        let result = await this.createGZFile();
-        if(result && this.extensionManager.packToZip){
-            result = await this.createZipFile();
-        }
-        if(!result){
-            this.destinationFilePath = undefined;
-        }
-
-        return result;
+        return await this.createGZFile();
     }
 
 	public async pushPackage(enviromentId: string): Promise<boolean> {
-        if(!this.destinationFilePath){
+        if(this.filesForZip.length === 0){
             this.commandExecuteError('The package file is not created.');
             return false;
         }
 
-        const result = await this.internalPushPackage(enviromentId);
+        let result = false;
+
+        if(this.filesForZip.length > 1){
+            result = await this.createZipFile();
+
+            if(!result){
+                return false;
+            }
+        }else{
+            this.pushingFilePath = this.filesForZip.pop()!;
+        }
+
+        result = await this.internalPushPackage(enviromentId);
 
         this.cleanProperties();
 
