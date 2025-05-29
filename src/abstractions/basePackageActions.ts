@@ -31,11 +31,14 @@ export abstract class BasePackageActions {
     protected abstract createGZFile(): Promise<boolean>;
     protected abstract internalPushPackage(enviromentId: string): Promise<boolean>;
 
-    public async createPackage(pkg: PackageSettings): Promise<boolean> {
+    public async createPackage(pkg: PackageSettings, onlyCreatePackage: boolean): Promise<boolean> {
         this.packageSettings = pkg;
         const destinationFilePath = path.join(this.extensionManager.packageDirPath, pkg.packageFileName + '.gz');
-        this.filesForZip.push(destinationFilePath);
 
+        if(!onlyCreatePackage){
+            this.filesForZip.push(destinationFilePath);
+        }
+        
         return await this.createGZFile();
     }
 
