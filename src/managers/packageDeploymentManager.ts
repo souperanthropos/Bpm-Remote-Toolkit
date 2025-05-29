@@ -66,8 +66,8 @@ export class PackageDeploymentManager {
 
     // #region IPackageActions implementation
 
-    private async createPackage(settings: PackageSettings): Promise<boolean> {
-        const result = await this.packageActions.createPackage(settings);
+    private async createPackage(settings: PackageSettings, onlyCreatePackage: boolean): Promise<boolean> {
+        const result = await this.packageActions.createPackage(settings, onlyCreatePackage);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true);
@@ -88,7 +88,7 @@ export class PackageDeploymentManager {
                 if (await this._gitHelper.isPermittedBranch(branches)) {
                     await this.extensionManager.clearPackageFolder();
                     await this.extensionManager.clearExecuteLogs();
-                    if (await this.createPackage(pkg)) {
+                    if (await this.createPackage(pkg, true)) {
                         this.extensionManager.openPackageFolder();
                     }
                 }
@@ -219,7 +219,7 @@ export class PackageDeploymentManager {
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
             await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.packageFileName}.`);
-            var result = await this.createPackage(element.package);
+            var result = await this.createPackage(element.package, false);
             if(this._queueItems.length > 1){
                 element.isRunning = false;
             }
