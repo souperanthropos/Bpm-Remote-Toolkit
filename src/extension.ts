@@ -210,7 +210,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	vscode.commands.registerCommand('packageDeploymentManagement.refreshEntry', () => {
-		packageDeploymentProvider.refresh(bpmToolkit.packageDeploymentManager.getItems());
+		packageDeploymentProvider.refresh(bpmToolkit.packageDeploymentManager.getDeployNode());
 	});
 
 }
