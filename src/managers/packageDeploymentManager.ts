@@ -57,10 +57,11 @@ export class PackageDeploymentManager {
     }
 
     private clearIfDeployed() {
-        if(this._queueItems.filter(q=>q.Completed !== null).length > 0){
+        if(this._deployNode?.status === DeployStatus.Error || this._deployNode?.status === DeployStatus.Success){
             this.clear();
+            this._deployNode.status = DeployStatus.Waiting;
+            this._deployNode.packages = [];
         }
-        this._deployNode = new DeployNode();
     }
 
     // #region IPackageActions implementation
