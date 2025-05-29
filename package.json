@@ -4,7 +4,7 @@
   "description": "Development and remote toolkit for BPMSoft and Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.8.17",
+  "version": "1.8.19",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -105,13 +105,6 @@
           "default": false,
           "scope": "application",
           "description": "When saving changes to cs or js files, automatically updates the ModifiedOnUtc field in the Descriptor.json file."
-        },
-        "bpmtoolkit.general.packToZip": {
-          "order": 2,
-          "type": "boolean",
-          "default": false,
-          "scope": "application",
-          "description": "If this option is enabled, the generated package will be packed into a zip file."
         }
       }
     },
