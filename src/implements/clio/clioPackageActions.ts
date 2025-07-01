@@ -9,7 +9,7 @@ export class ClioPackageActions extends BasePackageActions {
     }
 
     protected override async internalPushPackage(enviromentId: string) {
-        const command = new ClioPushPackageCommand(this.extensionManager.terminalWrapper, this.destinationFilePath!, enviromentId);
+        const command = new ClioPushPackageCommand(this.extensionManager.terminalWrapper, this.pushingFilePath, enviromentId);
         return await command.execute();
     }
 }
