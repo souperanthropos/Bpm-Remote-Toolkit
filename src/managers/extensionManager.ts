@@ -10,7 +10,6 @@ export class ExtensionManager {
 	private _environments: enviromentSettings[] = [];
 	private _selectedUtility: string = 'auto';
 	private _autoUpdateTime = false;
-	private _packToZip = false;
 
 	public readonly terminalWrapper: TerminalWrapper;
 
@@ -26,10 +25,6 @@ export class ExtensionManager {
 		return this._autoUpdateTime;
 	}
 
-	public get packToZip(): boolean {
-		return this._packToZip;
-	}
-
 	public get packageDirPath(): string {
 		return this.fileManager.packageDirPath;
 	}
@@ -39,6 +34,7 @@ export class ExtensionManager {
 	constructor() {
 		this.registerEvents();
 		this.initializeProperties();
+		this.initializeEnvironments();
 		this.fileManager = new FileManager();
 		this.terminalWrapper = new PowerShellWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
 	}
@@ -47,8 +43,6 @@ export class ExtensionManager {
 		vscode.workspace.onDidChangeConfiguration((configEvent) =>{
 			this.initializeProperties(configEvent);
 			this.initializeEnvironments();
-			vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
-			vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 		});
 	}
 
@@ -67,13 +61,14 @@ export class ExtensionManager {
 		} else {
 			vscode.commands.executeCommand('setContext', 'isShowContextMenu', false);
 		}
+		vscode.commands.executeCommand('bpmEnvironments.refreshEntry');
+		vscode.commands.executeCommand('packagesExplorer.refreshEntry');
 	}
 
 	private initializeProperties(configEvent?: vscode.ConfigurationChangeEvent) {
 		const generalConfig = vscode.workspace.getConfiguration('bpmtoolkit.general');
 		this._selectedUtility = generalConfig.get<string>('utility')!;
 		this._autoUpdateTime = generalConfig.get<boolean>('autoUpdateTime')!;
-		this._packToZip = generalConfig.get<boolean>('packToZip')!;
 
 		if(configEvent && configEvent.affectsConfiguration('bpmtoolkit.general.utility')){
 			if (this.onSelectedUtilityChanged) {

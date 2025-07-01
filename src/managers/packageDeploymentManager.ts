@@ -8,10 +8,34 @@ import { BasePackageActions } from '../abstractions/basePackageActions';
 import { PackageSettings } from '../common/packageSettings';
 import { PowerShellRunCommand } from '../command/winCommand';
 
+export enum DeployStatus {
+    Waiting,
+    Creating,
+    Uploading,
+    Success,
+    Error
+}
+
+export class DeployNode {
+    public status: DeployStatus = DeployStatus.Waiting;
+    public packages: queueItem[] = [];
+
+    public getRootNodes(): queueItem[] {
+        return [
+            {
+				package: undefined,
+				isRunning: false,
+				Completed: null
+		    }
+        ];
+    }
+}
+
 export class PackageDeploymentManager {
     private readonly _gitHelper: GitHelper;
     private readonly _queueItems: queueItem[];
     private _selectedServer?: enviromentSettings;
+    private _deployNode?: DeployNode;
 
     public onCommandExecuteError?: (message: string, showbutton: boolean) => void;
     public onCommandExecuteComplete?: (message: string, showbutton: boolean) => void;
@@ -33,15 +57,17 @@ export class PackageDeploymentManager {
     }
 
     private clearIfDeployed() {
-        if(this._queueItems.filter(q=>q.Completed !== null).length > 0){
+        if(this._deployNode?.status === DeployStatus.Error || this._deployNode?.status === DeployStatus.Success){
             this.clear();
+            this._deployNode.status = DeployStatus.Waiting;
+            this._deployNode.packages = [];
         }
     }
 
     // #region IPackageActions implementation
 
-    private async createPackage(settings: PackageSettings): Promise<boolean> {
-        const result = await this.packageActions.createPackage(settings);
+    private async createPackage(settings: PackageSettings, onlyCreatePackage: boolean): Promise<boolean> {
+        const result = await this.packageActions.createPackage(settings, onlyCreatePackage);
 
         if (!result && this.onCommandExecuteError) {
             this.onCommandExecuteError('Create package failed.', true);
@@ -62,7 +88,7 @@ export class PackageDeploymentManager {
                 if (await this._gitHelper.isPermittedBranch(branches)) {
                     await this.extensionManager.clearPackageFolder();
                     await this.extensionManager.clearExecuteLogs();
-                    if (await this.createPackage(pkg)) {
+                    if (await this.createPackage(pkg, true)) {
                         this.extensionManager.openPackageFolder();
                     }
                 }
@@ -71,7 +97,7 @@ export class PackageDeploymentManager {
         );
     }
 
-    public async pushPackage(settings: PackageSettings): Promise<boolean>  {
+    public async pushPackage(): Promise<boolean>  {
         if (this._selectedServer === null) {
             Logger.writeToChannel('Error: target enviroment not found');
             if (this.onCommandExecuteError) {
@@ -95,8 +121,12 @@ export class PackageDeploymentManager {
 
     // #endregion
 
-    public getItems(): ReadonlyArray<queueItem> {
-        return this._queueItems;
+    public getDeployNode(): DeployNode {
+        if(!this._deployNode){
+            this._deployNode = new DeployNode();
+        }
+        this._deployNode.packages = this._queueItems.concat();
+        return this._deployNode;
     }
 
     public addQueueItems(pkgs: PackageSettings[]) {
@@ -169,23 +199,6 @@ export class PackageDeploymentManager {
     }
 
     public async startDeployment() {
-        let ignorePushError = false;
-        let abortDeployment = false;
-        if(this._queueItems.length > 1){
-            const options: vscode.MessageOptions = { modal: true };
-            await vscode.window
-                .showInformationMessage('Ignore package installation errors?', options, "Yes", "No")
-                .then(answer => {
-                    if (answer === "Yes") {
-                        ignorePushError = true;
-                    }else if (answer === undefined){
-                        abortDeployment = true;
-                    }
-                });
-        }
-        if(abortDeployment){
-            return;
-        }
         await this.extensionManager.clearPackageFolder();
         await this.extensionManager.clearExecuteLogs();
         const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
@@ -194,37 +207,42 @@ export class PackageDeploymentManager {
         vscode.commands.executeCommand('setContext', 'isShowStartDeploymentCommand', false);
         vscode.commands.executeCommand('setContext', 'isShowClearDeploymentCommand', false);
         await this.extensionManager.writeToExecuteLogFile('START DEPLOYMENT');
+        this._deployNode!.status = DeployStatus.Creating;
         for await (const element of this._queueItems) {
             if (!await this._gitHelper.checkBranch(this._selectedServer!.gitBranchName!)){
                 break;
+            }
+            if(!element.package){
+                continue;
             }
             element.isRunning = true;
             vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             statusBarItem.text = '$(loading~spin) Create package...';
             await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package creating ${element.package.packageFileName}.`);
-            var result = await this.createPackage(element.package);
+            var result = await this.createPackage(element.package, false);
+            if(this._queueItems.length > 1){
+                element.isRunning = false;
+            }
+            element.Completed = { isSuccess: result };
+            vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
             if (!result) {
-                element.isRunning = false;
-                element.Completed = { isSuccess: false };
-                vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
                 break;
-            } else {
-                statusBarItem.text = '$(loading~spin) Sending package...';
-                await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading ${element.package.packageFileName}.`);
-                result = await this.pushPackage(element.package);
-                element.isRunning = false;
-                if (!result) {
-                    element.Completed = { isSuccess: false };
-                    vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
-                    if (!ignorePushError) {
-                        break;
-                    }
-                } else {
-                    element.Completed = { isSuccess: true };
-                    vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
-                }
             }
         }
+
+        statusBarItem.text = '$(loading~spin) Sending package...';
+        await this.extensionManager.writeToExecuteLogFile(`[${this._selectedServer?.id}] - Start package uploading`);
+        this._deployNode!.status = DeployStatus.Uploading;
+        vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+        
+        result = await this.pushPackage();
+        this._deployNode!.status = result ? DeployStatus.Success : DeployStatus.Error;
+        if(this._queueItems.length === 1){
+            this._deployNode!.packages[0].isRunning = false;
+            this._deployNode!.packages[0].Completed = { isSuccess: result };
+        }
+        vscode.commands.executeCommand('packageDeploymentManagement.refreshEntry');
+        
         const currentBranch = this._gitHelper.getCurrentBranch();
         var currentEnviroment = this.extensionManager.environments?.filter(e => e.gitBranchName === currentBranch)[0];
         if(currentEnviroment && !isNullOrWhitespace(currentEnviroment.postRunCommand)){
@@ -234,8 +252,7 @@ export class PackageDeploymentManager {
             await command.execute();
         }
         await this.extensionManager.writeToExecuteLogFile('FINISH DEPLOYMENT');
-        const deployErrorCount = this._queueItems.filter(q=>!q.Completed?.isSuccess).length;
-        if(deployErrorCount > 0){
+        if(this._deployNode?.status === DeployStatus.Error){
             this.extensionManager.showErrorMessage('Package deployment failed with an error.', true);
         }
         statusBarItem.hide();
