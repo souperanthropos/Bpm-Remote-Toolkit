@@ -2,7 +2,9 @@ import * as vscode from 'vscode';
 import path from 'path';
 import { enviromentSettings } from '../interfaces';
 import { FileManager } from './filemanager';
-import { BashWrapper, PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
+import { TerminalWrapper } from '../terminal/terminalwrapper';
+import { BashWrapper } from '../terminal/bashWrapper';
+import { PowerShellWrapper } from '../terminal/powerShellWrapper';
 
 export class ExtensionManager {
 	private readonly isWindows = process.platform === 'win32';
