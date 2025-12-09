@@ -2,9 +2,12 @@ import * as vscode from 'vscode';
 import path from 'path';
 import { enviromentSettings } from '../interfaces';
 import { FileManager } from './filemanager';
-import { PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
+import { BashWrapper, PowerShellWrapper, TerminalWrapper } from '../terminal/terminalwrapper';
 
 export class ExtensionManager {
+	private readonly isWindows = process.platform === 'win32';
+	private readonly isLinux = process.platform === 'linux';
+
 	private readonly fileManager: FileManager;
 	
 	private _environments: enviromentSettings[] = [];
@@ -36,7 +39,12 @@ export class ExtensionManager {
 		this.initializeProperties();
 		this.initializeEnvironments();
 		this.fileManager = new FileManager();
-		this.terminalWrapper = new PowerShellWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
+
+		if(this.isWindows){
+			this.terminalWrapper = new PowerShellWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
+		} else {
+			this.terminalWrapper = new BashWrapper(this.fileManager.terminalDirPath, 'bpmtoolkit');
+		}
 	}
 
 	private registerEvents(){
