@@ -4,9 +4,13 @@
   "description": "Development and remote toolkit for BPMSoft and Creatio.",
   "icon": "images/icon.png",
   "publisher": "code-papery",
-  "version": "1.8.20",
+  "version": "1.8.22",
   "engines": {
     "vscode": "^1.85.0"
+  },
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/souperanthropos/Bpm-Remote-Toolkit.git"
   },
   "categories": [
     "Other"
