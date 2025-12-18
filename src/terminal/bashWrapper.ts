@@ -27,11 +27,11 @@ export class BashWrapper extends TerminalWrapper {
 
         terminal.show(true);
         terminal.sendText(
-            `${command} ${this.errorOutputToSuccessOutputCommand} | tee ${this.tempFilePath} >> ${this.executeLogFilePath}`,
+            `${command} ${this.errorOutputToSuccessOutputCommand} | tee ${this.tempFilePath} >> ${this.executeLogFilePath};`,
             false
         );
         terminal.sendText(
-            `if [ $? -eq 0 ]; then echo 1 > ${this.executeResultFilePath}; else echo 0 > ${this.executeResultFilePath}; fi`,
+            `if [ $? -eq 0 ]; then echo 1 > ${this.executeResultFilePath}; else echo 0 > ${this.executeResultFilePath}; fi;`,
             false
         );
         terminal.sendText("exit");

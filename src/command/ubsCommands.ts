@@ -17,12 +17,18 @@ export class UbsOpenSettingsCommand extends BaseCommand {
 }
 
 export class UbsWebAppRegisterCommand extends BaseCommand {
+    private readonly isWindows = process.platform === 'win32';
+
     private loginQuery?: string;
     private passwordQuery?: string;
 
     constructor(terminal: TerminalWrapper, server: enviromentSettings) {
         super(terminal);
-        this.command = `$username = "{0}";$password = "{1}";ubs env-set ${server.id} -u ${server.url} -l $username -p $password -i ${server.isNetCore}`;
+        if(this.isWindows){
+            this.command = `$username = "{0}";$password = "{1}";ubs env-set ${server.id} -u ${server.url} -l $username -p $password -i ${server.isNetCore}`;
+        }else{
+            this.command = `username="{0}"; password="{1}"; ubs env-set ${server.id} -u ${server.url} -l "$username" -p "$password" -i ${server.isNetCore}`;
+        }
         this.options = { useErrorOutputToSuccessOutput: true };
     }
 
