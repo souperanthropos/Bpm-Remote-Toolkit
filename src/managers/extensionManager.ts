@@ -108,7 +108,11 @@ export class ExtensionManager {
 
 	public openExecuteLog() {
         const folderUri = vscode.Uri.file(this.terminalWrapper.executeLogFilePath);
-		vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+		if (vscode.env.remoteName){
+			vscode.commands.executeCommand(`revealInExplorer`, folderUri);
+		} else {
+			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
+		}
     }
 
 	public async clearPackageFolder() {
